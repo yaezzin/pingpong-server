@@ -1,4 +1,4 @@
-package com.app.pingpong.member.entity;
+package com.app.pingpong.domain.member.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
