@@ -1,6 +1,6 @@
 package com.app.pingpong.domain.social.entity;
 
-import com.app.pingpong.domain.social.dto.response.UserInfoResponse;
+import com.app.pingpong.domain.social.dto.response.MemberInfoResponse;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -66,7 +66,7 @@ public class KakaoOAuth implements SocialOAuth{
     }
 
     @Override
-    public UserInfoResponse getUserInfo(String accessToken) {
+    public MemberInfoResponse getUserInfo(String accessToken) {
         HashMap<String, Object> userInfo = new HashMap<>();
         String reqURL = "https://kapi.kakao.com/v2/user/me";
 
@@ -94,7 +94,7 @@ public class KakaoOAuth implements SocialOAuth{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new UserInfoResponse((String)userInfo.get("id"), (String)userInfo.get("email"));
+        return new MemberInfoResponse((String)userInfo.get("id"), (String)userInfo.get("email"));
     }
 
 }

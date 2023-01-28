@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class UserInfoRequest {
+public class MemberInfoRequest {
     private String socialType;
     private String code;
 }
