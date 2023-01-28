@@ -32,4 +32,9 @@ spring:
                         client-authentication-method: POST
                         client-name: Kakao
 
+                    google:
+                        client-id: "499200857499-6ij6ualpg0vqmo6ppvkvd1mtqua0j7hp.apps.googleusercontent.com"
+                        client-secret: "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"
+                        redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+                        scope: "https://www.googleapis.com/auth/userinfo.email"
 
