@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
@@ -22,7 +23,7 @@ public class MemberRepositoryTest {
     }
 
     @Test
-    public void 회원가입() {
+    public void 저장() {
         Member member = createMember();
         memberRepository.save(member);
         Member findMember = memberRepository.findById(member.getId()).orElseThrow();
@@ -36,6 +37,12 @@ public class MemberRepositoryTest {
         Member findMember = memberRepository.findByEmail(member.getEmail()).orElseThrow();
         assertThat(findMember.getEmail()).isEqualTo(findMember.getEmail());
     }
+
+    @Test
+    public void 닉네임_중복_확인() {
+        Member member = memberRepository.save(createMember());
+        assertThat(memberRepository.existsByEmail(member.getEmail())).isTrue();
+     }
 
     private Member createMember() {
         return new Member("123", "email", "nickname", "profileImage", Authority.ROLE_USER);
