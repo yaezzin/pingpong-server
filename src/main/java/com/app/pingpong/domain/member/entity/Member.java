@@ -1,13 +1,11 @@
 package com.app.pingpong.domain.member.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Getter
 @NoArgsConstructor
@@ -27,4 +25,17 @@ public class Member {
 
     private String profileImage;
 
+    @Enumerated(EnumType.STRING)
+    private Authority authority;
+
+    @Builder
+    public Member(String socialId, String email, String nickname, String profileImage, Authority authority) {
+        this.socialId = socialId;
+        this.email = email;
+        this.nickname = nickname;
+        this.profileImage = profileImage;
+        this.authority = authority;
+    }
+
 }
+

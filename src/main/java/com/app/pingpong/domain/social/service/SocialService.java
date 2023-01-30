@@ -25,12 +25,12 @@ public class SocialService {
 
     public MemberInfoResponse getUserInfo(MemberInfoRequest request) {
         switch (request.getSocialType()) {
-            case "KAKAO" : {
+            case "KAKAO": {
                 String accessToken = kakao.getAccessToken(request.getCode());
                 MemberInfoResponse userInfo = kakao.getUserInfo(accessToken);
                 return userInfo;
             }
-            case "GOOGLE" : {
+            case "GOOGLE": {
                 String accessToken = google.getAccessToken(request.getCode());
                 MemberInfoResponse userInfo = google.getUserInfo(accessToken);
                 return userInfo;
@@ -56,5 +56,7 @@ public class SocialService {
         //        .value(tokenResponse.getRefreshToken())
         //        .build();
         //refreshTokenRepository.save(refreshToken);
-        return MemberLoginResponse.of(member, tokenResponse);
+        //return MemberLoginResponse.of(member, tokenResponse);
+        return null;
     }
+}
