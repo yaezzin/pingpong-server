@@ -1,3 +1,4 @@
+DROP TABLE member IF EXISTS;
 CREATE TABLE member
 (
     id int NOT NULL PRIMARY KEY,
