@@ -19,4 +19,11 @@ public class MemberController {
     public BaseResponse<MemberResponse> signup(@RequestBody SignUpRequest request) {
         return new BaseResponse<>(memberService.signup(request));
     }
+
+    @ResponseBody
+    @PostMapping("/validate")
+    public BaseResponse<String> validate(@RequestParam String nickname) {
+        return memberService.validateNickname(nickname);
+    }
+
 }

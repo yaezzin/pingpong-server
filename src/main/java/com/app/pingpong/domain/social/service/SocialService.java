@@ -50,7 +50,7 @@ public class SocialService {
 
     public MemberLoginResponse login(MemberLoginRequest request) {
         String email = request.getEmail();
-        String socialIdx = request.getSocialIdx();
+        String socialIdx = request.getSocialId();
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new BaseException(EMAIL_NOT_FOUND));
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, socialIdx);
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);

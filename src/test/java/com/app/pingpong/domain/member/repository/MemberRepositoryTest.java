@@ -2,7 +2,6 @@ package com.app.pingpong.domain.member.repository;
 
 import com.app.pingpong.domain.member.entity.Authority;
 import com.app.pingpong.domain.member.entity.Member;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
-public class MemberTest {
+public class MemberRepositoryTest {
 
     @Autowired MemberRepository memberRepository;
 
@@ -24,7 +23,7 @@ public class MemberTest {
 
     @Test
     public void 회원가입() {
-        Member member = new Member("123", "email", "nickname", "profileImage", Authority.ROLE_USER);
+        Member member = createMember();
         memberRepository.save(member);
         Member findMember = memberRepository.findById(member.getId()).orElseThrow();
         assertThat(findMember.getId()).isEqualTo(member.getId());
@@ -32,10 +31,13 @@ public class MemberTest {
 
     @Test
     public void 이메일로_회원_찾기() {
-        Member member = new Member("123", "email", "nickname", "profileImage", Authority.ROLE_USER);
+        Member member = createMember();
         memberRepository.save(member);
         Member findMember = memberRepository.findByEmail(member.getEmail()).orElseThrow();
         assertThat(findMember.getEmail()).isEqualTo(findMember.getEmail());
     }
 
+    private Member createMember() {
+        return new Member("123", "email", "nickname", "profileImage", Authority.ROLE_USER);
+    }
 }
