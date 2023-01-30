@@ -6,10 +6,15 @@ import com.app.pingpong.domain.social.dto.request.MemberInfoRequest;
 import com.app.pingpong.domain.social.dto.request.MemberLoginRequest;
 import com.app.pingpong.domain.social.dto.response.MemberInfoResponse;
 import com.app.pingpong.domain.social.dto.response.MemberLoginResponse;
+import com.app.pingpong.domain.social.dto.response.TokenResponse;
 import com.app.pingpong.domain.social.entity.GoogleOAuth;
 import com.app.pingpong.domain.social.entity.KakaoOAuth;
 import com.app.pingpong.global.exception.BaseException;
+import com.app.pingpong.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import static com.app.pingpong.global.exception.StatusCode.EMAIL_NOT_FOUND;
@@ -22,6 +27,8 @@ public class SocialService {
     private final KakaoOAuth kakao;
     private final GoogleOAuth google;
     private final MemberRepository memberRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     public MemberInfoResponse getUserInfo(MemberInfoRequest request) {
         switch (request.getSocialType()) {
@@ -45,9 +52,9 @@ public class SocialService {
         String email = request.getEmail();
         String socialIdx = request.getSocialIdx();
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new BaseException(EMAIL_NOT_FOUND));
-        //UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, socialIdx);
-        //Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        //TokenResponse tokenResponse = jwtTokenProvider.createToken(authentication);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, socialIdx);
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        TokenResponse tokenResponse = jwtTokenProvider.createToken(authentication);
 
         //ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         //valueOperations.set(user.getEmail(), tokenResponse.getRefreshToken());
@@ -56,7 +63,6 @@ public class SocialService {
         //        .value(tokenResponse.getRefreshToken())
         //        .build();
         //refreshTokenRepository.save(refreshToken);
-        //return MemberLoginResponse.of(member, tokenResponse);
-        return null;
+        return MemberLoginResponse.of(member, tokenResponse);
     }
 }

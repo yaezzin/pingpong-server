@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .and()
 
                 .authorizeRequests()
-                .antMatchers("/oauth", "/api/members/sign-up").permitAll()
+                .antMatchers("/oauth/**", "/api/members/sign-up").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .apply(new JwtSecurityConfig(jwtTokenProvider));
