@@ -2,6 +2,7 @@ package com.app.pingpong.domain.member.service;
 
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
+import com.app.pingpong.domain.member.entity.Authority;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 

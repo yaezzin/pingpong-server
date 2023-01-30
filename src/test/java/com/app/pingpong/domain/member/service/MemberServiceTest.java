@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.member.service;
 
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
+import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Authority;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -22,16 +24,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
 @ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
 
-    @InjectMocks MemberService memberService;
+    @Spy @InjectMocks MemberService memberService;
     @Mock MemberRepository memberRepository;
     @Mock PasswordEncoder passwordEncoder;
+
+    @Test
+    public void 회원가입() {
+        SignUpRequest request = new SignUpRequest("socialId", "email", "nickname", "profileImage");
+        MemberResponse response = MemberResponse.of(request.toEntity(passwordEncoder));
+        lenient().doReturn(response).when(memberService).signup(any(SignUpRequest.class));
+    }
 
     @Test
     public void 닉네임_정규식() {
@@ -51,7 +59,6 @@ public class MemberServiceTest {
         // when, then
         assertThatThrownBy(() -> memberService.validateNickname(createMember().getNickname())).isInstanceOf(BaseException.class);
     }
-
 
     private Member createMember() {
         return Member.builder()

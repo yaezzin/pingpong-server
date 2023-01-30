@@ -2,9 +2,7 @@ package com.app.pingpong.domain.member.dto.request;
 
 import com.app.pingpong.domain.member.entity.Authority;
 import com.app.pingpong.domain.member.entity.Member;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Getter
@@ -16,6 +14,7 @@ public class SignUpRequest {
     private String nickname;
     private String profileImage;
 
+    @Builder
     public Member toEntity(PasswordEncoder passwordEncoder) {
         return Member.builder()
                 .socialId(passwordEncoder.encode(socialId))
