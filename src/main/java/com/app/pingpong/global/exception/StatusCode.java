@@ -19,6 +19,7 @@ public enum StatusCode {
     INVALID_NICKNAME(false, 400, "닉네임 형식이 올바르지 않습니다."),
     USER_NICKNAME_ALREADY_EXISTS(false, 400, "이미 사용중인 닉네임입니다."),
 
+    INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다."),
 
     /* 404 : NOT FOUND */
     USER_NOT_FOUND(false, 404, "해당 유저를 찾을 수 없습니다."),
