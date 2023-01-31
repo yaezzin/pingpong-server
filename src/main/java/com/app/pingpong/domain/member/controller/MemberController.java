@@ -27,10 +27,17 @@ public class MemberController {
         return memberService.validateNickname(nickname);
     }
 
-    // 수정, 탈퇴, 로그아웃, 회원 정보 id로 찾기
+    // 로그아웃, 회원 정보 id로 찾기
     @ResponseBody
     @PatchMapping("/{id}")
     public BaseResponse<MemberResponse> update(@PathVariable Long id, @RequestBody UpdateRequest request) {
         return new BaseResponse<>(memberService.update(id, request));
     }
+
+    @ResponseBody
+    @DeleteMapping("/{id}")
+    public BaseResponse<String> delete(@PathVariable Long id) {
+        return memberService.delete(id);
+    }
+
 }

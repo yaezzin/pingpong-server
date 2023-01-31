@@ -4,6 +4,7 @@ import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Authority;
 import com.app.pingpong.domain.member.entity.Member;
+import com.app.pingpong.domain.member.entity.Status;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.global.exception.BaseException;
 import org.junit.jupiter.api.BeforeAll;
@@ -71,7 +72,7 @@ public class MemberServiceTest {
     }
 
     private Member createFailedMember() {
-        return new Member("123", "email", "nadㅁ@z@!!1231", "profileImage", Authority.ROLE_USER);
+        return new Member("123", "email", "nadㅁ@z@!!1231", "profileImage", Status.ACTIVE, Authority.ROLE_USER);
     }
 }
 

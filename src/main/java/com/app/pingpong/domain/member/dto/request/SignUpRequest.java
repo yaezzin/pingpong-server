@@ -5,6 +5,8 @@ import com.app.pingpong.domain.member.entity.Member;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import static com.app.pingpong.domain.member.entity.Status.ACTIVE;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,6 +23,7 @@ public class SignUpRequest {
                 .email(email)
                 .nickname(nickname)
                 .profileImage(profileImage)
+                .status(ACTIVE)
                 .authority(Authority.ROLE_USER)
                 .build();
     }

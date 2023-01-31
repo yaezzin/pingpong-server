@@ -2,6 +2,7 @@ package com.app.pingpong.domain.member.repository;
 
 import com.app.pingpong.domain.member.entity.Authority;
 import com.app.pingpong.domain.member.entity.Member;
+import com.app.pingpong.domain.member.entity.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,6 @@ public class MemberRepositoryTest {
      }
 
     private Member createMember() {
-        return new Member("123", "email", "nickname", "profileImage", Authority.ROLE_USER);
+        return new Member("123", "email", "nickname", "profileImage", Status.ACTIVE, Authority.ROLE_USER);
     }
 }

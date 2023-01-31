@@ -12,6 +12,8 @@ public enum StatusCode {
 
     SUCCESS_DELETE_AWS_S3(true, 200, "S3에서 사진 삭제를 성공하였습니다."),
 
+    SUCCESS_USER_DELETE(true, 200, "유저 탈퇴에 성공하였습니다."),
+
     /* 400 : Bad Request   */
     INVALID_SOCIAL_TYPE(false, 400, "소셜로그인 타입이 일치하지 않습니다."),
     INVALID_NICKNAME(false, 400, "닉네임 형식이 올바르지 않습니다."),
