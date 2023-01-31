@@ -1,15 +1,15 @@
 package com.app.pingpong.domain.member.service;
 
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
+import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
-import com.app.pingpong.domain.member.entity.Authority;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 
+import com.app.pingpong.domain.s3.S3Uploader;
 import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +23,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final S3Uploader s3Uploader;
 
     @Transactional
     public MemberResponse signup(SignUpRequest request) {
@@ -41,4 +42,15 @@ public class MemberService {
         return new BaseResponse(SUCCESS_VALIDATE_NICKNAME);
     }
 
+    @Transactional
+    public MemberResponse update(Long id, UpdateRequest request) {
+        Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        s3Uploader.deleteFile(member.getProfileImage());
+
+        validateNickname(member.getNickname());
+        member.setNickname(request.getNickname());
+        member.setProfileImage(request.getProfileImage());
+
+        return MemberResponse.of(member);
+    }
 }

@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.member.controller;
 
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
+import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.service.MemberService;
 import com.app.pingpong.global.common.BaseResponse;
@@ -26,4 +27,10 @@ public class MemberController {
         return memberService.validateNickname(nickname);
     }
 
+    // 수정, 탈퇴, 로그아웃, 회원 정보 id로 찾기
+    @ResponseBody
+    @PatchMapping("/{id}")
+    public BaseResponse<MemberResponse> update(@PathVariable Long id, @RequestBody UpdateRequest request) {
+        return new BaseResponse<>(memberService.update(id, request));
+    }
 }

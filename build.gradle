@@ -43,6 +43,8 @@ dependencies {
 	// h2
 	implementation 'com.h2database:h2'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 }
 
 tasks.named('test') {
@@ -64,10 +66,37 @@ jacocoTestReport {
 		xml.enabled false
 		csv.enabled false
 	}
+
+	def Qdomains = []
+	for (qPattern in '**/QA'..'**/QZ') {
+		Qdomains.add(qPattern + '*')
+	}
+
+	afterEvaluate {
+		classDirectories.setFrom(
+				files(classDirectories.files.collect {
+					fileTree(dir: it, excludes: [
+							"**/*Application*",
+							"**/*Config*",
+							"**/*Dto*",
+							"**/*Request*",
+							"**/*Response*",
+							"**/*Interceptor*",
+							"**/*Exception*",
+							"**/*OAuth*"
+					] + Qdomains)
+				})
+		)
+	}
 	finalizedBy 'jacocoTestCoverageVerification'
 }
 
 jacocoTestCoverageVerification {
+	def Qdomains = []
+	for (qPattern in '*.QA'..'*.QZ') {
+		Qdomains.add(qPattern + '*')
+	}
+
 	violationRules {
 		rule {
 			enabled = true // 활성화
@@ -94,7 +123,17 @@ jacocoTestCoverageVerification {
 				value = 'TOTALCOUNT'
 				maximum = 200
 			}
-			//excludes = []
+
+			excludes = [
+					"**.*Application*",
+					"**.*Config*",
+					"**.*Dto*",
+					"**.*Request*",
+					"**.*Response*",
+					"**.*Interceptor*",
+					"**.*Exception*",
+					"**.*OAuth*"
+			] + Qdomains
 		}
 
 	}

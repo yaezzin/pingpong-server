@@ -4,6 +4,9 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+AwsS3.config
+application.yml
+
 
 ### STS ###
 .apt_generated
@@ -16,6 +19,8 @@ build/
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+application.yml
+
 
 ### IntelliJ IDEA ###
 .idea
