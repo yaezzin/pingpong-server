@@ -5,6 +5,7 @@ import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.service.MemberService;
 import com.app.pingpong.global.common.BaseResponse;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,12 @@ public class MemberController {
         return memberService.validateNickname(nickname);
     }
 
-    // 로그아웃, 회원 정보 id로 찾기
+    @ResponseBody
+    @GetMapping("/{id}")
+    public BaseResponse<MemberResponse> findById(@PathVariable Long id) {
+        return new BaseResponse<>(memberService.findById(id));
+    }
+
     @ResponseBody
     @PatchMapping("/{id}")
     public BaseResponse<MemberResponse> update(@PathVariable Long id, @RequestBody UpdateRequest request) {

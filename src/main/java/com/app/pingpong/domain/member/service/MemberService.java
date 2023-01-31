@@ -44,6 +44,11 @@ public class MemberService {
         return new BaseResponse(SUCCESS_VALIDATE_NICKNAME);
     }
 
+    public MemberResponse findById(Long id) {
+        Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        return MemberResponse.of(member);
+    }
+
     @Transactional
     public MemberResponse update(Long id, UpdateRequest request) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
