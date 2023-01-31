@@ -47,7 +47,7 @@ public class MemberService {
         Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         s3Uploader.deleteFile(member.getProfileImage());
 
-        validateNickname(member.getNickname());
+        validateNickname(request.getNickname());
         member.setNickname(request.getNickname());
         member.setProfileImage(request.getProfileImage());
 
