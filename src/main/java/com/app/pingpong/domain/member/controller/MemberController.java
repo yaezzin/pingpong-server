@@ -1,5 +1,6 @@
 package com.app.pingpong.domain.member.controller;
 
+import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
@@ -9,6 +10,8 @@ import com.app.pingpong.global.common.BaseResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -51,6 +54,12 @@ public class MemberController {
     @GetMapping("/{id}/mypage")
     public BaseResponse<MemberDetailResponse> getMyPage(@PathVariable Long id) {
         return new BaseResponse<>(memberService.getMyPage(id));
+    }
+
+    @ResponseBody
+    @GetMapping("/friends")
+    public BaseResponse<List<Friend>> getMyFriends() {
+        return new BaseResponse<>(memberService.getMyFriends());
     }
 
 }

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -26,4 +27,6 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
     @Query("select count(f.id) from Friend f where (f.applicant.id =:id or f.respondent.id =:id) and f.status = 'ACTIVE'")
     int findFriendCount(Long id);
 
+    @Query("select f from Friend f where f.applicant.id =:id or f.respondent.id =:id and f.status = 'ACTIVE'")
+    List<Friend> findAllFriendsByUserId(Long id);
 }
