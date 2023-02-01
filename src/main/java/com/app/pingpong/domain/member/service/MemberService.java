@@ -85,6 +85,12 @@ public class MemberService {
         return MemberDetailResponse.of(member, friendCount);
     }
 
+    public MemberDetailResponse getOppPage(Long id) {
+        Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        int friendCount = friendRepository.findFriendCount(id);
+        return MemberDetailResponse.of(member, friendCount);
+    }
+
     public List<Friend> getMyFriends() {
         Member loginUser = userFacade.getCurrentUser();
         List<Friend> friends = friendRepository.findAllFriendsByUserId(loginUser.getId());
@@ -104,4 +110,5 @@ public class MemberService {
         }
         return list;
     }
+
 }

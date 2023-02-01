@@ -56,6 +56,13 @@ public class MemberController {
         return new BaseResponse<>(memberService.getMyPage(id));
     }
 
+    // 타인 프로필 조회
+    @ResponseBody
+    @GetMapping("/{id}/profile")
+    public BaseResponse<MemberDetailResponse> getOppPage(@PathVariable Long id) {
+        return new BaseResponse<>(memberService.getOppPage(id));
+    }
+
     @ResponseBody
     @GetMapping("/friends")
     public BaseResponse<List<Friend>> getMyFriends() {
