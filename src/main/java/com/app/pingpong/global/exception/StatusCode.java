@@ -12,6 +12,7 @@ public enum StatusCode {
     SUCCESS_DELETE_USER(true, 200, "유저 탈퇴에 성공하였습니다."),
     SUCCESS_DELETE_AWS_S3(true, 200, "S3에서 사진 삭제를 성공하였습니다."),
     SUCCESS_ACCEPT_FRIEND(true, 200, "친구 신청 수락에 성공하였습니다."),
+    SUCCESS_REFUSE_FRIEND(true, 200, "친구 신청 거절에 성공하였습니다."),
 
     /* 400 : Bad Request   */
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다."),

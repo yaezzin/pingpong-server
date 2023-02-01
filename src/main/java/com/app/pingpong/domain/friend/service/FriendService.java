@@ -15,8 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.app.pingpong.domain.member.entity.Status.ACTIVE;
-import static com.app.pingpong.domain.member.entity.Status.WAIT;
+import static com.app.pingpong.domain.member.entity.Status.*;
 import static com.app.pingpong.global.exception.StatusCode.*;
 
 @RequiredArgsConstructor
@@ -38,8 +37,17 @@ public class FriendService {
     public StatusCode acceptFriend(Long id) {
         Member loginUser = userFacade.getCurrentUser();
         Friend friend = friendRepository.findByApplicantIdAndRespondentId(id, loginUser.getId()).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
-        checkAndSetFriendStatus(friend);
+        checkAndSetStatusActive(friend);
         return SUCCESS_ACCEPT_FRIEND;
+    }
+
+    @Transactional
+    public StatusCode refuseFriend(Long id) {
+        Member loginUser = userFacade.getCurrentUser();
+        Friend friend = friendRepository.findByApplicantIdAndRespondentId(id, loginUser.getId()).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
+        checkAndSetStatusDelete(friend);
+        return SUCCESS_REFUSE_FRIEND;
+
     }
 
     private void checkFriend(Member applicant, Member respondent) {
@@ -57,10 +65,17 @@ public class FriendService {
         }
     }
 
-    private void checkAndSetFriendStatus(Friend friend) {
+    private void checkAndSetStatusActive(Friend friend) {
         if (friend.getStatus().equals(ACTIVE)) {
             throw new BaseException(ALREADY_ON_FRIEND);
         }
         friend.setStatus(ACTIVE);
+    }
+
+    private void checkAndSetStatusDelete(Friend friend) {
+        if (friend.getStatus().equals(ACTIVE)) {
+            throw new BaseException(ALREADY_ON_FRIEND);
+        }
+        friend.setStatus(DELETE);
     }
 }

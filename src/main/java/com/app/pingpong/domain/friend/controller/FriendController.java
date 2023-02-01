@@ -27,4 +27,10 @@ public class FriendController {
         return new BaseResponse<>(friendService.acceptFriend(id));
     }
 
+    @ResponseBody
+    @PostMapping("/refuse")
+    public BaseResponse<StatusCode> refuseFriend(@RequestParam("opponentId") Long id) {
+        return new BaseResponse<>(friendService.refuseFriend(id));
+    }
+
 }
