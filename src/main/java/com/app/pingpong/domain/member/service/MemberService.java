@@ -1,7 +1,9 @@
 package com.app.pingpong.domain.member.service;
 
+import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
+import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.Status;
@@ -24,6 +26,7 @@ import static com.app.pingpong.global.util.RegexUtil.isRegexNickname;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final FriendRepository friendRepository;
     private final PasswordEncoder passwordEncoder;
     private final S3Uploader s3Uploader;
 
@@ -66,5 +69,11 @@ public class MemberService {
         Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         member.setStatus(DELETE);
         return new BaseResponse<>(SUCCESS_DELETE_USER);
+    }
+
+    public MemberDetailResponse getMyPage(Long id) {
+        Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        int friendCount = friendRepository.findFriendCount(id);
+        return MemberDetailResponse.of(member, friendCount);
     }
 }

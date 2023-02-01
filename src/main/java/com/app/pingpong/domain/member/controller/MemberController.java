@@ -2,6 +2,7 @@ package com.app.pingpong.domain.member.controller;
 
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
+import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.service.MemberService;
 import com.app.pingpong.global.common.BaseResponse;
@@ -44,6 +45,12 @@ public class MemberController {
     @DeleteMapping("/{id}")
     public BaseResponse<String> delete(@PathVariable Long id) {
         return memberService.delete(id);
+    }
+
+    @ResponseBody
+    @GetMapping("/{id}/mypage")
+    public BaseResponse<MemberDetailResponse> getMyPage(@PathVariable Long id) {
+        return new BaseResponse<>(memberService.getMyPage(id));
     }
 
 }

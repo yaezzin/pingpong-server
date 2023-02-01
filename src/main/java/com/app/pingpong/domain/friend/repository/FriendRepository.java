@@ -22,4 +22,8 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
     @Query("select f from Friend f where f.applicant.id =:applicantId " +
             "and f.respondent.id =:respondentId and f.status = 'WAIT' or f.status = 'ACTIVE'")
     Optional<Friend> findByApplicantIdAndRespondentId(Long applicantId, Long respondentId);
+
+    @Query("select count(f.id) from Friend f where (f.applicant.id =:id or f.respondent.id =:id) and f.status = 'ACTIVE'")
+    int findFriendCount(Long id);
+
 }

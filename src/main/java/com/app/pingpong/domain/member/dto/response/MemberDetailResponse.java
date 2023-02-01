@@ -8,12 +8,13 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberResponse {
+public class MemberDetailResponse {
     private Long userId;
     private String nickname;
     private String profileImage;
+    private int friendCount;
 
-    public static MemberResponse of(Member member) {
-        return new MemberResponse(member.getId(), member.getNickname(), member.getProfileImage());
+    public static MemberDetailResponse of(Member member, int friendCount) {
+        return new MemberDetailResponse(member.getId(), member.getNickname(), member.getProfileImage(), friendCount);
     }
 }
