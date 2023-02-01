@@ -65,6 +65,6 @@ public class MemberService {
     public BaseResponse<String> delete(Long id) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         member.setStatus(DELETE);
-        return new BaseResponse<>(SUCCESS_USER_DELETE);
+        return new BaseResponse<>(SUCCESS_DELETE_USER);
     }
 }

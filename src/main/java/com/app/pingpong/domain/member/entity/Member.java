@@ -1,8 +1,12 @@
 package com.app.pingpong.domain.member.entity;
 
 import lombok.*;
+import org.springframework.security.core.CredentialsContainer;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.util.Collection;
 
 @Getter
 @NoArgsConstructor
