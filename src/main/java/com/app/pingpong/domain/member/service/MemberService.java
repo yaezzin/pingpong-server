@@ -8,6 +8,7 @@ import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
 import com.app.pingpong.domain.member.dto.response.MemberFriendResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
+import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.Status;
 import com.app.pingpong.domain.member.repository.MemberRepository;
@@ -59,7 +60,7 @@ public class MemberService {
     }
 
     @Transactional
-    public BaseResponse<String> validateNickname(String nickname){
+    public BaseResponse<String> validateNickname(String nickname) {
         if (!isRegexNickname(nickname)) {
             throw new BaseException(INVALID_NICKNAME);
         }
@@ -128,7 +129,7 @@ public class MemberService {
     // 친구 검색 최근 검색어 저장
     @Transactional
     public StatusCode saveSearchLog(SearchLogRequest request) throws JsonProcessingException {
-        Member member= memberRepository.findById(request.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        Member member = memberRepository.findById(request.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         String loginUserId = "id" + userFacade.getCurrentUser().getId(); // 내 식별자
         String memberId = "id" + member.getId();
         ObjectMapper mapper = new ObjectMapper()
@@ -141,9 +142,6 @@ public class MemberService {
         } else {
             redisTemplate.opsForHash().put(loginUserId, memberId, value);
         }
-
-        //ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-        //valueOperations.set(key, MemberResponse.of(member));
         return SUCCESS;
     }
 
@@ -152,5 +150,18 @@ public class MemberService {
         return entries;
     }
 
-
+    public List<MemberSearchResponse> findByNickname(String nickname) {
+        List<Member> findMembers = memberRepository.findByNicknameContains(nickname).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        List<MemberSearchResponse> list = new ArrayList<>();
+        for (Member findMember : findMembers) {
+            boolean isFriend = friendRepository.isFriend(userFacade.getCurrentUser().getId(), findMember.getId());
+            list.add(MemberSearchResponse.builder()
+                    .userId(findMember.getId())
+                    .nickname(findMember.getNickname())
+                    .profileImage(findMember.getProfileImage())
+                    .isFriend(isFriend)
+                    .build());
+        }
+        return list;
+    }
 }

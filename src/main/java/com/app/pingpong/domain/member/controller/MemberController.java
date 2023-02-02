@@ -6,6 +6,7 @@ import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
+import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
 import com.app.pingpong.domain.member.service.MemberService;
 import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.StatusCode;
@@ -75,6 +76,11 @@ public class MemberController {
     }
 
     // 검색
+    @GetMapping("/search")
+    public BaseResponse<List<MemberSearchResponse>> findByNickname(@RequestParam("nickname") String nickname) {
+        return new BaseResponse<>(memberService.findByNickname(nickname));
+    }
+
     // 검색기록 저장
     @PostMapping("/search-log")
     public BaseResponse<StatusCode> saveSearchLog(@RequestBody SearchLogRequest request) throws IOException {

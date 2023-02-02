@@ -27,6 +27,11 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
     @Query("select count(f.id) from Friend f where (f.applicant.id =:id or f.respondent.id =:id) and f.status = 'ACTIVE'")
     int findFriendCount(Long id);
 
-    @Query("select f from Friend f where f.applicant.id =:id or f.respondent.id =:id and f.status = 'ACTIVE'")
+    @Query("select f from Friend f where (f.applicant.id =:id or f.respondent.id =:id) and f.status = 'ACTIVE'")
     List<Friend> findAllFriendsByUserId(Long id);
+
+    @Query("select count(f.id) > 0 from Friend f where (f.applicant.id =:loginUserId or f.respondent.id =:loginUserId) " +
+            "and (f.applicant.id =:searchedUserId or f.respondent.id =:searchedUserId) and f.status = 'ACTIVE'")
+    boolean isFriend(Long loginUserId, Long searchedUserId);
 }
+
