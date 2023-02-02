@@ -5,9 +5,7 @@ import com.app.pingpong.domain.friend.dto.response.FriendResponse;
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.entity.Member;
-import com.app.pingpong.domain.member.entity.Status;
 import com.app.pingpong.domain.member.repository.MemberRepository;
-import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.BaseException;
 import com.app.pingpong.global.exception.StatusCode;
 import com.app.pingpong.global.util.UserFacade;
@@ -47,7 +45,6 @@ public class FriendService {
         Friend friend = friendRepository.findByApplicantIdAndRespondentId(id, loginUser.getId()).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
         checkAndSetStatusDelete(friend);
         return SUCCESS_REFUSE_FRIEND;
-
     }
 
     private void checkFriend(Member applicant, Member respondent) {
