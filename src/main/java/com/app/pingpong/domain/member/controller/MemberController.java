@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +77,7 @@ public class MemberController {
     // 검색
     // 검색기록 저장
     @PostMapping("/search-log")
-    public BaseResponse<StatusCode> saveSearchLog(@RequestBody SearchLogRequest request) throws JsonProcessingException {
+    public BaseResponse<StatusCode> saveSearchLog(@RequestBody SearchLogRequest request) throws IOException {
         return new BaseResponse<>(memberService.saveSearchLog(request));
     }
 

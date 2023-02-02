@@ -18,6 +18,7 @@ import com.app.pingpong.global.exception.BaseException;
 import com.app.pingpong.global.exception.StatusCode;
 import com.app.pingpong.global.util.UserFacade;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
@@ -130,18 +131,19 @@ public class MemberService {
         Member member= memberRepository.findById(request.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         String loginUserId = "id" + userFacade.getCurrentUser().getId(); // 내 식별자
         String memberId = "id" + member.getId();
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
         String value = mapper.writeValueAsString(MemberResponse.of(member));
-
-        if (mapper.convertValue(redisTemplate.opsForHash().get(loginUserId, memberId), MemberResponse.class) != null) {
-            redisTemplate.opsForHash().put(loginUserId, "id" + (member.getId() + 1), value);
+        if (mapper.readValue((String) redisTemplate.opsForHash().get(loginUserId, memberId), MemberResponse.class) != null) {
+            redisTemplate.opsForHash().delete(loginUserId, memberId);
+            redisTemplate.opsForHash().put(loginUserId, memberId, value);
         } else {
             redisTemplate.opsForHash().put(loginUserId, memberId, value);
         }
 
         //ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
         //valueOperations.set(key, MemberResponse.of(member));
-        //redisTemplate.expireAt(key, Date.from(ZonedDateTime.now().plusDays(7).toInstant()));
         return SUCCESS;
     }
 
