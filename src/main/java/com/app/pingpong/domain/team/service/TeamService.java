@@ -105,6 +105,7 @@ public class TeamService {
         return SUCCESS;
     }
 
+    @Transactional
     public List<TeamMemberResponse> getTeamMembers(Long id) {
         List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(id);
         Team team = teamRepository.findActiveTeamById(id).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
@@ -114,12 +115,14 @@ public class TeamService {
         List<TeamMemberResponse> list = new ArrayList<>();
         for (Member findMember : members) {
             boolean isFriend = friendRepository.isFriend(hostId, findMember.getId());
+            MemberTeam isStatus = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), findMember.getId());
             list.add(TeamMemberResponse.builder()
                     .userId(findMember.getId())
                     .nickname(findMember.getNickname())
                     .profileImage(findMember.getProfileImage())
                     .hostId(hostId)
                     .isFriend(isFriend)
+                    .status(isStatus.getStatus())
                     .build());
         }
         return list;
