@@ -32,7 +32,7 @@ public class TeamController {
     }
 
     @ResponseBody
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/members")
     public BaseResponse<List<TeamMemberResponse>> getTeamMembers(@PathVariable Long id) {
         return new BaseResponse<>(teamService.getTeamMembers(id));
     }

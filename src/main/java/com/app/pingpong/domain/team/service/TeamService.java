@@ -74,7 +74,7 @@ public class TeamService {
 
     public List<TeamMemberResponse> getTeamMembers(Long id) {
         List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(id);
-        Team team = teamRepository.findById(id).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Team team = teamRepository.findActiveTeamById(id).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         List<Member> members = getMembersFromUserTeams(memberTeam);
         Long hostId = team.getHost().getId();
 
