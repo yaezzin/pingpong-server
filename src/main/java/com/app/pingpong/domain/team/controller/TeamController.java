@@ -6,6 +6,7 @@ import com.app.pingpong.domain.team.dto.response.TeamMemberResponse;
 import com.app.pingpong.domain.team.dto.response.TeamResponse;
 import com.app.pingpong.domain.team.service.TeamService;
 import com.app.pingpong.global.common.BaseResponse;
+import com.app.pingpong.global.exception.StatusCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,12 @@ public class TeamController {
     @PostMapping("")
     public BaseResponse<TeamResponse> create(@RequestBody TeamRequest request) {
         return new BaseResponse<>(teamService.create(request));
+    }
+
+    @ResponseBody
+    @DeleteMapping("/{id}")
+    public BaseResponse<StatusCode> delete(@PathVariable Long id) {
+        return new BaseResponse<>(teamService.delete(id));
     }
 
     @ResponseBody

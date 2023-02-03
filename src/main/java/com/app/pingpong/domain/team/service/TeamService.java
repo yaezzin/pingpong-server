@@ -14,6 +14,7 @@ import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.TeamRepository;
 import com.app.pingpong.global.common.Status;
 import com.app.pingpong.global.exception.BaseException;
+import com.app.pingpong.global.exception.StatusCode;
 import com.app.pingpong.global.util.UserFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.app.pingpong.global.common.Status.DELETE;
 import static com.app.pingpong.global.exception.StatusCode.*;
 
 @RequiredArgsConstructor
@@ -54,6 +57,42 @@ public class TeamService {
         return TeamResponse.of(memberTeamRepository.findAllByTeamId(newTeam.getId()));
     }
 
+    @Transactional
+    public StatusCode delete(Long id) {
+        Team team= teamRepository.findById(id).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        if (userFacade.getCurrentUser().getId() != team.getHost().getId()) {
+            throw new BaseException(INVALID_HOST);
+        }
+        team.setStatus(DELETE);
+
+        List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(id);
+        for (MemberTeam member : memberTeam) {
+            member.setStatus(DELETE);
+        }
+        return SUCCESS;
+    }
+
+    public List<TeamMemberResponse> getTeamMembers(Long id) {
+        List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(id);
+        Team team = teamRepository.findById(id).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        List<Member> members = getMembersFromUserTeams(memberTeam);
+        Long hostId = team.getHost().getId();
+
+        List<TeamMemberResponse> list = new ArrayList<>();
+        for (Member findMember : members) {
+            boolean isFriend = friendRepository.isFriend(hostId, findMember.getId());
+            list.add(TeamMemberResponse.builder()
+                    .userId(findMember.getId())
+                    .nickname(findMember.getNickname())
+                    .profileImage(findMember.getProfileImage())
+                    .hostId(hostId)
+                    .isFriend(isFriend)
+                    .build());
+        }
+        return list;
+    }
+
+
     private void setTeamToHost(Team team, Member loginMember) {
         MemberTeam memberTeam = new MemberTeam();
         memberTeam.setTeam(team);
@@ -77,27 +116,9 @@ public class TeamService {
         }
     }
 
-    public List<TeamMemberResponse> getTeamMembers(Long id) {
-        List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(id);
-        Team team = teamRepository.findById(id).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        List<Member> members = getMembersFromUserTeams(memberTeam);
-        Long hostId = team.getHost().getId();
-
-        List<TeamMemberResponse> list = new ArrayList<>();
-        for (Member findMember : members) {
-            boolean isFriend = friendRepository.isFriend(hostId, findMember.getId());
-            list.add(TeamMemberResponse.builder()
-                    .userId(findMember.getId())
-                    .nickname(findMember.getNickname())
-                    .profileImage(findMember.getProfileImage())
-                    .hostId(hostId)
-                    .isFriend(isFriend)
-                    .build());
-        }
-        return list;
-    }
-
     private List<Member> getMembersFromUserTeams(List<MemberTeam> memberTeams) {
         return memberTeams.stream().map(MemberTeam::getMember).collect(Collectors.toList());
     }
+
+
 }
