@@ -1,11 +1,14 @@
 package com.app.pingpong.domain.team.service;
 
+import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
+import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
+import com.app.pingpong.domain.team.dto.response.TeamMemberResponse;
 import com.app.pingpong.domain.team.dto.response.TeamResponse;
 import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.TeamRepository;
@@ -16,6 +19,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static com.app.pingpong.global.exception.StatusCode.*;
 
 @RequiredArgsConstructor
@@ -23,6 +30,7 @@ import static com.app.pingpong.global.exception.StatusCode.*;
 public class TeamService {
 
     private final MemberRepository memberRepository;
+    private final FriendRepository friendRepository;
     private final TeamRepository teamRepository;
     private final MemberTeamRepository memberTeamRepository;
     private final UserFacade userFacade;
@@ -67,5 +75,29 @@ public class TeamService {
             memberTeam.setMember(member);
             memberTeamRepository.save(memberTeam);
         }
+    }
+
+    public List<TeamMemberResponse> getTeamMembers(Long id) {
+        List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(id);
+        Team team = teamRepository.findById(id).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        List<Member> members = getMembersFromUserTeams(memberTeam);
+        Long hostId = team.getHost().getId();
+
+        List<TeamMemberResponse> list = new ArrayList<>();
+        for (Member findMember : members) {
+            boolean isFriend = friendRepository.isFriend(hostId, findMember.getId());
+            list.add(TeamMemberResponse.builder()
+                    .userId(findMember.getId())
+                    .nickname(findMember.getNickname())
+                    .profileImage(findMember.getProfileImage())
+                    .hostId(hostId)
+                    .isFriend(isFriend)
+                    .build());
+        }
+        return list;
+    }
+
+    private List<Member> getMembersFromUserTeams(List<MemberTeam> memberTeams) {
+        return memberTeams.stream().map(MemberTeam::getMember).collect(Collectors.toList());
     }
 }
