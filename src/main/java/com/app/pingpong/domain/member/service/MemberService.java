@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.app.pingpong.global.common.Status.ACTIVE;
 import static com.app.pingpong.global.common.Status.DELETE;
 import static com.app.pingpong.global.exception.StatusCode.*;
 import static com.app.pingpong.global.util.RegexUtil.isRegexNickname;
@@ -63,13 +64,13 @@ public class MemberService {
     }
 
     public MemberResponse findById(Long id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        Member member = memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         return MemberResponse.of(member);
     }
 
     @Transactional
     public MemberResponse update(Long id, UpdateRequest request) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        Member member = memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         s3Uploader.deleteFile(member.getProfileImage());
 
         validateNickname(request.getNickname());
@@ -81,19 +82,19 @@ public class MemberService {
 
     @Transactional
     public BaseResponse<String> delete(Long id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        Member member = memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         member.setStatus(DELETE);
         return new BaseResponse<>(SUCCESS_DELETE_USER);
     }
 
     public MemberDetailResponse getMyPage(Long id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        Member member = memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         int friendCount = friendRepository.findFriendCount(id);
         return MemberDetailResponse.of(member, friendCount);
     }
 
     public MemberDetailResponse getOppPage(Long id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        Member member = memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         int friendCount = friendRepository.findFriendCount(id);
         return MemberDetailResponse.of(member, friendCount);
     }
@@ -121,7 +122,7 @@ public class MemberService {
     // 친구 검색 최근 검색어 저장
     @Transactional
     public StatusCode saveSearchLog(SearchLogRequest request) throws JsonProcessingException {
-        Member member = memberRepository.findById(request.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        Member member = memberRepository.findByIdAndStatus(request.getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         String loginUserId = "id" + userFacade.getCurrentUser().getId(); // 내 식별자
         String memberId = "id" + member.getId();
         ObjectMapper mapper = new ObjectMapper()
@@ -143,7 +144,7 @@ public class MemberService {
     }
 
     public List<MemberSearchResponse> findByNickname(String nickname) {
-        List<Member> findMembers = memberRepository.findByNicknameContains(nickname).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        List<Member> findMembers = memberRepository.findByStatusAndNicknameContains(ACTIVE, nickname).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         List<MemberSearchResponse> list = new ArrayList<>();
         for (Member findMember : findMembers) {
             boolean isFriend = friendRepository.isFriend(userFacade.getCurrentUser().getId(), findMember.getId());
