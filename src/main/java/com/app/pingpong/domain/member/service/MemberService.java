@@ -6,11 +6,9 @@ import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
-import com.app.pingpong.domain.member.dto.response.MemberFriendResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
 import com.app.pingpong.domain.member.entity.Member;
-import com.app.pingpong.domain.member.entity.Status;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 
 import com.app.pingpong.domain.s3.S3Uploader;
@@ -22,22 +20,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static com.app.pingpong.domain.member.entity.Status.DELETE;
+import static com.app.pingpong.global.common.Status.DELETE;
 import static com.app.pingpong.global.exception.StatusCode.*;
 import static com.app.pingpong.global.util.RegexUtil.isRegexNickname;
 

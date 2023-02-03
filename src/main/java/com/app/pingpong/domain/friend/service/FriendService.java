@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.app.pingpong.domain.member.entity.Status.*;
+import static com.app.pingpong.global.common.Status.*;
 import static com.app.pingpong.global.exception.StatusCode.*;
 
 @RequiredArgsConstructor

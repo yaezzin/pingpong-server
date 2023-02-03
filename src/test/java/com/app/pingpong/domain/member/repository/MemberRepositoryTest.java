@@ -2,7 +2,7 @@ package com.app.pingpong.domain.member.repository;
 
 import com.app.pingpong.domain.member.entity.Authority;
 import com.app.pingpong.domain.member.entity.Member;
-import com.app.pingpong.domain.member.entity.Status;
+import com.app.pingpong.global.common.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

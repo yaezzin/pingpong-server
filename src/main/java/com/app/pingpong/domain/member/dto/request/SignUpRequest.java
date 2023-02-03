@@ -5,7 +5,7 @@ import com.app.pingpong.domain.member.entity.Member;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static com.app.pingpong.domain.member.entity.Status.ACTIVE;
+import static com.app.pingpong.global.common.Status.ACTIVE;
 
 @Getter
 @NoArgsConstructor

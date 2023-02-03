@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-import static com.app.pingpong.domain.member.entity.Status.WAIT;
+import static com.app.pingpong.global.common.Status.WAIT;
 
 @Getter
 @NoArgsConstructor

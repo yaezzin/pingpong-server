@@ -1,12 +1,11 @@
 package com.app.pingpong.domain.member.entity;
 
+import com.app.pingpong.global.common.Status;
 import lombok.*;
-import org.springframework.security.core.CredentialsContainer;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -31,6 +30,9 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     private Authority authority;
+
+    @OneToMany(mappedBy = "member")
+    private List<MemberTeam> memberTeams = new ArrayList<>();
 
     @Builder
     public Member(String socialId, String email, String nickname, String profileImage, Status status, Authority authority) {
