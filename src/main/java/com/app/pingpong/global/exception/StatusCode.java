@@ -21,6 +21,7 @@ public enum StatusCode {
     INVALID_TEAM_MEMBER(false, 400, "그룹 호스트(자기 자신)은/는 초대할 수 없습니다."),
     INVALID_TEAM_MEMBER_SIZE(false, 400, "그룹 멤버는 최소 1명, 최대 10명으로 제한됩니다."),
     INVALID_HOST(false, 400, "해당 그룹의 호스트가 아니므로 방출 및 위임 권한이 없습니다."),
+    INVALID_EMITTER(false, 400, "방출할 수 없는 유저입니다."),
 
     EXCEED_HOST_TEAM_SIZE(false, 400, "그룹을 더이상 생성할 수 없습니다. 그룹 개수는 최대 6개로 제한됩니다."),
     USER_NICKNAME_ALREADY_EXISTS(false, 400, "이미 사용중인 닉네임입니다."),
@@ -29,6 +30,7 @@ public enum StatusCode {
     USER_ALREADY_GET_FRIEND_REQUEST(false, 400, "나에게 이미 친구 신청을 보낸 유저입니다."),
     ALREADY_ON_FRIEND(false, 400, "이미 친구인 유저입니다."),
     ALREADY_TEAM_HOST(false, 400, "이미 해당 그룹의 호스트입니다."),
+
 
     /* 404 : NOT FOUND */
     USER_NOT_FOUND(false, 404, "해당 유저를 찾을 수 없습니다."),

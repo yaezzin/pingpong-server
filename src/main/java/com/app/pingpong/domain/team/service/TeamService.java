@@ -75,6 +75,22 @@ public class TeamService {
     }
 
     @Transactional
+    public TeamHostResponse emit(Long teamId, Long emitterId) {
+        Team team = teamRepository.findActiveTeamById(teamId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Member host = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        if (team.getHost().getId() != host.getId()) {
+            throw new BaseException(INVALID_HOST);
+        }
+        if (host.getId() == emitterId) {
+            throw new BaseException(INVALID_EMITTER);
+        }
+        Member delegator = memberRepository.findByIdAndStatus(emitterId, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberId(teamId, emitterId);
+        memberTeam.setStatus(DELETE);
+        return TeamHostResponse.of(team);
+    }
+
+    @Transactional
     public StatusCode delete(Long id) {
         Team team= teamRepository.findById(id).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         if (userFacade.getCurrentUser().getId() != team.getHost().getId()) {
@@ -135,4 +151,6 @@ public class TeamService {
     private List<Member> getMembersFromUserTeams(List<MemberTeam> memberTeams) {
         return memberTeams.stream().map(MemberTeam::getMember).collect(Collectors.toList());
     }
+
+
 }
