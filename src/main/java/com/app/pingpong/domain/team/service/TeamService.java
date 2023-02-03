@@ -8,6 +8,7 @@ import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
+import com.app.pingpong.domain.team.dto.response.TeamHostResponse;
 import com.app.pingpong.domain.team.dto.response.TeamMemberResponse;
 import com.app.pingpong.domain.team.dto.response.TeamResponse;
 import com.app.pingpong.domain.team.entity.Team;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.app.pingpong.global.common.Status.ACTIVE;
 import static com.app.pingpong.global.common.Status.DELETE;
 import static com.app.pingpong.global.exception.StatusCode.*;
 
@@ -55,6 +57,21 @@ public class TeamService {
         setTeamToUsers(newTeam, loginMember, request);
 
         return TeamResponse.of(memberTeamRepository.findAllByTeamId(newTeam.getId()));
+    }
+
+    @Transactional
+    public TeamHostResponse updateHost(Long teamId, Long delegatorId) {
+        Team team = teamRepository.findActiveTeamById(teamId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Member host = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        if (team.getHost().getId() != host.getId()) {
+            throw new BaseException(INVALID_HOST);
+        }
+        if (host.getId() == delegatorId) {
+            throw new BaseException(ALREADY_TEAM_HOST);
+        }
+        Member delegator = memberRepository.findByIdAndStatus(delegatorId, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        team.setHost(delegator);
+        return TeamHostResponse.of(team);
     }
 
     @Transactional
@@ -92,7 +109,6 @@ public class TeamService {
         return list;
     }
 
-
     private void setTeamToHost(Team team, Member loginMember) {
         MemberTeam memberTeam = new MemberTeam();
         memberTeam.setTeam(team);
@@ -119,6 +135,4 @@ public class TeamService {
     private List<Member> getMembersFromUserTeams(List<MemberTeam> memberTeams) {
         return memberTeams.stream().map(MemberTeam::getMember).collect(Collectors.toList());
     }
-
-
 }
