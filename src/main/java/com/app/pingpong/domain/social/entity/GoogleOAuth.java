@@ -1,5 +1,6 @@
 package com.app.pingpong.domain.social.entity;
 
+import com.app.pingpong.domain.social.dto.request.MemberLogoutRequest;
 import com.app.pingpong.domain.social.dto.response.MemberInfoResponse;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -94,6 +95,10 @@ public class GoogleOAuth implements SocialOAuth {
             e.printStackTrace();
         }
         return new MemberInfoResponse((String)userInfo.get("id"), (String)userInfo.get("email"));
+    }
+
+    @Override
+    public void logout(String request) {
     }
 
 }

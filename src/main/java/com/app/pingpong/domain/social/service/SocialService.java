@@ -4,13 +4,17 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.social.dto.request.MemberInfoRequest;
 import com.app.pingpong.domain.social.dto.request.MemberLoginRequest;
+import com.app.pingpong.domain.social.dto.request.MemberLogoutRequest;
 import com.app.pingpong.domain.social.dto.request.TokenRequest;
 import com.app.pingpong.domain.social.dto.response.MemberInfoResponse;
 import com.app.pingpong.domain.social.dto.response.MemberLoginResponse;
+import com.app.pingpong.domain.social.dto.response.MemberLogoutResponse;
 import com.app.pingpong.domain.social.dto.response.TokenResponse;
 import com.app.pingpong.domain.social.entity.GoogleOAuth;
 import com.app.pingpong.domain.social.entity.KakaoOAuth;
+import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.BaseException;
+import com.app.pingpong.global.exception.StatusCode;
 import com.app.pingpong.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,9 +22,6 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,6 +67,15 @@ public class SocialService {
         valueOperations.set(member.getEmail(), tokenResponse.getRefreshToken());
 
         return MemberLoginResponse.of(member, tokenResponse);
+    }
+
+    @Transactional
+    public BaseResponse logout(MemberLogoutRequest request) {
+        String accessToken = kakao.getAccessToken(request.getCode());
+        kakao.logout(accessToken);
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        valueOperations.getAndDelete(request.getEmail());
+        return new BaseResponse<>(SUCCESS_LOGOUT);
     }
 
     @Transactional

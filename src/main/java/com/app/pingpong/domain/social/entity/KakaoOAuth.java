@@ -1,6 +1,8 @@
 package com.app.pingpong.domain.social.entity;
 
+import com.app.pingpong.domain.social.dto.request.MemberLogoutRequest;
 import com.app.pingpong.domain.social.dto.response.MemberInfoResponse;
+import com.app.pingpong.global.exception.StatusCode;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -15,7 +17,7 @@ import java.util.HashMap;
 
 @Component
 @RequiredArgsConstructor
-public class KakaoOAuth implements SocialOAuth{
+public class KakaoOAuth implements SocialOAuth {
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String clientId;
@@ -97,4 +99,33 @@ public class KakaoOAuth implements SocialOAuth{
         return new MemberInfoResponse((String)userInfo.get("id"), (String)userInfo.get("email"));
     }
 
+    @Override
+    public void logout(String accessToken) {
+        String requestURL = "https://kapi.kakao.com/v1/user/logout";
+        try {
+            URL url = new URL(requestURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+            conn.setDoOutput(true);
+
+            InputStream inputStream;
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                inputStream = conn.getInputStream();
+            } else {
+                inputStream = conn.getErrorStream();
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            String line = "";
+            String result = "";
+            while ((line = br.readLine()) != null) {
+                result += line;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -15,7 +15,4 @@ public class TeamMemberResponse {
     private Long hostId;
     private boolean isFriend;
     private Status status;
-
-
-
 }
