@@ -27,18 +27,6 @@ public class TeamController {
     }
 
     @ResponseBody
-    @PatchMapping("/{id}/host")
-    public BaseResponse<TeamHostResponse> updateHost(@PathVariable("id") Long teamId, @RequestParam Long delegatorId) {
-        return new BaseResponse<>(teamService.updateHost(teamId, delegatorId));
-    }
-
-    @ResponseBody
-    @PatchMapping("/{id}/emit")
-    public BaseResponse<TeamHostResponse> emit(@PathVariable("id") Long teamId, @RequestParam Long emitterId) {
-        return new BaseResponse<>(teamService.emit(teamId, emitterId));
-    }
-
-    @ResponseBody
     @DeleteMapping("/{id}")
     public BaseResponse<StatusCode> delete(@PathVariable Long id) {
         return new BaseResponse<>(teamService.delete(id));
@@ -48,5 +36,17 @@ public class TeamController {
     @GetMapping("/{id}/members")
     public BaseResponse<List<TeamMemberResponse>> getTeamMembers(@PathVariable Long id) {
         return new BaseResponse<>(teamService.getTeamMembers(id));
+    }
+
+    @ResponseBody
+    @PatchMapping("/{id}/host")
+    public BaseResponse<TeamHostResponse> updateHost(@PathVariable("id") Long teamId, @RequestParam Long delegatorId) {
+        return new BaseResponse<>(teamService.updateHost(teamId, delegatorId));
+    }
+
+    @ResponseBody
+    @PatchMapping("/{id}/emit")
+    public BaseResponse<TeamHostResponse> emit(@PathVariable("id") Long teamId, @RequestParam Long emitterId) {
+        return new BaseResponse<>(teamService.emit(teamId, emitterId));
     }
 }

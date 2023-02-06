@@ -43,12 +43,7 @@ public class TeamService {
     @Transactional
     public TeamResponse create(TeamRequest request) {
         Member loginMember = userFacade.getCurrentUser();
-        if (request.getMemberId().size() > 10 || request.getMemberId().size() < 1) {
-            throw new BaseException(INVALID_TEAM_MEMBER_SIZE);
-        }
-        if (teamRepository.findByHostId(loginMember.getId()).size() > 6) {
-            throw new BaseException(EXCEED_HOST_TEAM_SIZE);
-        }
+        checkTeam(loginMember, request);
 
         Team newTeam = teamRepository.save(request.toEntity());
         newTeam.setHost(loginMember);
@@ -126,6 +121,18 @@ public class TeamService {
                     .build());
         }
         return list;
+    }
+
+    private void checkTeam(Member loginMember, TeamRequest request) {
+        if (teamRepository.findByHostId(loginMember.getId()).size() > 6) {
+            throw new BaseException(EXCEED_HOST_TEAM_SIZE);
+        }
+        if (request.getMemberId().size() > 10 || request.getMemberId().size() < 1) {
+            throw new BaseException(INVALID_TEAM_MEMBER_SIZE);
+        }
+        for (Long id : request.getMemberId()) {
+            memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(INVALID_INVITER));
+        }
     }
 
     private void setTeamToHost(Team team, Member loginMember) {
