@@ -89,7 +89,7 @@ public class MemberController {
 
     // 최근 검색 기록 조회
     @GetMapping("/search-log")
-    public BaseResponse<Map<Object, Object>> saveSearchLog() throws JsonProcessingException {
+    public BaseResponse<List<Object>> saveSearchLog() {
         return new BaseResponse<>(memberService.getSearchLog());
     }
 

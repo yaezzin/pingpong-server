@@ -21,7 +21,7 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
     boolean existsByApplicantIdAndRespondentId(@Param("applicantId") Long applicantId, @Param("respondentId") Long respondentId);
 
     @Query("select f from Friend f where f.applicant.id =:applicantId " +
-            "and f.respondent.id =:respondentId and f.status = 'WAIT' or f.status = 'ACTIVE'")
+            "and f.respondent.id =:respondentId and f.status = 'WAIT'")
     Optional<Friend> findByApplicantIdAndRespondentId(Long applicantId, Long respondentId);
 
     @Query("select count(f.id) from Friend f where (f.applicant.id =:id or f.respondent.id =:id) and f.status = 'ACTIVE'")

@@ -25,8 +25,8 @@ public class FriendService {
     private final UserFacade userFacade;
 
     public FriendResponse addFriend(FriendRequest request) {
-        Member applicant = memberRepository.findById(request.getApplicantId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
-        Member respondent = memberRepository.findById(request.getRespondentId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        Member applicant = memberRepository.findByIdAndStatus(request.getApplicantId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        Member respondent = memberRepository.findByIdAndStatus(request.getRespondentId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         checkFriend(applicant, respondent);
         return FriendResponse.of(friendRepository.save(request.toEntity(applicant, respondent)));
     }
@@ -48,15 +48,12 @@ public class FriendService {
     }
 
     private void checkFriend(Member applicant, Member respondent) {
-        // "이미 친구신청을 하였으니까 오류 뽑고 프론트에서 팝업 띄워서 친구 삭제하겠습니까?하기
         if (friendRepository.existsWaitByApplicantIdAndRespondentId(applicant.getId(), respondent.getId())) {
             throw new BaseException(USER_ALREADY_FRIEND_REQUEST);
         }
-        // "나에게 친구 신청을 한 유저입니다 -> 오류 뽑음 -> ㅊ"
         if (friendRepository.existsWaitByApplicantIdAndRespondentId(respondent.getId(), applicant.getId())) {
             throw new BaseException(USER_ALREADY_GET_FRIEND_REQUEST);
         }
-        // "이미 친구입니다."
         if (friendRepository.existsByApplicantIdAndRespondentId(applicant.getId(), respondent.getId())) {
             throw new BaseException(ALREADY_ON_FRIEND);
         }

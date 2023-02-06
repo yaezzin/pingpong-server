@@ -1,19 +1,18 @@
 package com.app.pingpong.domain.member.dto.response;
 
 import com.app.pingpong.domain.member.entity.Member;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestBody;
+
+import java.io.Serializable;
 
 @Getter
 @AllArgsConstructor
 @RequiredArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class MemberResponse {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class MemberResponse implements Serializable {
     private Long userId;
     private String nickname;
     private String profileImage;
