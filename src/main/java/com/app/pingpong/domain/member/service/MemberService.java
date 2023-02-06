@@ -130,16 +130,25 @@ public class MemberService {
         return SUCCESS;
     }
 
-    public List<Object> getSearchLog() {
+    public List<MemberResponse> getSearchLog() {
         ListOperations<String, Object> listOps = redisTemplate.opsForList();
         String loginUserId = "id" + userFacade.getCurrentUser().getId(); // 내 식별자
-        List<Object> list = new ArrayList<>();
+        List<String> list1 = new ArrayList<>();
         for (Object o : listOps.range(loginUserId, 0, -1)) {
-            if (!list.contains(o) && list.size() <= 10) {
-                list.add(o);
-            };
+            String userId = o.toString().substring(2,3); //숫자값만 추출
+            if (!list1.contains(userId) && list1.size() <= 10) {
+                list1.add(userId);
+            }
         }
-        return list;
+
+        List<MemberResponse> list2 = new ArrayList<>();
+        for (String l :list1) {
+            Long userId = Long.parseLong(l);
+            System.out.println("=====" + userId);
+            Member member = memberRepository.findById(userId).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+            list2.add(MemberResponse.of(member));
+        }
+        return list2;
     }
 
     public List<MemberSearchResponse> findByNickname(String nickname) {

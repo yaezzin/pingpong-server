@@ -89,7 +89,7 @@ public class MemberController {
 
     // 최근 검색 기록 조회
     @GetMapping("/search-log")
-    public BaseResponse<List<Object>> saveSearchLog() {
+    public BaseResponse<List<MemberResponse>> saveSearchLog() {
         return new BaseResponse<>(memberService.getSearchLog());
     }
 
