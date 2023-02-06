@@ -55,6 +55,20 @@ public class TeamService {
     }
 
     @Transactional
+    public StatusCode delete(Long id) {
+        Team team= teamRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        if (userFacade.getCurrentUser().getId() != team.getHost().getId()) {
+            throw new BaseException(INVALID_HOST);
+        }
+        team.setStatus(DELETE);
+        List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(id);
+        for (MemberTeam member : memberTeam) {
+            member.setStatus(DELETE);
+        }
+        return SUCCESS;
+    }
+
+    @Transactional
     public TeamHostResponse updateHost(Long teamId, Long delegatorId) {
         Team team = teamRepository.findActiveTeamById(teamId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member host = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
@@ -73,31 +87,12 @@ public class TeamService {
     public TeamHostResponse emit(Long teamId, Long emitterId) {
         Team team = teamRepository.findActiveTeamById(teamId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member host = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
-        if (team.getHost().getId() != host.getId()) {
-            throw new BaseException(INVALID_HOST);
-        }
-        if (host.getId() == emitterId) {
-            throw new BaseException(INVALID_EMITTER);
-        }
+        checkHostForEmit(team, host, emitterId);
         Member delegator = memberRepository.findByIdAndStatus(emitterId, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
-        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberId(teamId, emitterId);
+        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, emitterId, ACTIVE)
+                .orElseThrow(() -> new BaseException(USER_ㅎALREADY_EMIT));
         memberTeam.setStatus(DELETE);
         return TeamHostResponse.of(team);
-    }
-
-    @Transactional
-    public StatusCode delete(Long id) {
-        Team team= teamRepository.findById(id).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        if (userFacade.getCurrentUser().getId() != team.getHost().getId()) {
-            throw new BaseException(INVALID_HOST);
-        }
-        team.setStatus(DELETE);
-
-        List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(id);
-        for (MemberTeam member : memberTeam) {
-            member.setStatus(DELETE);
-        }
-        return SUCCESS;
     }
 
     @Transactional
@@ -139,7 +134,7 @@ public class TeamService {
         MemberTeam memberTeam = new MemberTeam();
         memberTeam.setTeam(team);
         memberTeam.setMember(loginMember);
-        memberTeam.setStatus(Status.WAIT);
+        memberTeam.setStatus(Status.ACTIVE);
         memberTeamRepository.save(memberTeam);
     }
 
@@ -148,13 +143,21 @@ public class TeamService {
             MemberTeam memberTeam = new MemberTeam();
             memberTeam.setTeam(newTeam);
             memberTeam.setStatus(Status.WAIT);
-            // 만약 방장이 들어가게 되면 오류 뜨게
             if (memberId == currentUser.getId()) {
                 throw new BaseException(INVALID_TEAM_MEMBER);
             }
             Member member = memberRepository.findById(memberId).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
             memberTeam.setMember(member);
             memberTeamRepository.save(memberTeam);
+        }
+    }
+
+    private void checkHostForEmit(Team team, Member host, Long emitterId) {
+        if (team.getHost().getId() != host.getId()) {
+            throw new BaseException(INVALID_HOST);
+        }
+        if (host.getId() == emitterId) {
+            throw new BaseException(INVALID_EMITTER);
         }
     }
 
