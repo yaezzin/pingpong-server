@@ -70,26 +70,10 @@ public class TeamService {
     public TeamHostResponse updateHost(Long teamId, Long delegatorId) {
         Team team = teamRepository.findActiveTeamById(teamId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member host = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
-        if (team.getHost().getId() != host.getId()) {
-            throw new BaseException(INVALID_HOST);
-        }
-        if (host.getId() == delegatorId) {
-            throw new BaseException(ALREADY_TEAM_HOST);
-        }
+        checkHostForDelegate(team, host, delegatorId);
         Member delegator = memberRepository.findByIdAndStatus(delegatorId, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         team.setHost(delegator);
-
-        List<TeamCompactResponse> list = new ArrayList<>();
-        List<Member> members = team.getMembers().stream().map(MemberTeam::getMember).collect(Collectors.toList());
-        for (Member m : members) {
-            MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(teamId, m.getId());
-            list.add(TeamCompactResponse.builder()
-                    .memberId(m.getId())
-                    .status(m1.getStatus())
-                    .build());
-        }
-
-        return TeamHostResponse.of(team, list);
+        return TeamHostResponse.of(team, getTeamMemberStatus(team));
     }
 
     @Transactional
@@ -181,9 +165,29 @@ public class TeamService {
         }
     }
 
+    private void checkHostForDelegate(Team team, Member host, Long delegatorId) {
+        if (team.getHost().getId() != host.getId()) {
+            throw new BaseException(INVALID_HOST);
+        }
+        if (host.getId() == delegatorId) {
+            throw new BaseException(ALREADY_TEAM_HOST);
+        }
+    }
+
+    private List<TeamCompactResponse> getTeamMemberStatus(Team team) {
+        List<TeamCompactResponse> list = new ArrayList<>();
+        List<Member> members = team.getMembers().stream().map(MemberTeam::getMember).collect(Collectors.toList());
+        for (Member m : members) {
+            MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), m.getId());
+            list.add(TeamCompactResponse.builder()
+                    .memberId(m.getId())
+                    .status(m1.getStatus());
+        }
+        return list;
+    }
+
     private List<Member> getMembersFromUserTeams(List<MemberTeam> memberTeams) {
         return memberTeams.stream().map(MemberTeam::getMember).collect(Collectors.toList());
     }
-
 
 }
