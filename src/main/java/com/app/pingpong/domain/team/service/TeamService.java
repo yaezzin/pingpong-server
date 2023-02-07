@@ -67,7 +67,7 @@ public class TeamService {
     }
 
     @Transactional
-    public void updateHost(Long teamId, Long delegatorId) {
+    public TeamHostResponse updateHost(Long teamId, Long delegatorId) {
         Team team = teamRepository.findActiveTeamById(teamId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member host = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         if (team.getHost().getId() != host.getId()) {
@@ -78,7 +78,18 @@ public class TeamService {
         }
         Member delegator = memberRepository.findByIdAndStatus(delegatorId, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         team.setHost(delegator);
-        //return TeamHostResponse.of(team);
+
+        List<TeamCompactResponse> list = new ArrayList<>();
+        List<Member> members = team.getMembers().stream().map(MemberTeam::getMember).collect(Collectors.toList());
+        for (Member m : members) {
+            MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(teamId, m.getId());
+            list.add(TeamCompactResponse.builder()
+                    .memberId(m.getId())
+                    .status(m1.getStatus())
+                    .build());
+        }
+
+        return TeamHostResponse.of(team, list);
     }
 
     @Transactional
