@@ -21,11 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.app.pingpong.global.common.Status.ACTIVE;
-import static com.app.pingpong.global.common.Status.DELETE;
+import static com.app.pingpong.global.common.Status.*;
 import static com.app.pingpong.global.exception.StatusCode.*;
 
 @RequiredArgsConstructor
@@ -135,7 +135,7 @@ public class TeamService {
         for (Long memberId : request.getMemberId()) {
             MemberTeam memberTeam = new MemberTeam();
             memberTeam.setTeam(newTeam);
-            memberTeam.setStatus(Status.WAIT);
+            memberTeam.setStatus(WAIT);
             if (memberId == currentUser.getId()) {
                 throw new BaseException(INVALID_TEAM_MEMBER);
             }
@@ -178,6 +178,25 @@ public class TeamService {
 
     public List<Member> getMembersFromUserTeams(List<MemberTeam> memberTeams) {
         return memberTeams.stream().map(MemberTeam::getMember).collect(Collectors.toList());
+    }
+
+    public StatusCode accept(Long teamId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, userFacade.getCurrentUser().getId(), WAIT)
+                .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, userFacade.getCurrentUser().getId(), ACTIVE)
+                .orElseThrow(() -> new BaseException(ALREADY_ACCEPT_TEAM_INVITATION));
+        memberTeam.setStatus(ACTIVE);
+        memberTeam.setParticipatedAt(new Date());
+        return SUCCESS_ACCEPT_TEAM_INVITATION;
+    }
+
+    public StatusCode refuse(Long teamId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, userFacade.getCurrentUser().getId(), WAIT)
+                .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
+        memberTeam.setStatus(DELETE);
+        return SUCCESS_REFUSE_TEAM_INVITATION;
     }
 }
 

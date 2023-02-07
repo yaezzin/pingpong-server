@@ -49,4 +49,16 @@ public class TeamController {
     public BaseResponse<TeamHostResponse> emit(@PathVariable("id") Long teamId, @RequestParam Long emitterId) {
         return new BaseResponse<>(teamService.emit(teamId, emitterId));
     }
+
+    @ResponseBody
+    @PostMapping("/{id}/accept")
+    public BaseResponse<StatusCode> accept(@PathVariable("id") Long teamId) {
+        return new BaseResponse<>(teamService.accept(teamId));
+    }
+
+    @ResponseBody
+    @PostMapping("/refuse")
+    public BaseResponse<StatusCode> refuse(@PathVariable("id") Long teamId) {
+        return new BaseResponse<>(teamService.refuse(teamId));
+    }
 }

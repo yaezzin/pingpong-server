@@ -14,6 +14,8 @@ public enum StatusCode {
     SUCCESS_ACCEPT_FRIEND(true, 200, "친구 신청 수락에 성공하였습니다."),
     SUCCESS_REFUSE_FRIEND(true, 200, "친구 신청 거절에 성공하였습니다."),
     SUCCESS_LOGOUT(true, 200, "로그아웃에 성공하였습니다."),
+    SUCCESS_ACCEPT_TEAM_INVITATION(true, 200, "그룹 초대 수락에 성공하였습니다."),
+    SUCCESS_REFUSE_TEAM_INVITATION(true, 200, "그룹 초대 거절에 성공하였습니다."),
 
     /* 400 : Bad Request   */
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다."),
@@ -33,13 +35,14 @@ public enum StatusCode {
     USER_ALREADY_EMIT(false, 400, "이미 방출된 유저입니다"),
     ALREADY_ON_FRIEND(false, 400, "이미 친구인 유저입니다."),
     ALREADY_TEAM_HOST(false, 400, "이미 해당 그룹의 호스트입니다."),
-
+    ALREADY_ACCEPT_TEAM_INVITATION(false, 400, "이미 해당 그룹의 초대를 수락하였습니다."),
 
     /* 404 : NOT FOUND */
     USER_NOT_FOUND(false, 404, "해당 유저를 찾을 수 없습니다."),
     EMAIL_NOT_FOUND(false, 404, "해당 이메일을 찾을 수 없습니다."),
     FRIEND_NOT_FOUND(false, 404, "해당 유저와는 친구 상태가 아니거나, 친구 신청이 존재하지 않습니다."),
     TEAM_NOT_FOUND(false, 404, "존재하지 않는 그룹입니다."),
+    TEAM_INVITATION_NOT_FOUND(false, 404, "해당 그룹에 대한 초대가 존재하지 않습니다."),
 
     /* 500 */
     DATABASE_ERROR(false, 500, "데이터베이스 오류입니다.");

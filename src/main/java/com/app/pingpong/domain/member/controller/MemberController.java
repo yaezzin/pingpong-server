@@ -90,7 +90,7 @@ public class MemberController {
         return new BaseResponse<>(memberService.getSearchLog());
     }
 
-    @GetMapping("/api/members/teams")
+    @GetMapping("/teams")
     public BaseResponse<List<MemberTeamResponse>> getMemberTeams() {
         return new BaseResponse<>(memberService.getMemberTeams());
     }
