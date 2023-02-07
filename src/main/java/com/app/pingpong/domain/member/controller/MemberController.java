@@ -7,6 +7,7 @@ import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
+import com.app.pingpong.domain.member.dto.response.MemberTeamResponse;
 import com.app.pingpong.domain.member.service.MemberService;
 import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.StatusCode;
@@ -62,7 +63,6 @@ public class MemberController {
         return new BaseResponse<>(memberService.getMyPage(id));
     }
 
-    // 타인 프로필 조회
     @ResponseBody
     @GetMapping("/{id}/profile")
     public BaseResponse<MemberDetailResponse> getOppPage(@PathVariable Long id) {
@@ -75,22 +75,24 @@ public class MemberController {
         return new BaseResponse<>(memberService.getMyFriends());
     }
 
-    // 검색
     @GetMapping("/search")
     public BaseResponse<List<MemberSearchResponse>> findByNickname(@RequestParam("nickname") String nickname) {
         return new BaseResponse<>(memberService.findByNickname(nickname));
     }
 
-    // 검색기록 저장
     @PostMapping("/search-log")
-    public BaseResponse<StatusCode> saveSearchLog(@RequestBody SearchLogRequest request) throws IOException {
+    public BaseResponse<StatusCode> saveSearchLog(@RequestBody SearchLogRequest request) {
         return new BaseResponse<>(memberService.saveSearchLog(request));
     }
 
-    // 최근 검색 기록 조회
     @GetMapping("/search-log")
     public BaseResponse<List<MemberResponse>> saveSearchLog() {
         return new BaseResponse<>(memberService.getSearchLog());
+    }
+
+    @GetMapping("/api/members/teams")
+    public BaseResponse<List<MemberTeamResponse>> getMemberTeams() {
+        return new BaseResponse<>(memberService.getMemberTeams());
     }
 
 }

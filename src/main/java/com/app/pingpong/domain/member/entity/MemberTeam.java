@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @EntityListeners(AuditingEntityListener.class)
 @Setter
@@ -30,6 +31,8 @@ public class MemberTeam {
 
     @LastModifiedDate
     private Date updatedAt;
+
+    private Date participatedAt;
 
     @ManyToOne
     @JoinColumn(name = "member_id")

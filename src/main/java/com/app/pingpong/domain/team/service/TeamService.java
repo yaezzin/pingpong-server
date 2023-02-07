@@ -70,8 +70,8 @@ public class TeamService {
     public TeamHostResponse updateHost(Long teamId, Long delegatorId) {
         Team team = teamRepository.findActiveTeamById(teamId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member host = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
-        checkHostForDelegate(team, host, delegatorId);
         Member delegator = memberRepository.findByIdAndStatus(delegatorId, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        checkHostForDelegate(team, host, delegatorId);
         team.setHost(delegator);
         return TeamHostResponse.of(team, getTeamMemberStatus(team));
     }
@@ -85,18 +85,7 @@ public class TeamService {
         MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, emitterId, ACTIVE)
                 .orElseThrow(() -> new BaseException(USER_ALREADY_EMIT));
         memberTeam.setStatus(DELETE);
-
-        List<TeamCompactResponse> list = new ArrayList<>();
-        List<Member> members = team.getMembers().stream().map(MemberTeam::getMember).collect(Collectors.toList());
-
-        for (Member m : members) {
-            MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(teamId, m.getId());
-            list.add(TeamCompactResponse.builder()
-                    .memberId(m.getId())
-                    .status(m1.getStatus())
-                    .build());
-        }
-        return TeamHostResponse.of(team, list);
+        return TeamHostResponse.of(team, getTeamMemberStatus(team));
     }
 
     @Transactional
@@ -181,13 +170,14 @@ public class TeamService {
             MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), m.getId());
             list.add(TeamCompactResponse.builder()
                     .memberId(m.getId())
-                    .status(m1.getStatus());
+                    .status(m1.getStatus())
+                    .build());
         }
         return list;
     }
 
-    private List<Member> getMembersFromUserTeams(List<MemberTeam> memberTeams) {
+    public List<Member> getMembersFromUserTeams(List<MemberTeam> memberTeams) {
         return memberTeams.stream().map(MemberTeam::getMember).collect(Collectors.toList());
     }
-
 }
+

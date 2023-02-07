@@ -8,28 +8,28 @@ import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
+import com.app.pingpong.domain.member.dto.response.MemberTeamResponse;
 import com.app.pingpong.domain.member.entity.Member;
+import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 
+import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.s3.S3Uploader;
+import com.app.pingpong.domain.team.entity.Team;
+import com.app.pingpong.domain.team.repository.TeamRepository;
 import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.BaseException;
 import com.app.pingpong.global.exception.StatusCode;
 import com.app.pingpong.global.util.UserFacade;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.app.pingpong.global.common.Status.ACTIVE;
 import static com.app.pingpong.global.common.Status.DELETE;
@@ -42,6 +42,8 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final FriendRepository friendRepository;
+    private final TeamRepository teamRepository;
+    private final MemberTeamRepository memberTeamRepository;
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final UserFacade userFacade;
@@ -164,5 +166,28 @@ public class MemberService {
                     .build());
         }
         return list;
+    }
+
+    public List<MemberTeamResponse> getMemberTeams() {
+        Long loginUserId = userFacade.getCurrentUser().getId();
+        List<MemberTeam> memberTeams = memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(loginUserId, ACTIVE);
+        List<MemberResponse> list = new ArrayList<>();
+        List<MemberTeamResponse> teamList = new ArrayList<>();
+
+        for (MemberTeam mt : memberTeams) {
+            Team team = mt.getTeam();
+            List<MemberTeam> teamMembers = memberTeamRepository.findAllByTeamId(team.getId());
+            List<Member> members = teamMembers.stream().map(MemberTeam::getMember).collect(Collectors.toList());
+            for (Member m : members) {
+                list.add(MemberResponse.builder()
+                        .userId(m.getId())
+                        .nickname(m.getNickname())
+                        .profileImage(m.getProfileImage())
+                        .build()
+                );
+            }
+            teamList.add(MemberTeamResponse.of(team, list));
+        }
+        return teamList;
     }
 }
