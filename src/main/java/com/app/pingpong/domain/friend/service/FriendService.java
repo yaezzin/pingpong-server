@@ -27,36 +27,40 @@ public class FriendService {
     public FriendResponse addFriend(FriendRequest request) {
         Member applicant = memberRepository.findByIdAndStatus(request.getApplicantId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         Member respondent = memberRepository.findByIdAndStatus(request.getRespondentId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
-        checkFriend(applicant, respondent);
+        checkFriendRequest(applicant, respondent);
         return FriendResponse.of(friendRepository.save(request.toEntity(applicant, respondent)));
     }
 
     @Transactional
-    public StatusCode acceptFriend(Long id) {
-        Member loginUser = userFacade.getCurrentUser();
-        Friend friend = friendRepository.findByApplicantIdAndRespondentId(id, loginUser.getId()).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
-        checkAndSetStatusActive(friend);
+    public StatusCode acceptFriend(Long opponentId) {
+        Friend request = getWaitingFriendRequest(opponentId);
+        checkAndSetStatusActive(request);
         return SUCCESS_ACCEPT_FRIEND;
     }
 
     @Transactional
-    public StatusCode refuseFriend(Long id) {
-        Member loginUser = userFacade.getCurrentUser();
-        Friend friend = friendRepository.findByApplicantIdAndRespondentId(id, loginUser.getId()).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
-        checkAndSetStatusDelete(friend);
+    public StatusCode refuseFriend(Long opponentId) {
+        Friend request = getWaitingFriendRequest(opponentId);
+        checkAndSetStatusDelete(request);
         return SUCCESS_REFUSE_FRIEND;
     }
 
-    private void checkFriend(Member applicant, Member respondent) {
-        if (friendRepository.existsWaitByApplicantIdAndRespondentId(applicant.getId(), respondent.getId())) {
+    private void checkFriendRequest(Member applicant, Member respondent) {
+        if (friendRepository.existsWaitRequestByApplicantIdAndRespondentId(applicant.getId(), respondent.getId())) {
             throw new BaseException(USER_ALREADY_FRIEND_REQUEST);
         }
-        if (friendRepository.existsWaitByApplicantIdAndRespondentId(respondent.getId(), applicant.getId())) {
+        if (friendRepository.existsWaitRequestByApplicantIdAndRespondentId(respondent.getId(), applicant.getId())) {
             throw new BaseException(USER_ALREADY_GET_FRIEND_REQUEST);
         }
-        if (friendRepository.existsByApplicantIdAndRespondentId(applicant.getId(), respondent.getId())) {
+        if (friendRepository.existsActiveRequestByApplicantIdAndRespondentId(applicant.getId(), respondent.getId())) {
             throw new BaseException(ALREADY_ON_FRIEND);
         }
+    }
+
+    private Friend getWaitingFriendRequest(Long opponentId) {
+        Member loginUser = userFacade.getCurrentUser();
+        Friend friend = friendRepository.findWaitRequestByApplicantIdAndRespondentId(opponentId, loginUser.getId()).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
+        return friend;
     }
 
     private void checkAndSetStatusActive(Friend friend) {
