@@ -42,10 +42,10 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final FriendRepository friendRepository;
-    private final TeamRepository teamRepository;
     private final MemberTeamRepository memberTeamRepository;
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ListOperations<String, Object> listOps = redisTemplate.opsForList();
     private final UserFacade userFacade;
     private final PasswordEncoder passwordEncoder;
     private final S3Uploader s3Uploader;
@@ -67,6 +67,7 @@ public class MemberService {
         return new BaseResponse(SUCCESS_VALIDATE_NICKNAME);
     }
 
+    @Transactional(readOnly = true)
     public MemberResponse findById(Long id) {
         Member member = memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         return MemberResponse.of(member);
@@ -91,66 +92,52 @@ public class MemberService {
         return new BaseResponse<>(SUCCESS_DELETE_USER);
     }
 
+    @Transactional(readOnly = true)
     public MemberDetailResponse getMyPage(Long id) {
         Member member = memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         int friendCount = friendRepository.findFriendCount(id);
         return MemberDetailResponse.of(member, friendCount);
     }
 
+    @Transactional(readOnly = true)
     public MemberDetailResponse getOppPage(Long id) {
         Member member = memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         int friendCount = friendRepository.findFriendCount(id);
         return MemberDetailResponse.of(member, friendCount);
     }
 
+    @Transactional(readOnly = true)
     public List<Friend> getMyFriends() {
         Member loginUser = userFacade.getCurrentUser();
         List<Friend> friends = friendRepository.findAllFriendsByUserId(loginUser.getId());
 
-        List list = new ArrayList();
+        List friendList = new ArrayList();
         for (Friend f : friends) {
-            if (f.getApplicant().getId() == loginUser.getId()) {
-                Member respondent = f.getRespondent();
-                list.add(new MemberResponse(respondent.getId(), respondent.getNickname(), respondent.getProfileImage()));
+            if (isMyFriendRequest(f, loginUser)) {
+                addRespondentInfoToFriendList(f, friendList);
             }
-            if (f.getRespondent().getId() == loginUser.getId()) {
-                Member applicant = f.getApplicant();
-                list.add(new MemberResponse(applicant.getId(), applicant.getNickname(), applicant.getProfileImage()));
+            if (isOpponentFriendRequest(f, loginUser)) {
+                addApplicantInfoToFriendList(f, friendList);
             }
         }
-        return list;
+        return friendList;
     }
 
-    // 친구 검색 최근 검색어 저장
     @Transactional
     public StatusCode saveSearchLog(SearchLogRequest request) {
         Member member = memberRepository.findByIdAndStatus(request.getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         String loginUserId = "id" + userFacade.getCurrentUser().getId(); // 내 식별자
         String memberId = "id" + member.getId();
-        ListOperations<String, Object> listOps = redisTemplate.opsForList();
         listOps.leftPush(loginUserId, memberId);
         return SUCCESS;
     }
 
+    @Transactional(readOnly = true)
     public List<MemberResponse> getSearchLog() {
-        ListOperations<String, Object> listOps = redisTemplate.opsForList();
         String loginUserId = "id" + userFacade.getCurrentUser().getId(); // 내 식별자
-        List<String> list1 = new ArrayList<>();
-        for (Object o : listOps.range(loginUserId, 0, -1)) {
-            String userId = o.toString().substring(2,3); //숫자값만 추출
-            if (!list1.contains(userId) && list1.size() <= 10) {
-                list1.add(userId);
-            }
-        }
-
-        List<MemberResponse> list2 = new ArrayList<>();
-        for (String l :list1) {
-            Long userId = Long.parseLong(l);
-            System.out.println("=====" + userId);
-            Member member = memberRepository.findById(userId).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
-            list2.add(MemberResponse.of(member));
-        }
-        return list2;
+        List<String> numList = extractNumAndAddToList(loginUserId);
+        List<MemberResponse> responses = addMemberToListByExtractedNum(numList);
+        return responses;
     }
 
     public List<MemberSearchResponse> findByNickname(String nickname) {
@@ -189,5 +176,52 @@ public class MemberService {
             teamList.add(MemberTeamResponse.of(team, list));
         }
         return teamList;
+    }
+
+    private boolean isMyFriendRequest(Friend f, Member loginUser) {
+        if (f.getApplicant().getId() == loginUser.getId()) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isOpponentFriendRequest(Friend f, Member loginUser) {
+        if (f.getRespondent().getId() == loginUser.getId()) {
+            return true;
+        }
+        return false;
+    }
+
+    private void addRespondentInfoToFriendList(Friend f, List friendList) {
+        Member respondent = f.getRespondent();
+        friendList.add(new MemberResponse(respondent.getId(), respondent.getNickname(), respondent.getProfileImage()));
+    }
+
+    private void addApplicantInfoToFriendList(Friend f, List friendList) {
+        Member applicant = f.getApplicant();
+        friendList.add(new MemberResponse(applicant.getId(), applicant.getNickname(), applicant.getProfileImage()));
+    }
+
+    /* String 타입인 Redis의 key값 (ex."id1")에서 숫자만 추출한다. */
+    private List<String> extractNumAndAddToList(String loginUserId) {
+        List<String> list = new ArrayList<>();
+        for (Object o : listOps.range(loginUserId, 0, -1)) {
+            String userId = o.toString().substring(2,3); //숫자값만 추출
+            if (!list.contains(userId) && list.size() <= 10) {
+                list.add(userId);
+            }
+        }
+        return list;
+    }
+
+    /* 추출한 숫자값으로 Member 정보를 가져온다. */
+    private List<MemberResponse> addMemberToListByExtractedNum(List<String> numList) {
+        List<MemberResponse> memberList = new ArrayList<>();
+        for (String num : numList) {
+            Long userId = Long.parseLong(num);
+            Member member = memberRepository.findById(userId).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+            memberList.add(MemberResponse.of(member));
+        }
+        return memberList;
     }
 }
