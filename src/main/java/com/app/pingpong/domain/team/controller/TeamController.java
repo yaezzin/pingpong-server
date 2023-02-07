@@ -40,8 +40,8 @@ public class TeamController {
 
     @ResponseBody
     @PatchMapping("/{id}/host")
-    public BaseResponse<TeamHostResponse> updateHost(@PathVariable("id") Long teamId, @RequestParam Long delegatorId) {
-        return new BaseResponse<>(teamService.updateHost(teamId, delegatorId));
+    public void updateHost(@PathVariable("id") Long teamId, @RequestParam Long delegatorId) {
+        //return new BaseResponse<>(teamService.updateHost(teamId, delegatorId));
     }
 
     @ResponseBody

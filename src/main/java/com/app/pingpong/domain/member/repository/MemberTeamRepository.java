@@ -13,4 +13,5 @@ public interface MemberTeamRepository extends JpaRepository<MemberTeam, Long> {
     List<MemberTeam> findAllByTeamId(Long teamId);
     MemberTeam findByTeamIdAndMemberId(Long teamId, Long memberId);
     Optional<MemberTeam> findByTeamIdAndMemberIdAndStatus(Long teamId, Long memberId, Status status);
+    Status findStatusByTeamIdAndMemberId(Long teamId, Long memberId);
 }

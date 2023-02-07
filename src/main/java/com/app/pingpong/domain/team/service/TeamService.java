@@ -1,13 +1,12 @@
 package com.app.pingpong.domain.team.service;
 
 import com.app.pingpong.domain.friend.repository.FriendRepository;
-import com.app.pingpong.domain.member.dto.response.MemberResponse;
-import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
+import com.app.pingpong.domain.team.dto.response.TeamCompactResponse;
 import com.app.pingpong.domain.team.dto.response.TeamHostResponse;
 import com.app.pingpong.domain.team.dto.response.TeamMemberResponse;
 import com.app.pingpong.domain.team.dto.response.TeamResponse;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.app.pingpong.global.common.Status.ACTIVE;
@@ -69,7 +67,7 @@ public class TeamService {
     }
 
     @Transactional
-    public TeamHostResponse updateHost(Long teamId, Long delegatorId) {
+    public void updateHost(Long teamId, Long delegatorId) {
         Team team = teamRepository.findActiveTeamById(teamId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member host = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         if (team.getHost().getId() != host.getId()) {
@@ -80,7 +78,7 @@ public class TeamService {
         }
         Member delegator = memberRepository.findByIdAndStatus(delegatorId, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         team.setHost(delegator);
-        return TeamHostResponse.of(team);
+        //return TeamHostResponse.of(team);
     }
 
     @Transactional
@@ -88,11 +86,22 @@ public class TeamService {
         Team team = teamRepository.findActiveTeamById(teamId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member host = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         checkHostForEmit(team, host, emitterId);
-        Member delegator = memberRepository.findByIdAndStatus(emitterId, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        memberRepository.findByIdAndStatus(emitterId, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, emitterId, ACTIVE)
-                .orElseThrow(() -> new BaseException(USER_ㅎALREADY_EMIT));
+                .orElseThrow(() -> new BaseException(USER_ALREADY_EMIT));
         memberTeam.setStatus(DELETE);
-        return TeamHostResponse.of(team);
+
+        List<TeamCompactResponse> list = new ArrayList<>();
+        List<Member> members = team.getMembers().stream().map(MemberTeam::getMember).collect(Collectors.toList());
+
+        for (Member m : members) {
+            MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(teamId, m.getId());
+            list.add(TeamCompactResponse.builder()
+                    .memberId(m.getId())
+                    .status(m1.getStatus())
+                    .build());
+        }
+        return TeamHostResponse.of(team, list);
     }
 
     @Transactional
