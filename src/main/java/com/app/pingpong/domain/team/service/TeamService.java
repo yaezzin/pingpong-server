@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.app.pingpong.global.common.Status.*;
@@ -197,7 +198,22 @@ public class TeamService {
             p.setStatus(PERMANENT);
         }
 
-        return SUCCESS;
+        return SUCCESS_DELETE_ALL_TRASH;
+    }
+
+    public StatusCode deleteTrash(Long teamId, Long planId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+
+        Member currentMember = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, currentMember.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM));
+
+        if (currentMember.getId() != team.getHost().getId()) {
+            throw new BaseException(INVALID_HOST);
+        }
+
+        Plan plan = planRepository.findById(planId).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        plan.setStatus(DELETE);
+        return SUCCESS_DELETE_TRASH;
     }
 
     private void checkTeam(Member loginMember, TeamRequest request) {
