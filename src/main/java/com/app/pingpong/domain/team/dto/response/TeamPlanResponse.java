@@ -7,17 +7,35 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Getter
 @AllArgsConstructor
 public class TeamPlanResponse {
+    private Long planId;
     private Long managerId;
     private String title;
     private LocalDate date;
     private Status status;
 
     public static TeamPlanResponse of(Plan plan) {
-        return new TeamPlanResponse(plan.getManager().getId(), plan.getTitle(), plan.getDate(), plan.getStatus());
+        return new TeamPlanResponse(plan.getId(), plan.getManager().getId(), plan.getTitle(), plan.getDate(), plan.getStatus());
+    }
+
+    public static List<TeamPlanResponse> of(List<Plan> plans) {
+        List<TeamPlanResponse> list = new ArrayList<>();
+        for (Plan p : plans) {
+            list.add(TeamPlanResponse.builder()
+                    .planId(p.getId())
+                    .managerId(p.getManager().getId())
+                    .title(p.getTitle())
+                    .date(p.getDate())
+                    .status(p.getStatus())
+                    .build()
+            );
+        }
+        return list;
     }
 }

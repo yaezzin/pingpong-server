@@ -4,10 +4,14 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.global.common.Status;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+@EntityListeners(AuditingEntityListener.class)
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
@@ -24,6 +28,9 @@ public class Plan {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate date;
+
+    @LastModifiedDate
+    private LocalDateTime wastedTime;
 
     @Enumerated(EnumType.STRING)
     private Status status;

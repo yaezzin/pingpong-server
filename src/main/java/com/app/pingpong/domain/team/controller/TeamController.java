@@ -82,4 +82,11 @@ public class TeamController {
     public BaseResponse<TeamPlanResponse> passPlan(@PathVariable("teamId") Long teamId, @RequestBody TeamPlanPassRequest request) {
         return new BaseResponse<>(teamService.passPlan(teamId, request));
     }
+
+    @ResponseBody
+    @GetMapping("/{id}/trash")
+    public BaseResponse<List<TeamPlanResponse>> getTrash(@PathVariable Long id) {
+        return new BaseResponse<>(teamService.getTrash(id));
+    }
+
 }
