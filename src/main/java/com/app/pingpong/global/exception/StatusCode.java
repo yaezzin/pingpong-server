@@ -19,6 +19,8 @@ public enum StatusCode {
     SUCCESS_DELETE_ALL_TRASH(true, 200, "해당 그룹의 휴지통 전체 삭제에 성공하였습니다."),
     SUCCESS_DELETE_TRASH(true, 200, "해당 그룹의 휴지통에서 할 일(1개) 삭제에 성공하였습니다."),
     SUCCESS_RECOVER_TRASH(true, 200, "해당 할 일을 휴지통에서 복구하였습니다."),
+    SUCCESS_COMPLETE_PLAN(true, 200, "해당 할 일을 완료하였습니다."),
+    SUCCESS_INCOMPLETE_PLAN(true, 200, "해당 할 일의 완료를 취소하였습니다."),
 
     /* 400 : Bad Request   */
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다."),
@@ -30,6 +32,9 @@ public enum StatusCode {
     INVALID_EMITTER(false, 400, "방출할 수 없는 유저입니다."),
     INVALID_INVITER(false, 400, "해당 유저는 초대할 수 없는 유저입니다."),
     INVALID_MANAGER(false, 400, "해당 할 일의 담당자가 아니므로 할 일을 넘길 수 없습니다."),
+    INVALID_COMPLETE_PLAN(false, 400, "해당 할 일의 담당자가 아니므로 할 일을 완료할 수 없습니다."),
+    INVALID_INCOMPLETE_PLAN(false, 400, "해당 할 일의 담당자가 아니므로 할 일의 완료 취소를 할 수 없습니다."),
+
     INVALID_PLAN(false, 400, "해당 할 일은 삭제되었습니다"),
 
     EXCEED_HOST_TEAM_SIZE(false, 400, "그룹을 더이상 생성할 수 없습니다. 그룹 개수는 최대 6개로 제한됩니다."),

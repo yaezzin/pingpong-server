@@ -84,6 +84,18 @@ public class TeamController {
     }
 
     @ResponseBody
+    @PatchMapping("/{teamId}/plans/{planId}/complete")
+    public BaseResponse<StatusCode> completePlan(@PathVariable("teamId") Long teamId, @PathVariable("planId") Long planId) {
+        return new BaseResponse<>(teamService.completePlan(teamId, planId));
+    }
+
+    @ResponseBody
+    @PatchMapping("/{teamId}/plans/{planId}/incomplete")
+    public BaseResponse<StatusCode> incompletePlan(@PathVariable("teamId") Long teamId, @PathVariable("planId") Long planId) {
+        return new BaseResponse<>(teamService.incompletePlan(teamId, planId));
+    }
+
+    @ResponseBody
     @GetMapping("/{id}/trash")
     public BaseResponse<List<TeamPlanResponse>> getTrash(@PathVariable Long id) {
         return new BaseResponse<>(teamService.getTrash(id));
@@ -106,5 +118,4 @@ public class TeamController {
     public BaseResponse<StatusCode> recoverTrash(@PathVariable("teamId") Long teamId, @PathVariable("planId") Long planId) {
         return new BaseResponse<>(teamService.recoverTrash(teamId, planId));
     }
-
 }

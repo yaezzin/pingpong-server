@@ -182,6 +182,32 @@ public class TeamService {
         return TeamPlanResponse.of(plan);
     }
 
+    @Transactional
+    public StatusCode completePlan(Long teamId, Long planId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Member currentMember = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+
+        Plan plan = planRepository.findByIdAndStatus(planId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+
+        System.out.println("==== plan.getManager().getId() : " + plan.getManager().getId());
+        System.out.println("==== currentMember.getId() : " + currentMember.getId());
+        if (plan.getManager().getId() != currentMember.getId()) {
+            throw new BaseException(INVALID_COMPLETE_PLAN);
+        }
+
+        plan.setAchievement(COMPLETE);
+
+        return SUCCESS_COMPLETE_PLAN;
+    }
+
+    @Transactional
+    public StatusCode incompletePlan(Long teamId, Long planId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Member currentMember = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+
+        return SUCCESS_INCOMPLETE_PLAN;
+    }
+
     @Transactional(readOnly = true)
     public List<TeamPlanResponse> getTrash(Long teamId) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
@@ -307,9 +333,8 @@ public class TeamService {
         return list;
     }
 
-    public List<Member> getMembersFromUserTeams(List<MemberTeam> memberTeams) {
+    private List<Member> getMembersFromUserTeams(List<MemberTeam> memberTeams) {
         return memberTeams.stream().map(MemberTeam::getMember).collect(Collectors.toList());
     }
-
 }
 

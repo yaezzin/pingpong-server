@@ -4,6 +4,7 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.global.common.Status;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -34,6 +35,10 @@ public class Plan {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @Column(length = 10, columnDefinition = "varchar(10) default 'INCOMPLETE'")
+    @Enumerated(EnumType.STRING)
+    private Status achievement;
 
     @ManyToOne
     @JoinColumn(name = "member_id")
