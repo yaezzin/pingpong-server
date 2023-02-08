@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.team.entity;
 
 import com.app.pingpong.domain.member.entity.Member;
+import com.app.pingpong.global.common.Status;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
@@ -23,6 +24,9 @@ public class Plan {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate date;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @ManyToOne
     @JoinColumn(name = "member_id")

@@ -69,4 +69,10 @@ public class TeamController {
     public BaseResponse<TeamPlanResponse> createPlan(@PathVariable Long id, @RequestBody TeamPlanRequest request) {
         return new BaseResponse<>(teamService.createPlan(id, request));
     }
+
+    @ResponseBody
+    @DeleteMapping("/{teamId}/plans/{planId}")
+    public BaseResponse<TeamPlanResponse> deletePlan(@PathVariable("teamId") Long teamId, @PathVariable("planId") Long planId) {
+        return new BaseResponse<>(teamService.deletePlan(teamId, planId));
+    }
 }

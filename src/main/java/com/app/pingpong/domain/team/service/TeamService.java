@@ -135,7 +135,17 @@ public class TeamService {
         Plan plan = request.toEntity();
         plan.setManager(manager);
         plan.setTeam(team);
+        plan.setStatus(ACTIVE);
         return TeamPlanResponse.of(planRepository.save(plan));
+    }
+
+    @Transactional
+    public TeamPlanResponse deletePlan(Long teamId, Long planId) {
+        Member member = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));;
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, member.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM));
+        Plan plan = planRepository.findById(planId).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        plan.setStatus(DELETE);
+        return TeamPlanResponse.of(plan);
     }
 
     private void checkTeam(Member loginMember, TeamRequest request) {
@@ -194,8 +204,7 @@ public class TeamService {
         List<TeamCompactResponse> list = new ArrayList<>();
         List<Member> members = team.getMembers().stream().map(MemberTeam::getMember).collect(Collectors.toList());
         for (Member m : members) {
-            MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), m.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM);
-));
+            MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), m.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM));
             list.add(TeamCompactResponse.builder()
                     .memberId(m.getId())
                     .status(m1.getStatus())
@@ -218,6 +227,5 @@ public class TeamService {
         memberTeam.setParticipatedAt(new Date());
         return SUCCESS_ACCEPT_TEAM_INVITATION;
     }
-
 }
 
