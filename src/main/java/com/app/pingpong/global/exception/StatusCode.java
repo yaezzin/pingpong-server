@@ -26,6 +26,8 @@ public enum StatusCode {
     INVALID_HOST(false, 400, "해당 그룹의 호스트가 아니므로 방출 및 위임 권한이 없습니다."),
     INVALID_EMITTER(false, 400, "방출할 수 없는 유저입니다."),
     INVALID_INVITER(false, 400, "해당 유저는 초대할 수 없는 유저입니다."),
+    INVALID_MANAGER(false, 400, "해당 할 일의 담당자가 아니므로 할 일을 넘길 수 없습니다."),
+    INVALID_PLAN(false, 400, "해당 할 일은 삭제되었습니다"),
 
     EXCEED_HOST_TEAM_SIZE(false, 400, "그룹을 더이상 생성할 수 없습니다. 그룹 개수는 최대 6개로 제한됩니다."),
     USER_NICKNAME_ALREADY_EXISTS(false, 400, "이미 사용중인 닉네임입니다."),

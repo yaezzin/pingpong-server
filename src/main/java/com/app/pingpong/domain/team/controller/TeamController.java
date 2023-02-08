@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.team.controller;
 
 import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
+import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
 import com.app.pingpong.domain.team.dto.response.TeamHostResponse;
@@ -74,5 +75,11 @@ public class TeamController {
     @DeleteMapping("/{teamId}/plans/{planId}")
     public BaseResponse<TeamPlanResponse> deletePlan(@PathVariable("teamId") Long teamId, @PathVariable("planId") Long planId) {
         return new BaseResponse<>(teamService.deletePlan(teamId, planId));
+    }
+
+    @ResponseBody
+    @PatchMapping("/{teamId}/plans/pass")
+    public BaseResponse<TeamPlanResponse> passPlan(@PathVariable("teamId") Long teamId, @RequestBody TeamPlanPassRequest request) {
+        return new BaseResponse<>(teamService.passPlan(teamId, request));
     }
 }

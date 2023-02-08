@@ -5,6 +5,7 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
+import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
 import com.app.pingpong.domain.team.dto.response.*;
@@ -148,6 +149,26 @@ public class TeamService {
         return TeamPlanResponse.of(plan);
     }
 
+    @Transactional
+    public TeamPlanResponse passPlan(Long teamId, TeamPlanPassRequest request) {
+        Member currentMember = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, currentMember.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM));
+
+        Member mandator = memberRepository.findByIdAndStatus(request.getMandaterId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, mandator.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM));
+
+        Plan plan = planRepository.findById(request.getPlanId()).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        if (plan.getManager().getId() != currentMember.getId()) {
+            throw new BaseException(INVALID_MANAGER);
+        }
+        if (plan.getStatus() != ACTIVE) {
+            throw new BaseException(INVALID_PLAN);
+        }
+
+        plan.setManager(mandator);
+        return TeamPlanResponse.of(plan);
+    }
+
     private void checkTeam(Member loginMember, TeamRequest request) {
         if (teamRepository.findByHostId(loginMember.getId()).size() > 6) {
             throw new BaseException(EXCEED_HOST_TEAM_SIZE);
@@ -227,5 +248,6 @@ public class TeamService {
         memberTeam.setParticipatedAt(new Date());
         return SUCCESS_ACCEPT_TEAM_INVITATION;
     }
+
 }
 
