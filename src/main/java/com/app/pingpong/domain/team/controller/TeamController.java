@@ -89,4 +89,11 @@ public class TeamController {
         return new BaseResponse<>(teamService.getTrash(id));
     }
 
+    @ResponseBody
+    @DeleteMapping("/{id}/all-trash")
+    public BaseResponse<StatusCode> deleteAllTrash(@PathVariable Long id) {
+        return new BaseResponse<>(teamService.deleteAllTrash(id));
+
+    }
+
 }

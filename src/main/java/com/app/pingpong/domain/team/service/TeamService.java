@@ -181,6 +181,25 @@ public class TeamService {
         return TeamPlanResponse.of(plansInTrash);
     }
 
+    @Transactional
+    public StatusCode deleteAllTrash(Long teamId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+
+        Member currentMember = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, currentMember.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM));
+
+        if (currentMember.getId() != team.getHost().getId()) {
+            throw new BaseException(INVALID_HOST);
+        }
+
+        List<Plan> plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(teamId, DELETE);
+        for (Plan p : plansInTrash) {
+            p.setStatus(PERMANENT);
+        }
+
+        return SUCCESS;
+    }
+
     private void checkTeam(Member loginMember, TeamRequest request) {
         if (teamRepository.findByHostId(loginMember.getId()).size() > 6) {
             throw new BaseException(EXCEED_HOST_TEAM_SIZE);
@@ -260,6 +279,5 @@ public class TeamService {
         memberTeam.setParticipatedAt(new Date());
         return SUCCESS_ACCEPT_TEAM_INVITATION;
     }
-
 }
 

@@ -23,7 +23,7 @@ public enum StatusCode {
     INVALID_NICKNAME(false, 400, "닉네임 형식이 올바르지 않습니다."),
     INVALID_TEAM_MEMBER(false, 400, "그룹 호스트(자기 자신)은/는 초대할 수 없습니다."),
     INVALID_TEAM_MEMBER_SIZE(false, 400, "그룹 멤버는 최소 1명, 최대 10명으로 제한됩니다."),
-    INVALID_HOST(false, 400, "해당 그룹의 호스트가 아니므로 방출 및 위임 권한이 없습니다."),
+    INVALID_HOST(false, 400, "해당 그룹의 호스트가 아니므로 방출, 위임 및 영구 삭제 권한이 없습니다."),
     INVALID_EMITTER(false, 400, "방출할 수 없는 유저입니다."),
     INVALID_INVITER(false, 400, "해당 유저는 초대할 수 없는 유저입니다."),
     INVALID_MANAGER(false, 400, "해당 할 일의 담당자가 아니므로 할 일을 넘길 수 없습니다."),
