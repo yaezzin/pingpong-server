@@ -38,8 +38,8 @@ public class SocialController {
 
     @ResponseBody
     @PostMapping("/logout")
-    public BaseResponse logout(@RequestBody MemberLogoutRequest request) {
-        return socialService.logout(request);
+    public BaseResponse<StatusCode> logout(@RequestBody MemberLogoutRequest request) {
+        return new BaseResponse<>(socialService.logout(request));
     }
 
     @ResponseBody
@@ -47,6 +47,4 @@ public class SocialController {
     public BaseResponse<TokenResponse> reissue(@RequestBody TokenRequest request) {
         return new BaseResponse<>(socialService.reissue(request));
     }
-
-
 }

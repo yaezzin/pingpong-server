@@ -70,12 +70,10 @@ public class SocialService {
     }
 
     @Transactional
-    public BaseResponse logout(MemberLogoutRequest request) {
-        String accessToken = kakao.getAccessToken(request.getCode());
-        kakao.logout(accessToken);
+    public StatusCode logout(MemberLogoutRequest request) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         valueOperations.getAndDelete(request.getEmail());
-        return new BaseResponse<>(SUCCESS_LOGOUT);
+        return SUCCESS_LOGOUT;
     }
 
     @Transactional
