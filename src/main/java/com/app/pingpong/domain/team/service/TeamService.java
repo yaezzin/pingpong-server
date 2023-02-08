@@ -99,7 +99,7 @@ public class TeamService {
         List<TeamMemberResponse> list = new ArrayList<>();
         for (Member findMember : members) {
             boolean isFriend = friendRepository.isFriend(hostId, findMember.getId());
-            MemberTeam isStatus = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), findMember.getId());
+            MemberTeam isStatus = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), findMember.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM));
             list.add(TeamMemberResponse.builder()
                     .userId(findMember.getId())
                     .nickname(findMember.getNickname())
@@ -123,13 +123,14 @@ public class TeamService {
 
     @Transactional
     public TeamPlanResponse createPlan(Long teamId, TeamPlanRequest request) {
+        // 1. 할 일을 담당할 사람이 존재하는지 확인 & 팀에 있는지 확인
         Member manager = memberRepository.findByIdAndStatus(request.getManagerId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
-        // 플랜을 생성하려는 멤버가 팀에 속해있는지 확인
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, manager.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM));
 
-        // 담당자가 팀에 속해있는지 확인
-        //if (memberTeamRepository.findByTeamIdAndMemberId(teamId, request.getManagerId()) !=) {
-//
-  //      }
+        // 2. 플랜을 생성하려는 멤버가 팀에 속해있는지 확인
+        Member maker = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));;
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, manager.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM));
+
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Plan plan = request.toEntity();
         plan.setManager(manager);
@@ -193,7 +194,8 @@ public class TeamService {
         List<TeamCompactResponse> list = new ArrayList<>();
         List<Member> members = team.getMembers().stream().map(MemberTeam::getMember).collect(Collectors.toList());
         for (Member m : members) {
-            MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), m.getId());
+            MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), m.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM);
+));
             list.add(TeamCompactResponse.builder()
                     .memberId(m.getId())
                     .status(m1.getStatus())
