@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface PlanRepository extends JpaRepository<Plan, Long> {
     List<Plan> findAllByTeamIdAndStatusOrderByWastedTimeDesc(Long teamId, Status status);
     Optional<Plan> findByIdAndStatus(Long planId, Status status);
+    Optional<Plan> findByIdAndTeamIdAndStatus(Long planId, Long teamId, Status status);
+
 }

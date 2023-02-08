@@ -186,17 +186,11 @@ public class TeamService {
     public StatusCode completePlan(Long teamId, Long planId) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member currentMember = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
-
-        Plan plan = planRepository.findByIdAndStatus(planId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
-
-        System.out.println("==== plan.getManager().getId() : " + plan.getManager().getId());
-        System.out.println("==== currentMember.getId() : " + currentMember.getId());
+        Plan plan = planRepository.findByIdAndTeamIdAndStatus(planId, teamId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
         if (plan.getManager().getId() != currentMember.getId()) {
             throw new BaseException(INVALID_COMPLETE_PLAN);
         }
-
         plan.setAchievement(COMPLETE);
-
         return SUCCESS_COMPLETE_PLAN;
     }
 
@@ -204,7 +198,11 @@ public class TeamService {
     public StatusCode incompletePlan(Long teamId, Long planId) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member currentMember = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
-
+        Plan plan = planRepository.findByIdAndTeamIdAndStatus(planId, teamId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        if (plan.getAchievement() == INCOMPLETE) {
+            throw new BaseException(ALREADY_INCOMPLETE_PLAN);
+        }
+        plan.setAchievement(INCOMPLETE);
         return SUCCESS_INCOMPLETE_PLAN;
     }
 
