@@ -45,7 +45,6 @@ public class MemberService {
     private final MemberTeamRepository memberTeamRepository;
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ListOperations<String, Object> listOps = redisTemplate.opsForList();
     private final UserFacade userFacade;
     private final PasswordEncoder passwordEncoder;
     private final S3Uploader s3Uploader;
@@ -126,6 +125,7 @@ public class MemberService {
     @Transactional
     public StatusCode saveSearchLog(SearchLogRequest request) {
         Member member = memberRepository.findByIdAndStatus(request.getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        ListOperations<String, Object> listOps = redisTemplate.opsForList();
         String loginUserId = "id" + userFacade.getCurrentUser().getId(); // 내 식별자
         String memberId = "id" + member.getId();
         listOps.leftPush(loginUserId, memberId);
@@ -204,6 +204,7 @@ public class MemberService {
 
     /* String 타입인 Redis의 key값 (ex."id1")에서 숫자만 추출한다. */
     private List<String> extractNumAndAddToList(String loginUserId) {
+        ListOperations<String, Object> listOps = redisTemplate.opsForList();
         List<String> list = new ArrayList<>();
         for (Object o : listOps.range(loginUserId, 0, -1)) {
             String userId = o.toString().substring(2,3); //숫자값만 추출

@@ -1,9 +1,11 @@
 package com.app.pingpong.domain.team.controller;
 
 import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
+import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
 import com.app.pingpong.domain.team.dto.response.TeamHostResponse;
 import com.app.pingpong.domain.team.dto.response.TeamMemberResponse;
+import com.app.pingpong.domain.team.dto.response.TeamPlanResponse;
 import com.app.pingpong.domain.team.dto.response.TeamResponse;
 import com.app.pingpong.domain.team.service.TeamService;
 import com.app.pingpong.global.common.BaseResponse;
@@ -60,5 +62,11 @@ public class TeamController {
     @PostMapping("/refuse")
     public BaseResponse<StatusCode> refuse(@PathVariable("id") Long teamId) {
         return new BaseResponse<>(teamService.refuse(teamId));
+    }
+
+    @ResponseBody
+    @PostMapping("/{id}/plans")
+    public BaseResponse<TeamPlanResponse> createPlan(@PathVariable Long id, @RequestBody TeamPlanRequest request) {
+        return new BaseResponse<>(teamService.createPlan(id, request));
     }
 }

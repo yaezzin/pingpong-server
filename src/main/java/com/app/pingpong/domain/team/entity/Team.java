@@ -33,6 +33,9 @@ public class Team {
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
     private List<MemberTeam> members = new ArrayList<>();
 
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+    private List<Plan> plans = new ArrayList<>();
+
     @Builder
     public Team(String name) {
         this.name = name;

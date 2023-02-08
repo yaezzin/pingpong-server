@@ -13,7 +13,4 @@ import java.util.Optional;
 public interface TeamRepository extends JpaRepository<Team, Long> {
     List<Team> findByHostId(Long hostId);
     Optional<Team> findByIdAndStatus(Long id, Status status);
-
-    @Query("select t from Team t where t.id =:id and t.status = 'ACTIVE'")
-    Optional<Team> findActiveTeamById(Long id);
 }

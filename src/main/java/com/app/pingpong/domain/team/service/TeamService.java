@@ -5,12 +5,12 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
+import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
-import com.app.pingpong.domain.team.dto.response.TeamCompactResponse;
-import com.app.pingpong.domain.team.dto.response.TeamHostResponse;
-import com.app.pingpong.domain.team.dto.response.TeamMemberResponse;
-import com.app.pingpong.domain.team.dto.response.TeamResponse;
+import com.app.pingpong.domain.team.dto.response.*;
+import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
+import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.domain.team.repository.TeamRepository;
 import com.app.pingpong.global.common.Status;
 import com.app.pingpong.global.exception.BaseException;
@@ -35,6 +35,7 @@ public class TeamService {
     private final MemberRepository memberRepository;
     private final FriendRepository friendRepository;
     private final TeamRepository teamRepository;
+    private final PlanRepository planRepository;
     private final MemberTeamRepository memberTeamRepository;
     private final UserFacade userFacade;
 
@@ -68,7 +69,7 @@ public class TeamService {
 
     @Transactional
     public TeamHostResponse updateHost(Long teamId, Long delegatorId) {
-        Team team = teamRepository.findActiveTeamById(teamId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member host = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         Member delegator = memberRepository.findByIdAndStatus(delegatorId, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         checkHostForDelegate(team, host, delegatorId);
@@ -78,7 +79,7 @@ public class TeamService {
 
     @Transactional
     public TeamHostResponse emit(Long teamId, Long emitterId) {
-        Team team = teamRepository.findActiveTeamById(teamId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member host = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         checkHostForEmit(team, host, emitterId);
         memberRepository.findByIdAndStatus(emitterId, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
@@ -89,9 +90,9 @@ public class TeamService {
     }
 
     @Transactional
-    public List<TeamMemberResponse> getTeamMembers(Long id) {
-        List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(id);
-        Team team = teamRepository.findActiveTeamById(id).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+    public List<TeamMemberResponse> getTeamMembers(Long teamId) {
+        List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(teamId);
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         List<Member> members = getMembersFromUserTeams(memberTeam);
         Long hostId = team.getHost().getId();
 
@@ -109,6 +110,31 @@ public class TeamService {
                     .build());
         }
         return list;
+    }
+
+    @Transactional
+    public StatusCode refuse(Long teamId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, userFacade.getCurrentUser().getId(), WAIT)
+                .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
+        memberTeam.setStatus(DELETE);
+        return SUCCESS_REFUSE_TEAM_INVITATION;
+    }
+
+    @Transactional
+    public TeamPlanResponse createPlan(Long teamId, TeamPlanRequest request) {
+        Member manager = memberRepository.findByIdAndStatus(request.getManagerId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        // 플랜을 생성하려는 멤버가 팀에 속해있는지 확인
+
+        // 담당자가 팀에 속해있는지 확인
+        //if (memberTeamRepository.findByTeamIdAndMemberId(teamId, request.getManagerId()) !=) {
+//
+  //      }
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Plan plan = request.toEntity();
+        plan.setManager(manager);
+        plan.setTeam(team);
+        return TeamPlanResponse.of(planRepository.save(plan));
     }
 
     private void checkTeam(Member loginMember, TeamRequest request) {
@@ -191,12 +217,5 @@ public class TeamService {
         return SUCCESS_ACCEPT_TEAM_INVITATION;
     }
 
-    public StatusCode refuse(Long teamId) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, userFacade.getCurrentUser().getId(), WAIT)
-                .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
-        memberTeam.setStatus(DELETE);
-        return SUCCESS_REFUSE_TEAM_INVITATION;
-    }
 }
 
