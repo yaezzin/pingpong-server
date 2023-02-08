@@ -101,4 +101,10 @@ public class TeamController {
         return new BaseResponse<>(teamService.deleteTrash(teamId, planId));
     }
 
+    @ResponseBody
+    @PatchMapping("/{teamId}/trash/{planId}")
+    public BaseResponse<StatusCode> recoverTrash(@PathVariable("teamId") Long teamId, @PathVariable("planId") Long planId) {
+        return new BaseResponse<>(teamService.recoverTrash(teamId, planId));
+    }
+
 }

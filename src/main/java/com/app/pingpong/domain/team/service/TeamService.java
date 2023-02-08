@@ -115,6 +115,18 @@ public class TeamService {
     }
 
     @Transactional
+    public StatusCode accept(Long teamId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, userFacade.getCurrentUser().getId(), WAIT)
+                .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, userFacade.getCurrentUser().getId(), ACTIVE)
+                .orElseThrow(() -> new BaseException(ALREADY_ACCEPT_TEAM_INVITATION));
+        memberTeam.setStatus(ACTIVE);
+        memberTeam.setParticipatedAt(new Date());
+        return SUCCESS_ACCEPT_TEAM_INVITATION;
+    }
+
+    @Transactional
     public StatusCode refuse(Long teamId) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, userFacade.getCurrentUser().getId(), WAIT)
@@ -201,6 +213,7 @@ public class TeamService {
         return SUCCESS_DELETE_ALL_TRASH;
     }
 
+    @Transactional
     public StatusCode deleteTrash(Long teamId, Long planId) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
 
@@ -214,6 +227,19 @@ public class TeamService {
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
         plan.setStatus(DELETE);
         return SUCCESS_DELETE_TRASH;
+    }
+
+    @Transactional
+    public StatusCode recoverTrash(Long teamId, Long planId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+
+        Member currentMember = memberRepository.findByIdAndStatus(userFacade.getCurrentUser().getId(), ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, currentMember.getId()).orElseThrow(() -> new BaseException(USER_NOT_FOUND_IN_TEAM));
+
+        Plan plan = planRepository.findByIdAndStatus(planId, DELETE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        plan.setStatus(ACTIVE);
+
+        return SUCCESS_RECOVER_TRASH;
     }
 
     private void checkTeam(Member loginMember, TeamRequest request) {
@@ -285,15 +311,5 @@ public class TeamService {
         return memberTeams.stream().map(MemberTeam::getMember).collect(Collectors.toList());
     }
 
-    public StatusCode accept(Long teamId) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, userFacade.getCurrentUser().getId(), WAIT)
-                .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, userFacade.getCurrentUser().getId(), ACTIVE)
-                .orElseThrow(() -> new BaseException(ALREADY_ACCEPT_TEAM_INVITATION));
-        memberTeam.setStatus(ACTIVE);
-        memberTeam.setParticipatedAt(new Date());
-        return SUCCESS_ACCEPT_TEAM_INVITATION;
-    }
 }
 

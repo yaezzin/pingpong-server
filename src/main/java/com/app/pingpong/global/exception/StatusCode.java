@@ -18,6 +18,7 @@ public enum StatusCode {
     SUCCESS_REFUSE_TEAM_INVITATION(true, 200, "그룹 초대 거절에 성공하였습니다."),
     SUCCESS_DELETE_ALL_TRASH(true, 200, "해당 그룹의 휴지통 전체 삭제에 성공하였습니다."),
     SUCCESS_DELETE_TRASH(true, 200, "해당 그룹의 휴지통에서 할 일(1개) 삭제에 성공하였습니다."),
+    SUCCESS_RECOVER_TRASH(true, 200, "해당 할 일을 휴지통에서 복구하였습니다."),
 
     /* 400 : Bad Request   */
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다."),
