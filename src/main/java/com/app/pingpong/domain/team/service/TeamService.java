@@ -256,7 +256,7 @@ public class TeamService {
         double achievement = 0;
         List<TeamAchieveResponse> response = new ArrayList<>();
         for (LocalDate date :dateList) {
-            List<Plan> plan = planRepository.findAllByDate(date);
+            List<Plan> plan = planRepository.findAllByTeamIdAndStatusAndDate(teamId, ACTIVE, date);
             List<Status> achieves = plan.stream().map(Plan::getAchievement).collect(Collectors.toList());
             for (Status achieve : achieves) {
                 if (achieve == COMPLETE) {
