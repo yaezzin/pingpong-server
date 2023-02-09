@@ -19,9 +19,10 @@ public class TeamPlanResponse {
     private String title;
     private LocalDate date;
     private Status status;
+    private Status achievement;
 
     public static TeamPlanResponse of(Plan plan) {
-        return new TeamPlanResponse(plan.getId(), plan.getManager().getId(), plan.getTitle(), plan.getDate(), plan.getStatus());
+        return new TeamPlanResponse(plan.getId(), plan.getManager().getId(), plan.getTitle(), plan.getDate(), plan.getStatus(), plan.getAchievement());
     }
 
     public static List<TeamPlanResponse> of(List<Plan> plans) {
@@ -33,6 +34,7 @@ public class TeamPlanResponse {
                     .title(p.getTitle())
                     .date(p.getDate())
                     .status(p.getStatus())
+                    .achievement(p.getAchievement())
                     .build()
             );
         }

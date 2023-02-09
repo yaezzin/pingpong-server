@@ -4,16 +4,15 @@ import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
 import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
-import com.app.pingpong.domain.team.dto.response.TeamHostResponse;
-import com.app.pingpong.domain.team.dto.response.TeamMemberResponse;
-import com.app.pingpong.domain.team.dto.response.TeamPlanResponse;
-import com.app.pingpong.domain.team.dto.response.TeamResponse;
+import com.app.pingpong.domain.team.dto.response.*;
 import com.app.pingpong.domain.team.service.TeamService;
 import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.StatusCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -93,6 +92,13 @@ public class TeamController {
     @PatchMapping("/{teamId}/plans/{planId}/incomplete")
     public BaseResponse<StatusCode> incompletePlan(@PathVariable("teamId") Long teamId, @PathVariable("planId") Long planId) {
         return new BaseResponse<>(teamService.incompletePlan(teamId, planId));
+    }
+
+    @ResponseBody
+    @GetMapping("/{id}/calendars")
+    public BaseResponse<TeamPlanDetailResponse> getTeamCalendarByDate(@PathVariable Long id,
+                                                                      @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+        return new BaseResponse<>(teamService.getTeamCalendarByDate(id, date));
     }
 
     @ResponseBody

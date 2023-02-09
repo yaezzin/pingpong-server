@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.team.service;
 
 import com.app.pingpong.domain.friend.repository.FriendRepository;
+import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -150,6 +152,7 @@ public class TeamService {
         plan.setManager(manager);
         plan.setTeam(team);
         plan.setStatus(ACTIVE);
+        plan.setAchievement(INCOMPLETE);
         return TeamPlanResponse.of(planRepository.save(plan));
     }
 
@@ -204,6 +207,41 @@ public class TeamService {
         }
         plan.setAchievement(INCOMPLETE);
         return SUCCESS_INCOMPLETE_PLAN;
+    }
+
+    @Transactional(readOnly = true)
+    public TeamPlanDetailResponse getTeamCalendarByDate(Long teamId, LocalDate date) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+
+        List<MemberTeam> memberTeam = memberTeamRepository.findALLByTeamIdAndStatus(teamId, ACTIVE);
+        List<Member> members = memberTeam.stream().map(MemberTeam::getMember).collect(Collectors.toList());
+        List<Long> memberIdList = members.stream().map(Member::getId).collect(Collectors.toList());
+
+        List<MemberResponse> memberList = new ArrayList<>();
+        for (Long id : memberIdList) {
+            Member member = memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+            memberList.add(MemberResponse.builder()
+                    .userId(member.getId())
+                    .nickname(member.getNickname())
+                    .profileImage(member.getProfileImage())
+                    .build()
+            );
+        }
+
+        List<Plan> plans = planRepository.findAllByTeamIdAndDateAndStatus(teamId, date, ACTIVE);
+        List<TeamPlanResponse> planList = new ArrayList<>();
+        for (Plan plan : plans) {
+            planList.add(TeamPlanResponse.builder()
+                    .planId(plan.getId())
+                    .managerId(plan.getManager().getId())
+                    .title(plan.getTitle())
+                    .date(plan.getDate())
+                    .status(plan.getStatus())
+                    .achievement(plan.getAchievement())
+                    .build()
+            );
+        }
+        return TeamPlanDetailResponse.of(team, memberList, planList);
     }
 
     @Transactional(readOnly = true)
