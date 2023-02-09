@@ -21,4 +21,6 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     List<Plan> findAllByManagerIdAndStatusAndDate(Long managerId, Status active, LocalDate date);
 
     List<Plan> findAllByTeamIdAndStatusAndDate(Long teamId, Status active, LocalDate date);
+
+    List<Plan> findAllByTeamIdAndManagerIdAndStatusAndDate(Long id, Long currentMemberId, Status active, LocalDate date);
 }

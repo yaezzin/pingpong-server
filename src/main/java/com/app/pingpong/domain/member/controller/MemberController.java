@@ -12,9 +12,11 @@ import com.app.pingpong.global.exception.StatusCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -93,8 +95,13 @@ public class MemberController {
         return new BaseResponse<>(memberService.getMemberTeams());
     }
 
-    @GetMapping("/calendars")
+    @GetMapping("/calendars/achievement")
     public BaseResponse<List<MemberAchieveResponse>> getMemberAchievement(@RequestBody MemberAchieveRequest request) {
         return new BaseResponse<>(memberService.getMemberAchievementRate(request));
+    }
+
+    @GetMapping("/calendars")
+    public BaseResponse<List<MemberPlanDetailResponse>> getMemberCalendarByDate(@RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+        return new BaseResponse<>(memberService.getMemberCalendarByDate(date));
     }
 }

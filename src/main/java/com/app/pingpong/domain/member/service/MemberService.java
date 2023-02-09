@@ -14,6 +14,7 @@ import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.s3.S3Uploader;
 import com.app.pingpong.domain.team.dto.response.TeamAchieveResponse;
+import com.app.pingpong.domain.team.dto.response.TeamPlanResponse;
 import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.PlanRepository;
@@ -255,5 +256,32 @@ public class MemberService {
             memberList.add(MemberResponse.of(member));
         }
         return memberList;
+    }
+
+    public List<MemberPlanDetailResponse> getMemberCalendarByDate(LocalDate date) {
+        Long currentMemberId = userFacade.getCurrentUser().getId();
+        List<MemberTeam> memberTeams = memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(currentMemberId, ACTIVE);
+        List<Team> teams = memberTeams.stream().map(MemberTeam::getTeam).collect(Collectors.toList());
+
+        List<MemberPlanDetailResponse> response = new ArrayList<>();
+        for (Team team : teams) {
+            // 팀마다 플랜을 가져옴
+            List<Plan> plans = planRepository.findAllByTeamIdAndManagerIdAndStatusAndDate(team.getId(), currentMemberId, ACTIVE, date);
+
+            List<TeamPlanResponse> planList = new ArrayList<>();
+            for (Plan plan : plans) {
+                planList.add(TeamPlanResponse.builder()
+                        .planId(plan.getId())
+                        .managerId(plan.getManager().getId())
+                        .title(plan.getTitle())
+                        .date(plan.getDate())
+                        .status(plan.getStatus())
+                        .achievement(plan.getAchievement())
+                        .build()
+                );
+            }
+            response.add(MemberPlanDetailResponse.of(team, planList));
+        }
+        return response;
     }
 }
