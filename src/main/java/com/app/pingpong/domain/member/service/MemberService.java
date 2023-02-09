@@ -2,22 +2,24 @@ package com.app.pingpong.domain.member.service;
 
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
+import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
-import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
-import com.app.pingpong.domain.member.dto.response.MemberResponse;
-import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
-import com.app.pingpong.domain.member.dto.response.MemberTeamResponse;
+import com.app.pingpong.domain.member.dto.response.*;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.s3.S3Uploader;
+import com.app.pingpong.domain.team.dto.response.TeamAchieveResponse;
+import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
+import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.domain.team.repository.TeamRepository;
 import com.app.pingpong.global.common.BaseResponse;
+import com.app.pingpong.global.common.Status;
 import com.app.pingpong.global.exception.BaseException;
 import com.app.pingpong.global.exception.StatusCode;
 import com.app.pingpong.global.util.UserFacade;
@@ -28,11 +30,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.app.pingpong.global.common.Status.ACTIVE;
-import static com.app.pingpong.global.common.Status.DELETE;
+import static com.app.pingpong.global.common.Status.*;
 import static com.app.pingpong.global.exception.StatusCode.*;
 import static com.app.pingpong.global.util.RegexUtil.isRegexNickname;
 
@@ -43,6 +45,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final FriendRepository friendRepository;
     private final MemberTeamRepository memberTeamRepository;
+    private final PlanRepository planRepository;
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final UserFacade userFacade;
@@ -140,6 +143,7 @@ public class MemberService {
         return responses;
     }
 
+    @Transactional(readOnly = true)
     public List<MemberSearchResponse> findByNickname(String nickname) {
         List<Member> findMembers = memberRepository.findByStatusAndNicknameContains(ACTIVE, nickname).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
         List<MemberSearchResponse> list = new ArrayList<>();
@@ -155,6 +159,7 @@ public class MemberService {
         return list;
     }
 
+    @Transactional(readOnly = true)
     public List<MemberTeamResponse> getMemberTeams() {
         Long loginUserId = userFacade.getCurrentUser().getId();
         List<MemberTeam> memberTeams = memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(loginUserId, ACTIVE);
@@ -176,6 +181,32 @@ public class MemberService {
             teamList.add(MemberTeamResponse.of(team, list));
         }
         return teamList;
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemberAchieveResponse> getMemberAchievementRate(MemberAchieveRequest request) {
+        Long currentUserId = userFacade.getCurrentUser().getId();
+        List<Plan> plans = planRepository.findAllByManagerIdAndStatusAndDateBetween(currentUserId, ACTIVE,request.getStartDate(), request.getEndDate());
+        List<LocalDate> dateList = plans.stream().map(Plan::getDate).collect(Collectors.toList());
+
+        int complete = 0;
+        int incomplete = 0;
+        double achievement = 0;
+        List<MemberAchieveResponse> response = new ArrayList<>();
+        for (LocalDate date :dateList) {
+            List<Plan> plan = planRepository.findAllByManagerIdAndStatusAndDate(currentUserId, ACTIVE, date);
+            List<Status> achieves = plan.stream().map(Plan::getAchievement).collect(Collectors.toList());
+            for (Status achieve : achieves) {
+                if (achieve == COMPLETE) {
+                    complete += 1;
+                } else {
+                    incomplete += 1;
+                }
+            }
+            achievement = ((double)(complete) / (double) (complete + incomplete) * 100.0);
+            response.add(new MemberAchieveResponse(date, achievement));
+        }
+        return response;
     }
 
     private boolean isMyFriendRequest(Friend f, Member loginUser) {

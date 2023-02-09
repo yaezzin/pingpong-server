@@ -1,13 +1,11 @@
 package com.app.pingpong.domain.member.controller;
 
 import com.app.pingpong.domain.friend.entity.Friend;
+import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
-import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
-import com.app.pingpong.domain.member.dto.response.MemberResponse;
-import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
-import com.app.pingpong.domain.member.dto.response.MemberTeamResponse;
+import com.app.pingpong.domain.member.dto.response.*;
 import com.app.pingpong.domain.member.service.MemberService;
 import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.StatusCode;
@@ -95,4 +93,8 @@ public class MemberController {
         return new BaseResponse<>(memberService.getMemberTeams());
     }
 
+    @GetMapping("/calendars")
+    public BaseResponse<List<MemberAchieveResponse>> getMemberAchievement(@RequestBody MemberAchieveRequest request) {
+        return new BaseResponse<>(memberService.getMemberAchievementRate(request));
+    }
 }
