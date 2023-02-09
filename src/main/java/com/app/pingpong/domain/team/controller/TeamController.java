@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.team.controller;
 
 import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
+import com.app.pingpong.domain.team.dto.request.TeamAchieveRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
@@ -99,6 +100,13 @@ public class TeamController {
     public BaseResponse<TeamPlanDetailResponse> getTeamCalendarByDate(@PathVariable Long id,
                                                                       @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
         return new BaseResponse<>(teamService.getTeamCalendarByDate(id, date));
+    }
+
+    @ResponseBody
+    @GetMapping("/{id}/calendars/achievement")
+    public BaseResponse<List<TeamAchieveResponse>> getTeamAchievementRate(@PathVariable Long id,
+                                                                       @RequestBody TeamAchieveRequest request) {
+        return new BaseResponse<>(teamService.getTeamAchievementRate(id, request));
     }
 
     @ResponseBody

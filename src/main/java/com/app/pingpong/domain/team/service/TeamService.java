@@ -6,6 +6,7 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
+import com.app.pingpong.domain.team.dto.request.TeamAchieveRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
@@ -244,6 +245,32 @@ public class TeamService {
         return TeamPlanDetailResponse.of(team, memberList, planList);
     }
 
+    @Transactional
+    public List<TeamAchieveResponse> getTeamAchievementRate(Long teamId, TeamAchieveRequest request) {
+        // 팀에 있는 모든 일정을 월 별 날짜별로 가져옴
+        List<Plan> plans = planRepository.findAllByTeamIdAndStatusAndDateBetween(teamId, ACTIVE, request.getStartDate(), request.getEndDate());
+        List<LocalDate> dateList = plans.stream().map(Plan::getDate).collect(Collectors.toList());
+
+        int complete = 0;
+        int incomplete = 0;
+        double achievement = 0;
+        List<TeamAchieveResponse> response = new ArrayList<>();
+        for (LocalDate date :dateList) {
+            List<Plan> plan = planRepository.findAllByDate(date);
+            List<Status> achieves = plan.stream().map(Plan::getAchievement).collect(Collectors.toList());
+            for (Status achieve : achieves) {
+                if (achieve == COMPLETE) {
+                    complete += 1;
+                } else {
+                    incomplete += 1;
+                }
+            }
+            achievement = ((double)(complete) / (double) (complete + incomplete) * 100.0);
+            response.add(new TeamAchieveResponse(date, achievement));
+        }
+        return response;
+    }
+
     @Transactional(readOnly = true)
     public List<TeamPlanResponse> getTrash(Long teamId) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
@@ -372,5 +399,7 @@ public class TeamService {
     private List<Member> getMembersFromUserTeams(List<MemberTeam> memberTeams) {
         return memberTeams.stream().map(MemberTeam::getMember).collect(Collectors.toList());
     }
+
+
 }
 
