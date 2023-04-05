@@ -64,7 +64,7 @@ public class MemberService {
         if (!isRegexNickname(nickname)) {
             throw new BaseException(INVALID_NICKNAME);
         }
-        if (memberRepository.existsUserByNicknameAndStatus(nickname)) {
+        if (memberRepository.existsMemberByNicknameAndStatus(nickname)) {
             throw new BaseException(USER_NICKNAME_ALREADY_EXISTS);
         }
         return new BaseResponse(SUCCESS_VALIDATE_NICKNAME);

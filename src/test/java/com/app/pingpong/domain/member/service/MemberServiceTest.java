@@ -54,7 +54,7 @@ public class MemberServiceTest {
     @Test
     public void 닉네임_중복_테스트() {
         // given
-        given(memberRepository.existsUserByNickname(anyString())).willReturn(true);
+        given(memberRepository.existsMemberByNickname(anyString())).willReturn(true);
 
         // when, then
         assertThatThrownBy(() -> memberService.validateNickname(createMember().getNickname())).isInstanceOf(BaseException.class);

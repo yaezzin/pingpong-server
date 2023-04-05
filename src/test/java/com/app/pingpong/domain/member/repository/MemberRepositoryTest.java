@@ -4,13 +4,21 @@ import com.app.pingpong.domain.member.entity.Authority;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.global.common.Status;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.util.List;
+import java.util.Optional;
+
+import static com.app.pingpong.global.common.Status.ACTIVE;
+import static com.app.pingpong.global.common.Status.DELETE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
@@ -18,34 +26,86 @@ public class MemberRepositoryTest {
 
     @Autowired MemberRepository memberRepository;
 
-    @BeforeEach
-    public void init() {
-        memberRepository.deleteAll();
-    }
-
     @Test
-    public void 저장() {
+    @DisplayName("이메일로 멤버 조회")
+    public void findByEmail() {
+        // given
         Member member = createMember();
         memberRepository.save(member);
-        Member findMember = memberRepository.findById(member.getId()).orElseThrow();
-        assertThat(findMember.getId()).isEqualTo(member.getId());
+
+        // when
+        Optional<Member> findMember = memberRepository.findByEmail(member.getEmail());
+
+        // then
+        assertTrue(findMember.isPresent());
+        assertEquals(member.getEmail(), findMember.get().getEmail());
     }
 
     @Test
-    public void 이메일로_회원_찾기() {
+    @DisplayName("ID와 상태값으로 멤버 조회")
+    public void findByIdAndStatus() {
+        // given
         Member member = createMember();
         memberRepository.save(member);
-        Member findMember = memberRepository.findByEmail(member.getEmail()).orElseThrow();
-        assertThat(findMember.getEmail()).isEqualTo(findMember.getEmail());
+
+        // when
+        Optional<Member> findMember = memberRepository.findByIdAndStatus(member.getId(), ACTIVE);
+
+        // then
+        assertTrue(findMember.isPresent());
+        assertEquals(member.getId(), findMember.get().getId());
     }
 
     @Test
-    public void 닉네임_중복_확인() {
+    @DisplayName("상태값이 Active이고, 닉네임에 해당 문자열이 포함되는 멤버 조회")
+    public void findByStatusAndNicknameContains() {
+        // given
+        Member active = new Member("123", "email@email.com", "test1", "profileImage", ACTIVE, Authority.ROLE_USER);
+        memberRepository.save(active);
+
+        Member inactive = new Member("456", "test@email.com", "test2", "profileImage", DELETE, Authority.ROLE_USER);
+        memberRepository.save(inactive);
+
+        // when
+        Optional<List<Member>> members = memberRepository.findByStatusAndNicknameContains(ACTIVE, "test");
+
+        // then
+        assertTrue(members.isPresent());
+        assertEquals(1, members.get().size());
+        assertEquals(active.getId(), members.get().get(0).getId());
+    }
+
+    @Test
+    @DisplayName("이메일 중복 체크")
+    public void existsByEmail() {
+        // given, when
         Member member = memberRepository.save(createMember());
+
+        // then
         assertThat(memberRepository.existsByEmail(member.getEmail())).isTrue();
-     }
+    }
+
+    @Test
+    @DisplayName("닉네임 중복 체크")
+    public void existsMemberByNickname() {
+        // given, when
+        Member member = memberRepository.save(createMember());
+
+        // then
+        assertThat(memberRepository.existsMemberByNickname(member.getNickname())).isTrue();
+    }
+
+    @Test
+    @DisplayName("상태값이 active이고, 해당 닉네임으로 유저가 존재하는지 확인")
+    public void existsMemberByNicknameAndStatus() {
+        // given, when
+        Member member = memberRepository.save(createMember());
+
+        // then
+        memberRepository.existsMemberByNicknameAndStatus("nickname");
+    }
 
     private Member createMember() {
-        return new Member("123", "email", "nickname", "profileImage", Status.ACTIVE, Authority.ROLE_USER);
+        return new Member("123", "email", "nickname", "profileImage", ACTIVE, Authority.ROLE_USER);
     }
 }

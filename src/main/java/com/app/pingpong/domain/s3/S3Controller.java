@@ -17,7 +17,7 @@ public class S3Controller {
     private final S3Uploader s3Uploader;
 
     @GetMapping("/file")
-    public BaseResponse<String> getFile(@RequestParam String fileName) {
+    public BaseResponse<String> getFile(@RequestParam("name") String fileName) {
         return new BaseResponse<>(s3Uploader.getFilePath(fileName));
     }
 
@@ -27,7 +27,7 @@ public class S3Controller {
     }
 
     @DeleteMapping("/file")
-    public BaseResponse<String> deleteFile(@RequestParam String fileName) {
+    public BaseResponse<String> deleteFile(@RequestParam("name") String fileName) {
         s3Uploader.deleteFile(fileName);
         return new BaseResponse<>(SUCCESS_DELETE_AWS_S3);
     }
