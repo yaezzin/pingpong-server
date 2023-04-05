@@ -2,8 +2,6 @@ package com.app.pingpong.domain.member.repository;
 
 import com.app.pingpong.domain.member.entity.Authority;
 import com.app.pingpong.domain.member.entity.Member;
-import com.app.pingpong.global.common.Status;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,10 +58,10 @@ public class MemberRepositoryTest {
     @DisplayName("상태값이 Active이고, 닉네임에 해당 문자열이 포함되는 멤버 조회")
     public void findByStatusAndNicknameContains() {
         // given
-        Member active = new Member("123", "email@email.com", "test1", "profileImage", ACTIVE, Authority.ROLE_USER);
+        Member active = new Member(1L, "123", "email@email.com", "test1", "profileImage", ACTIVE, Authority.ROLE_USER);
         memberRepository.save(active);
 
-        Member inactive = new Member("456", "test@email.com", "test2", "profileImage", DELETE, Authority.ROLE_USER);
+        Member inactive = new Member(2L, "456", "test@email.com", "test2", "profileImage", DELETE, Authority.ROLE_USER);
         memberRepository.save(inactive);
 
         // when
@@ -106,6 +104,6 @@ public class MemberRepositoryTest {
     }
 
     private Member createMember() {
-        return new Member("123", "email", "nickname", "profileImage", ACTIVE, Authority.ROLE_USER);
+        return new Member(1L, "123", "email", "nickname", "profileImage", ACTIVE, Authority.ROLE_USER);
     }
 }

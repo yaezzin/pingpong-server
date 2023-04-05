@@ -3,13 +3,11 @@ package com.app.pingpong.domain.member.service;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
-import com.app.pingpong.domain.member.entity.Authority;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.s3.S3Uploader;
 import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.global.common.BaseResponse;
-import com.app.pingpong.global.common.Status;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.global.exception.BaseException;
 import com.app.pingpong.global.util.UserFacade;
@@ -17,47 +15,46 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Field;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.Optional;
 
+import static com.app.pingpong.domain.member.entity.Authority.ROLE_USER;
 import static com.app.pingpong.global.common.Status.ACTIVE;
 import static com.app.pingpong.global.exception.StatusCode.SUCCESS_VALIDATE_NICKNAME;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
+@DataJpaTest
 @ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
+
+    @PersistenceContext EntityManager em;
 
     @Mock private MemberRepository memberRepository;
     @Mock private FriendRepository friendRepository;
     @Mock private MemberTeamRepository memberTeamRepository;
     @Mock private PlanRepository planRepository;
-
     @Mock private RedisTemplate<String, Object> redisTemplate;
     @Mock private UserFacade userFacade;
     @Mock private PasswordEncoder passwordEncoder;
-
     @Mock private S3Uploader s3Uploader;
     @Mock private ListOperations<String, Object> listOps;
-
     @InjectMocks private MemberService memberService;
 
     @BeforeEach
@@ -69,13 +66,11 @@ public class MemberServiceTest {
 
     @Test
     @DisplayName("회원가입")
-    public void signup() throws NoSuchFieldException, IllegalAccessException {
+    public void signup() {
         // given
         SignUpRequest request = new SignUpRequest("1234", "test@email.com", "nickname", "profileImage");
         Member member = request.toEntity(passwordEncoder);
-        Field filed = member.getClass().getDeclaredField("id");
-        filed.setAccessible(true);
-        filed.set(member, 1L);
+        member.setId(1L);
         given(memberRepository.save(any(Member.class))).willReturn(member);
 
         // when
@@ -90,8 +85,8 @@ public class MemberServiceTest {
     @Test
     @DisplayName("회원가입 시 닉네임 유효성 테스트")
     public void validateNickname() {
-        Member member1 = new Member("123", "email", "nickname", "profileImage", ACTIVE, Authority.ROLE_USER);
-        Member member2 = new Member("123", "email", "nickname", "profileImage", ACTIVE, Authority.ROLE_USER);
+        Member member1 = new Member(1L, "123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
+        Member member2 = new Member(2L, "123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
         memberRepository.save(member1);
         memberRepository.save(member2);
 
@@ -111,7 +106,25 @@ public class MemberServiceTest {
         assertThrows(BaseException.class, () -> memberService.validateNickname(invalidNickname));
     }
 
-    private Member createMember() {
-        return new Member("123", "email", "nickname", "profileImage", ACTIVE, Authority.ROLE_USER);
+    @Test
+    @DisplayName("id로 멤버 조회")
+    @Transactional
+    @Rollback(false)
+    public void findById() {
+        // given
+        Member member = new Member(1L, "123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
+
+        when(memberRepository.findByIdAndStatus(member.getId(), ACTIVE)).thenReturn(Optional.of(member));
+        MemberResponse memberResponse = memberService.findById(member.getId());
+
+        assertNotNull(memberResponse);
+        assertEquals(member.getNickname(), memberResponse.getNickname());
+        assertEquals(member.getId(), memberResponse.getUserId());
     }
+
+    private void clear() {
+        em.flush(); //쿼리 즉시 수행
+        em.clear(); //캐시를 비움
+    }
+
 }

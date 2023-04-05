@@ -35,7 +35,6 @@ public class SecurityConfig {
                 .csrf().disable()
                 .cors().disable()
                 .formLogin().disable()
-
                 .exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .accessDeniedHandler(jwtAccessDeniedHandler)

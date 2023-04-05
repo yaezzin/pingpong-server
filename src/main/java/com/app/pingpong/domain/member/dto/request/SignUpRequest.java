@@ -18,7 +18,6 @@ public class SignUpRequest {
 
     @Builder
     public Member toEntity(PasswordEncoder passwordEncoder) {
-        System.out.println(passwordEncoder.getClass());
         Member member = Member.builder()
                 .socialId(passwordEncoder.encode(socialId))
                 .email(email)
