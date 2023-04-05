@@ -56,7 +56,8 @@ public class MemberService {
     @Transactional
     public MemberResponse signup(SignUpRequest request) {
         Member member = request.toEntity(passwordEncoder);
-        return MemberResponse.of(memberRepository.save(member));
+        Member save = memberRepository.save(member);
+        return MemberResponse.of(save);
     }
 
     @Transactional
