@@ -6,6 +6,8 @@ build/
 !**/src/test/**/build/
 AwsS3.config
 application.yml
+appspec.yml
+lombok.config
 
 
 ### STS ###
