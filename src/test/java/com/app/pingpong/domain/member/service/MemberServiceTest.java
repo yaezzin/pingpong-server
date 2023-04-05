@@ -35,8 +35,8 @@ import static com.app.pingpong.global.common.Status.ACTIVE;
 import static com.app.pingpong.global.exception.StatusCode.SUCCESS_VALIDATE_NICKNAME;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -87,8 +87,8 @@ public class MemberServiceTest {
     @Test
     @DisplayName("회원가입 시 닉네임 유효성 테스트")
     public void validateNickname() {
-        Member member1 = new Member(1L, "123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
-        Member member2 = new Member(2L, "123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
+        Member member1 = new Member("123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
+        Member member2 = new Member("123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
         memberRepository.save(member1);
         memberRepository.save(member2);
 
@@ -112,7 +112,7 @@ public class MemberServiceTest {
     @DisplayName("id로 멤버 조회")
     public void findById() {
         // given
-        Member member = new Member(1L, "123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
+        Member member = new Member("123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
 
         when(memberRepository.findByIdAndStatus(member.getId(), ACTIVE)).thenReturn(Optional.of(member));
         MemberResponse memberResponse = memberService.findById(member.getId());
@@ -126,7 +126,7 @@ public class MemberServiceTest {
     @DisplayName("닉네임, 프로필 수정")
     public void updateMember() {
         // given
-        Member member = new Member(1L, "123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
+        Member member = new Member("123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
         when(memberRepository.save(member)).thenReturn(member);
         Member save = memberRepository.save(member);
 
@@ -143,5 +143,4 @@ public class MemberServiceTest {
         assertEquals(request.getNickname(), memberResponse.getNickname());
         assertEquals(request.getProfileImage(), memberResponse.getProfileImage());
     }
-
 }

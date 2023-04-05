@@ -14,11 +14,9 @@ import java.util.Optional;
 import static com.app.pingpong.global.common.Status.ACTIVE;
 import static com.app.pingpong.global.common.Status.DELETE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 public class MemberRepositoryTest {
 
@@ -58,10 +56,10 @@ public class MemberRepositoryTest {
     @DisplayName("상태값이 Active이고, 닉네임에 해당 문자열이 포함되는 멤버 조회")
     public void findByStatusAndNicknameContains() {
         // given
-        Member active = new Member(1L, "123", "email@email.com", "test1", "profileImage", ACTIVE, Authority.ROLE_USER);
+        Member active = new Member("123", "email@email.com", "test1", "profileImage", ACTIVE, Authority.ROLE_USER);
         memberRepository.save(active);
 
-        Member inactive = new Member(2L, "456", "test@email.com", "test2", "profileImage", DELETE, Authority.ROLE_USER);
+        Member inactive = new Member("456", "test@email.com", "test2", "profileImage", DELETE, Authority.ROLE_USER);
         memberRepository.save(inactive);
 
         // when
@@ -104,6 +102,6 @@ public class MemberRepositoryTest {
     }
 
     private Member createMember() {
-        return new Member(1L, "123", "email", "nickname", "profileImage", ACTIVE, Authority.ROLE_USER);
+        return new Member("123", "email", "nickname", "profileImage", ACTIVE, Authority.ROLE_USER);
     }
 }

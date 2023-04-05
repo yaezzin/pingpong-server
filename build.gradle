@@ -23,9 +23,9 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'junit:junit:4.13.1'
-    implementation 'org.projectlombok:lombok:1.18.22'
-	implementation 'org.projectlombok:lombok:1.18.22'
+	implementation 'junit:junit:4.13.2'
+
+	implementation 'org.projectlombok:lombok:1.18.26'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -54,7 +54,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis:2.3.1.RELEASE'
 
 	// jacoco
-	implementation 'com.example:member-repository:1.0.0-SNAPSHOT'
 
 }
 
@@ -69,13 +68,18 @@ jar {
 
 jacoco {
 	toolVersion = '0.8.5'
+	reportsDir = file("${buildDir}/reports/jacoco/index.html")
 }
 
 jacocoTestReport {
 	reports {
+		xml.enabled true
+		csv.enabled true
 		html.enabled true
-		xml.enabled false
-		csv.enabled false
+
+		xml.destination file("${buildDir}/jacoco/index.xml")
+		csv.destination file("${buildDir}/jacoco/index.csv")
+		html.destination file("${buildDir}/jacoco/index.html")
 	}
 
 	def Qdomains = []
@@ -114,11 +118,10 @@ jacocoTestCoverageVerification {
 			element = 'CLASS' // 클래스 단위로 커버리지 체크
 
 			includes = [
-						'**/*Controller*',
-						'**/*Service*',
-						'**/*Repository*'
+					'**/*Controller*',
+					'**/*Service*',
+					'**/*Repository*'
 			]
-
 
 			// 라인 커버리지 제한을 80%로 설정
 			limit {
@@ -142,14 +145,7 @@ jacocoTestCoverageVerification {
 			}
 
 			excludes = [
-					"**.*Application*",
-					"**.*Config*",
-					"**.*Dto*",
-					"**.*Request*",
-					"**.*Response*",
-					"**.*Interceptor*",
-					"**.*Exception*",
-					"**.*OAuth*",
+
 			] + Qdomains + [
 					"**/*Repository*"
 			]
