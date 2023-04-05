@@ -2,6 +2,7 @@ package com.app.pingpong.domain.member.service;
 
 import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
+import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
@@ -62,6 +63,7 @@ public class MemberServiceTest {
         MockitoAnnotations.openMocks(this);
         memberService = new MemberService(memberRepository, friendRepository, memberTeamRepository, planRepository,
                 redisTemplate, userFacade, passwordEncoder, s3Uploader);
+        memberRepository.deleteAll();
     }
 
     @Test
@@ -108,8 +110,6 @@ public class MemberServiceTest {
 
     @Test
     @DisplayName("id로 멤버 조회")
-    @Transactional
-    @Rollback(false)
     public void findById() {
         // given
         Member member = new Member(1L, "123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
@@ -122,9 +122,26 @@ public class MemberServiceTest {
         assertEquals(member.getId(), memberResponse.getUserId());
     }
 
-    private void clear() {
-        em.flush(); //쿼리 즉시 수행
-        em.clear(); //캐시를 비움
+    @Test
+    @DisplayName("닉네임, 프로필 수정")
+    public void updateMember() {
+        // given
+        Member member = new Member(1L, "123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
+        when(memberRepository.save(member)).thenReturn(member);
+        Member save = memberRepository.save(member);
+
+        UpdateRequest request = new UpdateRequest("new", "newProfileImage");
+
+        when(memberRepository.findByIdAndStatus(save.getId(), ACTIVE)).thenReturn(Optional.of(save));
+        doNothing().when(s3Uploader).deleteFile(anyString());
+
+        // when
+        MemberResponse memberResponse = memberService.update(save.getId(), request);
+
+        // then
+        assertNotNull(memberResponse);
+        assertEquals(request.getNickname(), memberResponse.getNickname());
+        assertEquals(request.getProfileImage(), memberResponse.getProfileImage());
     }
 
 }
