@@ -8,7 +8,7 @@ AwsS3.config
 application.yml
 appspec.yml
 lombok.config
-
+build.gradle.kts
 
 ### STS ###
 .apt_generated
