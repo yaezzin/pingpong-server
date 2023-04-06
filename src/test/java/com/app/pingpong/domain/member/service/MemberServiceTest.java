@@ -3,6 +3,7 @@ package com.app.pingpong.domain.member.service;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
+import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
@@ -124,7 +125,7 @@ public class MemberServiceTest {
 
     @Test
     @DisplayName("닉네임, 프로필 수정")
-    public void updateMember() {
+    public void update() {
         // given
         Member member = new Member("123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
         when(memberRepository.save(member)).thenReturn(member);
@@ -142,5 +143,28 @@ public class MemberServiceTest {
         assertNotNull(memberResponse);
         assertEquals(request.getNickname(), memberResponse.getNickname());
         assertEquals(request.getProfileImage(), memberResponse.getProfileImage());
+    }
+
+    @Test
+    @DisplayName("나의 페이지 조회")
+    public void getMyPage() {
+        // given
+        Member member = createMember();
+        when(memberRepository.findByIdAndStatus(member.getId(), ACTIVE)).thenReturn(Optional.of(member));
+        given(friendRepository.findFriendCount(eq(member.getId()))).willReturn(10);
+
+        // when
+        MemberDetailResponse response = memberService.getMyPage(member.getId());
+
+        // then
+        assertNotNull(response);
+        assertEquals(response.getUserId(), member.getId());
+        assertThat(response.getFriendCount()).isEqualTo(10);
+    }
+
+    private Member createMember() {
+        Member member = new Member("123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
+        when(memberRepository.save(member)).thenReturn(member);
+        return memberRepository.save(member);
     }
 }
