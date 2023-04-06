@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import static com.app.pingpong.domain.member.entity.Authority.ROLE_USER;
 import static com.app.pingpong.global.common.Status.ACTIVE;
+import static com.app.pingpong.global.exception.StatusCode.SUCCESS_DELETE_USER;
 import static com.app.pingpong.global.exception.StatusCode.SUCCESS_VALIDATE_NICKNAME;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -127,12 +128,8 @@ public class MemberServiceTest {
     @DisplayName("닉네임, 프로필 수정")
     public void update() {
         // given
-        Member member = new Member("123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
-        when(memberRepository.save(member)).thenReturn(member);
-        Member save = memberRepository.save(member);
-
+        Member save = createMember();
         UpdateRequest request = new UpdateRequest("new", "newProfileImage");
-
         when(memberRepository.findByIdAndStatus(save.getId(), ACTIVE)).thenReturn(Optional.of(save));
         doNothing().when(s3Uploader).deleteFile(anyString());
 
@@ -160,6 +157,20 @@ public class MemberServiceTest {
         assertNotNull(response);
         assertEquals(response.getUserId(), member.getId());
         assertThat(response.getFriendCount()).isEqualTo(10);
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴")
+    public void delete() {
+        // given
+        Member member = createMember();
+        when(memberRepository.findByIdAndStatus(member.getId(), ACTIVE)).thenReturn(Optional.of(member));
+
+        // when
+        BaseResponse<String> response = memberService.delete(member.getId());
+
+        // then
+        assertEquals(SUCCESS_DELETE_USER.getCode(), response.getCode());
     }
 
     private Member createMember() {
