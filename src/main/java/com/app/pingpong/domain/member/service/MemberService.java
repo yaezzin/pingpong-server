@@ -169,7 +169,8 @@ public class MemberService {
         List<MemberTeamResponse> teamList = new ArrayList<>();
         for (MemberTeam mt : memberTeams) {
             Team team = mt.getTeam();
-            List<Member> members = memberTeamRepository.findAllMembersByTeamIdAndStatus(team.getId(), ACTIVE);
+            List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamIdAndStatus(team.getId(), ACTIVE);
+            List<Member> members = memberTeam.stream().map(MemberTeam::getMember).collect(Collectors.toList());
             teamList.add(MemberTeamResponse.of(team, MemberResponse.of(members)));
         }
         return teamList;

@@ -83,5 +83,9 @@ public class Member {
     public void setProfileImage(String profileImage){
         this.profileImage = profileImage;
     }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 }
 

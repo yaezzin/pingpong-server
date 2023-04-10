@@ -35,6 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +62,7 @@ public class MemberServiceTest {
     @Mock private FriendRepository friendRepository;
     @Mock private MemberTeamRepository memberTeamRepository;
     @Mock private PlanRepository planRepository;
+
     @Mock private RedisTemplate<String, Object> redisTemplate;
     @Mock private MemberFacade memberFacade;
     @Mock private PasswordEncoder passwordEncoder;
@@ -81,8 +83,8 @@ public class MemberServiceTest {
         // given
         SignUpRequest request = new SignUpRequest("1234", "test@email.com", "nickname", "profileImage");
         Member member = request.toEntity(passwordEncoder);
-        member.setId(1L);
         given(memberRepository.save(any(Member.class))).willReturn(member);
+        em.persist(member);
 
         // when
         MemberResponse response = memberService.signup(request);
@@ -196,17 +198,6 @@ public class MemberServiceTest {
     @Test
     @DisplayName("나의 친구 조회")
     public void getMyFriends() {
-    }
-
-    @Test
-    @DisplayName("검색기록 저장")
-    public void saveSearchLog() {
-
-    }
-
-    @Test
-    @DisplayName("검색기록 조회")
-    public void getSearchLog() {
 
     }
 
@@ -250,7 +241,7 @@ public class MemberServiceTest {
 
         when(memberFacade.getCurrentMember()).thenReturn(currentMember);
         when(memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(currentMember.getId(), ACTIVE)).thenReturn(memberTeams);
-        when(memberTeamRepository.findAllMembersByTeamIdAndStatus(team1.getId(), ACTIVE)).thenReturn(members);
+        when(memberTeamRepository.findAllByTeamIdAndStatus(team1.getId(), ACTIVE)).thenReturn(memberTeams);
 
         // when
         List<MemberTeamResponse> teamList = memberService.getMemberTeams();
@@ -265,6 +256,7 @@ public class MemberServiceTest {
     @Test
     @DisplayName("유저의 성취율 조회")
     public void getMemberAchievementRate() {
+        // given
         Member member = createMember("Member1");
         Team team = createTeam("Team1", member);
         LocalDate startDate = LocalDate.of(2023, 4, 1);
@@ -296,7 +288,34 @@ public class MemberServiceTest {
     @Test
     @DisplayName("유저가 속한 팀에서 오늘 할일 조회 ")
     public void getMemberCalendarByDate() {
+        // given
+        Member member = createMember();
 
+        Team team1 = createTeam("Team1", member);
+        Team team2 = createTeam("Team2", member);
+
+        MemberTeam memberTeam1 = setTeamToMember(member, team1);
+        MemberTeam memberTeam2 = setTeamToMember(member, team2);
+        List<MemberTeam> memberTeams = Arrays.asList(memberTeam1, memberTeam2);
+
+        Plan plan1 = createPlan("title1", LocalDate.now(), member, team1);
+        Plan plan2 = createPlan("title2", LocalDate.now(), member, team1);
+        Plan plan3 = createPlan("title2", LocalDate.now(), member, team2);
+        List<Plan> plansFroTeam1 = Arrays.asList(plan1, plan2);
+        List<Plan> plansFroTeam2 = Arrays.asList(plan3);
+
+
+        when(memberFacade.getCurrentMember()).thenReturn(member);
+        when(memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(member.getId(), ACTIVE)).thenReturn(memberTeams);
+        when(planRepository.findAllByTeamIdAndManagerIdAndStatusAndDate(team1.getId(), member.getId(), ACTIVE, LocalDate.now())).thenReturn(plansFroTeam1);
+        when(planRepository.findAllByTeamIdAndManagerIdAndStatusAndDate(team2.getId(), member.getId(), ACTIVE, LocalDate.now())).thenReturn(plansFroTeam2);
+
+        // when
+        List<MemberPlanDetailResponse> response = memberService.getMemberCalendarByDate(LocalDate.now());
+
+        // then
+        assertEquals(response.get(0).getPlanList().size(), 1);
+        assertEquals(response.get(1).getPlanList().size(), 1);
     }
 
     private Member createMember() {
@@ -330,6 +349,4 @@ public class MemberServiceTest {
         plan.setTeam(team);
         return plan;
     }
-
-
 }
