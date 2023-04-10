@@ -7,6 +7,7 @@ import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
+import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.s3.S3Uploader;
@@ -59,9 +60,7 @@ public class MemberServiceTest {
     @Mock private MemberFacade memberFacade;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private S3Uploader s3Uploader;
-    @Mock private ListOperations<String, Object> listOps;
     @InjectMocks private MemberService memberService;
-    @InjectMocks private FriendService friendService;
 
     @BeforeEach
     public void setUp() {
@@ -212,8 +211,69 @@ public class MemberServiceTest {
         assertThat(result.get(0).getStatus()).isEqualTo(ACTIVE);
     }
 
+    @Test
+    @DisplayName("검색기록 저장")
+    public void saveSearchLog() {
+
+
+    }
+
+    @Test
+    @DisplayName("검색기록 조회")
+    public void getSearchLog() {
+
+    }
+
+    @Test
+    @DisplayName("닉네임으로 유저조회")
+    public void findByNickname() {
+        // given
+        Member currentMember = createMember("유저1");
+        Member searchMember1 = createMember("유저2");
+        Member searchMember2 = createMember("유저3");
+        String searchNickname = "유저";
+
+
+        List<Member> findMembers = Arrays.asList(searchMember1, searchMember2, currentMember);
+        when(memberRepository.findByStatusAndNicknameContains(ACTIVE, searchNickname)).thenReturn(Optional.of(findMembers));
+        when(memberFacade.getCurrentMember()).thenReturn(currentMember);
+
+        // when
+        List<MemberSearchResponse> result = memberService.findByNickname(searchNickname);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(3);
+        assertThat(result).extracting(MemberSearchResponse::getNickname)
+                .containsExactlyInAnyOrder(currentMember.getNickname(), searchMember1.getNickname(), searchMember2.getNickname());
+    }
+
+    @Test
+    @DisplayName("유저가 속한 팀 전체 조")
+    public void getMemberTeams() {
+
+    }
+
+    @Test
+    @DisplayName("유저의 성취율 조회")
+    public void getMemberAchievementRate() {
+
+    }
+
+    @Test
+    @DisplayName("오늘 할일 조회 by All teams")
+    public void getMemberCalendarByDate() {
+
+    }
+
     private Member createMember() {
         Member member = new Member("123", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
+        when(memberRepository.save(member)).thenReturn(member);
+        return memberRepository.save(member);
+    }
+
+    private Member createMember(String nickname) {
+        Member member = new Member("123", "email", nickname, "profileImage", ACTIVE, ROLE_USER);
         when(memberRepository.save(member)).thenReturn(member);
         return memberRepository.save(member);
     }
