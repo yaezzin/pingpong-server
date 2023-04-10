@@ -17,20 +17,20 @@ public class FriendController {
 
     @ResponseBody
     @PostMapping("")
-    public BaseResponse<FriendResponse> addFriend(@RequestBody FriendRequest request) {
-        return new BaseResponse<>(friendService.addFriend(request));
+    public BaseResponse<FriendResponse> add(@RequestBody FriendRequest request) {
+        return new BaseResponse<>(friendService.add(request));
     }
 
     @ResponseBody
     @PostMapping("/accept")
-    public BaseResponse<StatusCode> acceptFriend(@RequestParam("opponentId") Long id) {
-        return new BaseResponse<>(friendService.acceptFriend(id));
+    public BaseResponse<StatusCode> accept(@RequestParam("opponentId") Long id) {
+        return new BaseResponse<>(friendService.accept(id));
     }
 
     @ResponseBody
     @PostMapping("/refuse")
-    public BaseResponse<StatusCode> refuseFriend(@RequestParam("opponentId") Long id) {
-        return new BaseResponse<>(friendService.refuseFriend(id));
+    public BaseResponse<StatusCode> refuse(@RequestParam("opponentId") Long id) {
+        return new BaseResponse<>(friendService.refuse(id));
     }
 
 }

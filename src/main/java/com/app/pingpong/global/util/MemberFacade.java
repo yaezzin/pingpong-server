@@ -7,18 +7,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import static com.app.pingpong.global.exception.StatusCode.USER_NOT_FOUND;
+import static com.app.pingpong.global.exception.StatusCode.MEMBER_NOT_FOUND;
 
 @RequiredArgsConstructor
 @Component
-public class UserFacade {
+public class MemberFacade {
 
-    private final MemberRepository userRepository;
+    private final MemberRepository memberRepository;
 
-    public Member getCurrentUser() {
+    public Member getCurrentMember() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         if(email.equals("anonymousUser"))
-            throw new BaseException(USER_NOT_FOUND);
-        return userRepository.findByEmail(email).orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+            throw new BaseException(MEMBER_NOT_FOUND);
+        return memberRepository.findByEmail(email).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
     }
 }

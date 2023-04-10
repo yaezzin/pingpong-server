@@ -9,7 +9,7 @@ public enum StatusCode {
 
     SUCCESS(true, 200, "요청에 성공하였습니다."),
     SUCCESS_VALIDATE_NICKNAME(true, 200, "닉네임 형식 확인에 성공하였습니다."),
-    SUCCESS_DELETE_USER(true, 200, "유저 탈퇴에 성공하였습니다."),
+    SUCCESS_DELETE_MEMBER(true, 200, "유저 탈퇴에 성공하였습니다."),
     SUCCESS_DELETE_AWS_S3(true, 200, "S3에서 사진 삭제를 성공하였습니다."),
     SUCCESS_ACCEPT_FRIEND(true, 200, "친구 신청 수락에 성공하였습니다."),
     SUCCESS_REFUSE_FRIEND(true, 200, "친구 신청 거절에 성공하였습니다."),
@@ -21,6 +21,7 @@ public enum StatusCode {
     SUCCESS_RECOVER_TRASH(true, 200, "해당 할 일을 휴지통에서 복구하였습니다."),
     SUCCESS_COMPLETE_PLAN(true, 200, "해당 할 일을 완료하였습니다."),
     SUCCESS_INCOMPLETE_PLAN(true, 200, "해당 할 일의 완료를 취소하였습니다."),
+    SUCCESS_SAVE_SEARCH_LOG(true, 200, "검색 기록 저장에 성공하였습니다"),
 
     /* 400 : Bad Request   */
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다."),
@@ -36,6 +37,7 @@ public enum StatusCode {
     INVALID_INCOMPLETE_PLAN(false, 400, "해당 할 일의 담당자가 아니므로 할 일의 완료 취소를 할 수 없습니다."),
 
     INVALID_PLAN(false, 400, "해당 할 일은 삭제되었습니다"),
+    INVALID_SAVE_SEARCH_LOG(false, 400, "본인은 검색기록에 저장할 수 없습니다."),
 
     EXCEED_HOST_TEAM_SIZE(false, 400, "그룹을 더이상 생성할 수 없습니다. 그룹 개수는 최대 6개로 제한됩니다."),
     USER_NICKNAME_ALREADY_EXISTS(false, 400, "이미 사용중인 닉네임입니다."),
@@ -48,9 +50,10 @@ public enum StatusCode {
     ALREADY_ACCEPT_TEAM_INVITATION(false, 400, "이미 해당 그룹의 초대를 수락하였습니다."),
     ALREADY_INCOMPLETE_PLAN(false, 400, "해당 할 일의 완료 취소를 할 수 없습니다."),
 
+
     /* 404 : NOT FOUND */
-    USER_NOT_FOUND(false, 404, "해당 유저를 찾을 수 없습니다."),
-    USER_NOT_FOUND_IN_TEAM(false, 404, "해당 그룹에서 해당 유저를 찾을 수 없습니다."),
+    MEMBER_NOT_FOUND(false, 404, "해당 유저를 찾을 수 없습니다."),
+    MEMBER_NOT_FOUND_IN_TEAM(false, 404, "해당 그룹에서 해당 유저를 찾을 수 없습니다."),
     EMAIL_NOT_FOUND(false, 404, "해당 이메일을 찾을 수 없습니다."),
     FRIEND_NOT_FOUND(false, 404, "해당 유저와는 친구 상태가 아니거나, 친구 신청이 존재하지 않습니다."),
     TEAM_NOT_FOUND(false, 404, "존재하지 않는 그룹입니다."),

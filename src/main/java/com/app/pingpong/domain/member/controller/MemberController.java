@@ -9,16 +9,12 @@ import com.app.pingpong.domain.member.dto.response.*;
 import com.app.pingpong.domain.member.service.MemberService;
 import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.StatusCode;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -70,36 +66,42 @@ public class MemberController {
     }
 
     @ResponseBody
-    @GetMapping("/friends")
-    public BaseResponse<List<Friend>> getMyFriends() {
-        return new BaseResponse<>(memberService.getMyFriends());
+    @GetMapping("/{id}/friends")
+    public BaseResponse<List<Friend>> getMyFriends(@PathVariable Long id) {
+        return new BaseResponse<>(memberService.getMyFriends(id));
     }
 
+    @ResponseBody
     @GetMapping("/search")
     public BaseResponse<List<MemberSearchResponse>> findByNickname(@RequestParam("nickname") String nickname) {
         return new BaseResponse<>(memberService.findByNickname(nickname));
     }
 
+    @ResponseBody
     @PostMapping("/search-log")
     public BaseResponse<StatusCode> saveSearchLog(@RequestBody SearchLogRequest request) {
         return new BaseResponse<>(memberService.saveSearchLog(request));
     }
 
+    @ResponseBody
     @GetMapping("/search-log")
     public BaseResponse<List<MemberResponse>> saveSearchLog() {
         return new BaseResponse<>(memberService.getSearchLog());
     }
 
+    @ResponseBody
     @GetMapping("/teams")
     public BaseResponse<List<MemberTeamResponse>> getMemberTeams() {
         return new BaseResponse<>(memberService.getMemberTeams());
     }
 
+    @ResponseBody
     @GetMapping("/calendars/achievement")
     public BaseResponse<List<MemberAchieveResponse>> getMemberAchievement(@RequestBody MemberAchieveRequest request) {
         return new BaseResponse<>(memberService.getMemberAchievementRate(request));
     }
 
+    @ResponseBody
     @GetMapping("/calendars")
     public BaseResponse<List<MemberPlanDetailResponse>> getMemberCalendarByDate(@RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
         return new BaseResponse<>(memberService.getMemberCalendarByDate(date));

@@ -8,11 +8,9 @@ import com.app.pingpong.domain.social.dto.request.MemberLogoutRequest;
 import com.app.pingpong.domain.social.dto.request.TokenRequest;
 import com.app.pingpong.domain.social.dto.response.MemberInfoResponse;
 import com.app.pingpong.domain.social.dto.response.MemberLoginResponse;
-import com.app.pingpong.domain.social.dto.response.MemberLogoutResponse;
 import com.app.pingpong.domain.social.dto.response.TokenResponse;
 import com.app.pingpong.domain.social.entity.GoogleOAuth;
 import com.app.pingpong.domain.social.entity.KakaoOAuth;
-import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.BaseException;
 import com.app.pingpong.global.exception.StatusCode;
 import com.app.pingpong.global.security.JwtTokenProvider;
@@ -90,7 +88,7 @@ public class SocialService {
 
         // 3. 리프레시 토큰이 일치하는지 검증
         if (!refreshToken.equals(tokenRequest.getRefreshToken())) {
-            throw new BaseException(USER_NOT_FOUND);
+            throw new BaseException(MEMBER_NOT_FOUND);
         }
 
         TokenResponse token = jwtTokenProvider.createToken(authentication);
