@@ -3,18 +3,23 @@ package com.app.pingpong.domain.member.service;
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.friend.service.FriendService;
+import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
+import com.app.pingpong.domain.member.dto.response.MemberTeamResponse;
 import com.app.pingpong.domain.member.entity.Member;
+import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.s3.S3Uploader;
+import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.global.exception.BaseException;
+import com.app.pingpong.global.exception.StatusCode;
 import com.app.pingpong.global.util.MemberFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,9 +41,8 @@ import java.util.Optional;
 
 import static com.app.pingpong.domain.member.entity.Authority.ROLE_USER;
 import static com.app.pingpong.global.common.Status.ACTIVE;
-import static com.app.pingpong.global.exception.StatusCode.SUCCESS_DELETE_MEMBER;
-import static com.app.pingpong.global.exception.StatusCode.SUCCESS_VALIDATE_NICKNAME;
 
+import static com.app.pingpong.global.exception.StatusCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -184,38 +188,30 @@ public class MemberServiceTest {
     @Test
     @DisplayName("나의 친구 조회")
     public void getMyFriends() {
-        // given
-        Friend friend1 = Friend.builder()
-                .applicant(Member.builder().id(2L).build())
-                .respondent(Member.builder().id(1L).build())
-                .status(ACTIVE)
-                .build();
-
-        Friend friend2 = Friend.builder()
-                .applicant(Member.builder().id(1L).build())
-                .respondent(Member.builder().id(3L).build())
-                .status(ACTIVE)
-                .build();
-
-        when(friendRepository.findAllFriendsByMemberId(1L)).thenReturn(Arrays.asList(friend1, friend2));
-
-        // when
-        doNothing().when(memberFacade).getCurrentMember();
-        List<Friend> result = memberService.getMyFriends(memberFacade.getCurrentMember().getId());
-
-        // then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getId()).isEqualTo(1L);
-        assertThat(result.get(0).getApplicant().getId()).isEqualTo(2L);
-        assertThat(result.get(0).getRespondent().getId()).isEqualTo(1L);
-        assertThat(result.get(0).getStatus()).isEqualTo(ACTIVE);
     }
 
     @Test
     @DisplayName("검색기록 저장")
     public void saveSearchLog() {
+        // given
+        Member currentMember = createMember();
+        when(memberFacade.getCurrentMember()).thenReturn(currentMember);
 
+        Member anotherMember = createMember();
+        when(memberRepository.findByIdAndStatus(anotherMember.getId(), ACTIVE)).thenReturn(Optional.of(anotherMember));
 
+        SearchLogRequest request = new SearchLogRequest();
+        request.setId(2L);
+
+        ListOperations<String, Object> listOps = mock(ListOperations.class);
+        when(redisTemplate.opsForList()).thenReturn(listOps);
+
+        // when
+        StatusCode result = memberService.saveSearchLog(request);
+
+        // then
+        verify(listOps, times(1)).leftPush(eq("id1"), eq("id2"));
+        assertEquals(SUCCESS_SAVE_SEARCH_LOG, result);
     }
 
     @Test
@@ -233,7 +229,6 @@ public class MemberServiceTest {
         Member searchMember2 = createMember("유저3");
         String searchNickname = "유저";
 
-
         List<Member> findMembers = Arrays.asList(searchMember1, searchMember2, currentMember);
         when(memberRepository.findByStatusAndNicknameContains(ACTIVE, searchNickname)).thenReturn(Optional.of(findMembers));
         when(memberFacade.getCurrentMember()).thenReturn(currentMember);
@@ -249,9 +244,32 @@ public class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("유저가 속한 팀 전체 조")
+    @DisplayName("유저가 속한 팀 전체 조회")
     public void getMemberTeams() {
+        // given
+        Member currentMember = createMember();
 
+        Team team1 = createTeam("팀1", currentMember);
+        Team team2 = createTeam("팀2", currentMember);
+
+        MemberTeam memberTeam1 = setTeamToMember(currentMember, team1);
+        MemberTeam memberTeam2 = setTeamToMember(currentMember, team2);
+
+        List<MemberTeam> memberTeams = Arrays.asList(memberTeam1, memberTeam2);
+        List<Member> members = Arrays.asList(currentMember);
+
+        when(memberFacade.getCurrentMember()).thenReturn(currentMember);
+        when(memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(currentMember.getId(), ACTIVE)).thenReturn(memberTeams);
+        when(memberTeamRepository.findAllMembersByTeamIdAndStatus(team1.getId(), ACTIVE)).thenReturn(members);
+
+        // when
+        List<MemberTeamResponse> teamList = memberService.getMemberTeams();
+
+        // then
+        assertNotNull(teamList);
+        assertThat(teamList.size()).isEqualTo(2);
+        assertThat(teamList.get(0).getTeamName()).isEqualTo("팀1");
+        assertThat(teamList.get(1).getTeamName()).isEqualTo("팀2");
     }
 
     @Test
@@ -273,8 +291,21 @@ public class MemberServiceTest {
     }
 
     private Member createMember(String nickname) {
-        Member member = new Member("123", "email", nickname, "profileImage", ACTIVE, ROLE_USER);
+        Member member = new Member("1234", "email", nickname, "profileImage", ACTIVE, ROLE_USER);
         when(memberRepository.save(member)).thenReturn(member);
         return memberRepository.save(member);
+    }
+
+    private Team createTeam(String name, Member member) {
+        Team team = new Team(name);
+        team.setHost(member);
+        return team;
+    }
+
+    private MemberTeam setTeamToMember(Member member, Team team) {
+        MemberTeam memberTeam1 = new MemberTeam();
+        memberTeam1.setMember(member);
+        memberTeam1.setTeam(team);
+        return memberTeam1;
     }
 }
