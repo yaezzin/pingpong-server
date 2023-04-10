@@ -11,7 +11,6 @@ import java.util.Optional;
 
 @Repository
 public interface PlanRepository extends JpaRepository<Plan, Long> {
-    List<Plan> findAllByDate(LocalDate date);
     List<Plan> findAllByTeamIdAndStatusOrderByWastedTimeDesc(Long teamId, Status status);
     List<Plan> findAllByTeamIdAndStatusAndDateBetween(Long teamId, Status status, LocalDate startDate, LocalDate endDate);
     List<Plan> findAllByManagerIdAndStatusAndDateBetween(Long memberId, Status status, LocalDate startDate, LocalDate endDate);
@@ -19,8 +18,6 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     Optional<Plan> findByIdAndTeamIdAndStatus(Long planId, Long teamId, Status status);
     List<Plan> findAllByTeamIdAndDateAndStatus(Long teamId, LocalDate date, Status status);
     List<Plan> findAllByManagerIdAndStatusAndDate(Long managerId, Status active, LocalDate date);
-
     List<Plan> findAllByTeamIdAndStatusAndDate(Long teamId, Status active, LocalDate date);
-
     List<Plan> findAllByTeamIdAndManagerIdAndStatusAndDate(Long id, Long currentMemberId, Status active, LocalDate date);
 }
