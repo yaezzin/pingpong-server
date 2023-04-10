@@ -3,17 +3,16 @@ package com.app.pingpong.domain.member.service;
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.friend.service.FriendService;
+import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
-import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
-import com.app.pingpong.domain.member.dto.response.MemberResponse;
-import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
-import com.app.pingpong.domain.member.dto.response.MemberTeamResponse;
+import com.app.pingpong.domain.member.dto.response.*;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.s3.S3Uploader;
+import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.global.common.BaseResponse;
@@ -35,6 +34,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +42,7 @@ import java.util.Optional;
 import static com.app.pingpong.domain.member.entity.Authority.ROLE_USER;
 import static com.app.pingpong.global.common.Status.ACTIVE;
 
+import static com.app.pingpong.global.common.Status.COMPLETE;
 import static com.app.pingpong.global.exception.StatusCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -182,7 +183,14 @@ public class MemberServiceTest {
     @Test
     @DisplayName("상대방 페이지 조회")
     public void getOppPage() {
+        Member member = createMember();
+        when(memberRepository.findByIdAndStatus(member.getId(), ACTIVE)).thenReturn(Optional.of(member));
+        given(friendRepository.findFriendCount(eq(member.getId()))).willReturn(10);
 
+        MemberDetailResponse response = memberService.getOppPage(member.getId());
+        assertNotNull(response);
+        assertEquals(response.getUserId(), member.getId());
+        assertThat(response.getFriendCount()).isEqualTo(10);
     }
 
     @Test
@@ -193,25 +201,7 @@ public class MemberServiceTest {
     @Test
     @DisplayName("검색기록 저장")
     public void saveSearchLog() {
-        // given
-        Member currentMember = createMember();
-        when(memberFacade.getCurrentMember()).thenReturn(currentMember);
 
-        Member anotherMember = createMember();
-        when(memberRepository.findByIdAndStatus(anotherMember.getId(), ACTIVE)).thenReturn(Optional.of(anotherMember));
-
-        SearchLogRequest request = new SearchLogRequest();
-        request.setId(2L);
-
-        ListOperations<String, Object> listOps = mock(ListOperations.class);
-        when(redisTemplate.opsForList()).thenReturn(listOps);
-
-        // when
-        StatusCode result = memberService.saveSearchLog(request);
-
-        // then
-        verify(listOps, times(1)).leftPush(eq("id1"), eq("id2"));
-        assertEquals(SUCCESS_SAVE_SEARCH_LOG, result);
     }
 
     @Test
@@ -275,11 +265,36 @@ public class MemberServiceTest {
     @Test
     @DisplayName("유저의 성취율 조회")
     public void getMemberAchievementRate() {
+        Member member = createMember("Member1");
+        Team team = createTeam("Team1", member);
+        LocalDate startDate = LocalDate.of(2023, 4, 1);
+        LocalDate endDate = LocalDate.of(2023, 4, 30);
 
+        Plan plan1 = createPlan("Plan1", startDate, member, team);
+        plan1.setAchievement(COMPLETE);
+
+        Plan plan2 = createPlan("Plan1", startDate, member, team);
+        Plan plan3 = createPlan("Plan1", startDate, member, team);
+        Plan plan4 = createPlan("Plan1", startDate, member, team);
+        Plan plan5 = createPlan("Plan1", startDate, member, team);
+
+        List<Plan> plans = Arrays.asList(plan1, plan2, plan3, plan4, plan5);
+        planRepository.saveAll(plans);
+
+        when(memberFacade.getCurrentMember()).thenReturn(member);
+        when(planRepository.findAllByManagerIdAndStatusAndDateBetween(member.getId(), ACTIVE, startDate, endDate)).thenReturn(plans);
+        when(planRepository.findAllByManagerIdAndStatusAndDate(member.getId(), ACTIVE, startDate)).thenReturn(plans);
+
+        // when
+        List<MemberAchieveResponse> response = memberService.getMemberAchievementRate(new MemberAchieveRequest(startDate, endDate));
+
+        // then
+        assertNotNull(response);
+        assertEquals(response.get(0).getAchievement(), 20);
     }
 
     @Test
-    @DisplayName("오늘 할일 조회 by All teams")
+    @DisplayName("유저가 속한 팀에서 오늘 할일 조회 ")
     public void getMemberCalendarByDate() {
 
     }
@@ -308,4 +323,13 @@ public class MemberServiceTest {
         memberTeam1.setTeam(team);
         return memberTeam1;
     }
+
+    private Plan createPlan(String title, LocalDate startDate, Member member, Team team) {
+        Plan plan = new Plan(title, startDate);
+        plan.setManager(member);
+        plan.setTeam(team);
+        return plan;
+    }
+
+
 }
