@@ -11,10 +11,6 @@ import java.util.Optional;
 
 @Repository
 public interface FriendRepository extends JpaRepository<Friend, Long> {
-
-    @Query("select count(f.id) from Friend f where (f.applicant.id =:id or f.respondent.id =:id) and f.status = 'ACTIVE'")
-    int findFriendCount(Long id);
-
     @Query("select f from Friend f where (f.applicant.id =:id or f.respondent.id =:id) and f.status = 'ACTIVE'")
     List<Friend> findAllFriendsByMemberId(Long id);
 }
