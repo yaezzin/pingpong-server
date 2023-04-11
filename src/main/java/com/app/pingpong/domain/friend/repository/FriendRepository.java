@@ -12,18 +12,6 @@ import java.util.Optional;
 @Repository
 public interface FriendRepository extends JpaRepository<Friend, Long> {
 
-    // 1. 친구 상태가 대기인지 확인
-    @Query("select count(f.id) > 0 from Friend f where f.applicant.id =:applicantId and f.respondent.id =:respondentId and f.status = 'WAIT'")
-    boolean existsWaitRequestByApplicantIdAndRespondentId(@Param("applicantId") Long applicantId, @Param("respondentId") Long respondentId);
-
-    // 2. 친구 상태가 active인지 확인
-    @Query("select count(f.id) > 0 from Friend f where f.applicant.id =:applicantId and f.respondent.id =:respondentId and f.status = 'ACTIVE'")
-    boolean existsActiveRequestByApplicantIdAndRespondentId(@Param("applicantId") Long applicantId, @Param("respondentId") Long respondentId);
-
-    // 3. 친구 상태가 wait인 것을 가져온
-    @Query("select f from Friend f where f.applicant.id =:applicantId and f.respondent.id =:respondentId and f.status = 'WAIT'")
-    Optional<Friend> findWaitRequestByApplicantIdAndRespondentId(Long applicantId, Long respondentId);
-
     @Query("select count(f.id) from Friend f where (f.applicant.id =:id or f.respondent.id =:id) and f.status = 'ACTIVE'")
     int findFriendCount(Long id);
 

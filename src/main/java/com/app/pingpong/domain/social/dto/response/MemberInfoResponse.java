@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class MemberInfoResponse {
-    private String socialIdx;
+    private String socialId;
     private String email;
 }

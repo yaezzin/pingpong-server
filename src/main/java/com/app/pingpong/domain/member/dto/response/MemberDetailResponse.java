@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberDetailResponse {
-    private Long userId;
+    private Long memberId;
     private String nickname;
     private String profileImage;
     private int friendCount;

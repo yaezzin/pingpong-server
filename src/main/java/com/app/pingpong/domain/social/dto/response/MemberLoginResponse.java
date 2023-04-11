@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class MemberLoginResponse {
-    private Long userId;
+    private Long memberId;
     private String accessToken;
     private String refreshToken;
 

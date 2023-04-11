@@ -3,6 +3,7 @@ package com.app.pingpong.domain.friend.service;
 import com.app.pingpong.domain.friend.dto.request.FriendRequest;
 import com.app.pingpong.domain.friend.dto.response.FriendResponse;
 import com.app.pingpong.domain.friend.entity.Friend;
+import com.app.pingpong.domain.friend.repository.FriendFactory;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
@@ -22,8 +23,10 @@ public class FriendService {
 
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
-    private final MemberFacade userFacade;
+    private final FriendFactory friendFactory;
+    private final MemberFacade memberFacade;
 
+    @Transactional
     public FriendResponse add(FriendRequest request) {
         Member applicant = memberRepository.findByIdAndStatus(request.getApplicantId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Member respondent = memberRepository.findByIdAndStatus(request.getRespondentId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
@@ -46,20 +49,23 @@ public class FriendService {
     }
 
     private void checkFriendRequest(Member applicant, Member respondent) {
-        if (friendRepository.existsWaitRequestByApplicantIdAndRespondentId(applicant.getId(), respondent.getId())) {
+        /* 내가 상대방에게 보낸 친구 신청이 있는지 확인 -> WAIT */
+        if (friendFactory.existsRequestToRespondent(applicant.getId(), respondent.getId(), WAIT)) {
             throw new BaseException(USER_ALREADY_FRIEND_REQUEST);
         }
-        if (friendRepository.existsWaitRequestByApplicantIdAndRespondentId(respondent.getId(), applicant.getId())) {
+        /* 상대방이 나한테 보낸 친구신청이 있는지 확인 */
+        if (friendFactory.existsRequestToRespondent(respondent.getId(), applicant.getId(), WAIT)) {
             throw new BaseException(USER_ALREADY_GET_FRIEND_REQUEST);
         }
-        if (friendRepository.existsActiveRequestByApplicantIdAndRespondentId(applicant.getId(), respondent.getId())) {
+        /* 이미 친구를 수락하였는지 확인 -> */
+        if (friendFactory.existsRequestToRespondent(applicant.getId(), respondent.getId(), ACTIVE)) {
             throw new BaseException(ALREADY_ON_FRIEND);
         }
     }
 
     private Friend getWaitingFriendRequest(Long opponentId) {
-        Member loginUser = userFacade.getCurrentMember();
-        Friend friend = friendRepository.findWaitRequestByApplicantIdAndRespondentId(opponentId, loginUser.getId()).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
+        Member currentMember = memberFacade.getCurrentMember();
+        Friend friend = friendFactory.findWaitRequestBy(opponentId, currentMember.getId()).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
         return friend;
     }
 

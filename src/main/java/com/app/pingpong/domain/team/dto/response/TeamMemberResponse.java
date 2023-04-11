@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class TeamMemberResponse {
-    private Long userId;
+    private Long memberId;
     private String nickname;
     private String profileImage;
     private Long hostId;
