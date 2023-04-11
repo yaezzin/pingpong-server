@@ -25,8 +25,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import static com.app.pingpong.domain.member.entity.Authority.ROLE_USER;
-import static com.app.pingpong.global.common.Status.ACTIVE;
-import static com.app.pingpong.global.common.Status.WAIT;
+import static com.app.pingpong.global.common.Status.*;
 import static com.app.pingpong.global.exception.StatusCode.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -78,6 +77,7 @@ public class FriendServiceTest {
     }
 
     @Test
+    @DisplayName("친구 신청 수락")
     void accept_success() {
         // given
         Member currentMember = createMember(1L);
@@ -98,6 +98,7 @@ public class FriendServiceTest {
     }
 
     @Test
+    @DisplayName("친구 신청 수락 시 이미 친구인지 확인한다.")
     void accept_already_on_friend() {
         // given
         Member currentMember = createMember(1L);
@@ -114,17 +115,30 @@ public class FriendServiceTest {
         verify(friendFactory, times(1)).findWaitRequestBy(opponent.getId(), currentMember.getId());
     }
 
+    @Test
+    @DisplayName("친구 신청 거절")
+    void refuse() {
+        // given
+        Member currentMember = createMember(1L);
+        Member opponent = createMember(2L);
+        Friend friendRequest = new Friend(currentMember, opponent, WAIT, new Date());
+
+        when(memberFacade.getCurrentMember()).thenReturn(currentMember);
+        when(friendFactory.findWaitRequestBy(opponent.getId(), currentMember.getId())).thenReturn(Optional.of(friendRequest));
+
+        // when
+        StatusCode statusCode = friendService.refuse(opponent.getId());
+
+        // then
+        assertEquals(SUCCESS_REFUSE_FRIEND, statusCode);
+        assertEquals(DELETE, friendRequest.getStatus());
+        verify(memberFacade, times(1)).getCurrentMember();
+        verify(friendFactory, times(1)).findWaitRequestBy(opponent.getId(), currentMember.getId());
+    }
+
     private Member createMember(Long Id) {
         Member member = new Member("1234", "email", "nickname", "profileImage", ACTIVE, ROLE_USER);
         member.setId(Id);
         return member;
     }
-
-    private Friend createFriend(Member applicant, Member respondent, FriendRequest request) {
-        Friend friend = request.toEntity(applicant, respondent);
-        friend.setStatus(ACTIVE);
-        friend.setId(1L);
-        return friend;
-    }
-
 }
