@@ -10,6 +10,10 @@ group = 'com.app'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
+ext {
+	queryDslVersion = '5.0.0'
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -55,11 +59,11 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis:2.3.1.RELEASE'
 
 	// dsl
-	implementation 'com.querydsl:querydsl-jpa'
-	implementation 'com.querydsl:querydsl-apt'
-	implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
-	kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
-
+	implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
+	annotationProcessor "com.querydsl:querydsl-apt:${queryDslVersion}"
+	//implementation 'com.querydsl:querydsl-jpa'
+	//implementation 'com.querydsl:querydsl-apt'
+	//implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
 }
 
 tasks.named('test') {
@@ -165,12 +169,15 @@ querydsl {
 	jpa = true
 	querydslSourcesDir = querydslDir
 }
+
 sourceSets {
 	main.java.srcDir querydslDir
 }
+
 compileQuerydsl{
 	options.annotationProcessorPath = configurations.querydsl
 }
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor

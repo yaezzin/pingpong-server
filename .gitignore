@@ -7,6 +7,7 @@ build/
 AwsS3.config
 application.yml
 appspec.yml
+deploy.yml
 lombok.config
 build.gradle.kts
 
