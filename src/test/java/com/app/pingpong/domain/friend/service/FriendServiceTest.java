@@ -27,8 +27,7 @@ import java.util.Optional;
 import static com.app.pingpong.domain.member.entity.Authority.ROLE_USER;
 import static com.app.pingpong.global.common.Status.ACTIVE;
 import static com.app.pingpong.global.common.Status.WAIT;
-import static com.app.pingpong.global.exception.StatusCode.MEMBER_NOT_FOUND;
-import static com.app.pingpong.global.exception.StatusCode.SUCCESS_ACCEPT_FRIEND;
+import static com.app.pingpong.global.exception.StatusCode.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -93,6 +92,23 @@ public class FriendServiceTest {
 
         // then
         assertEquals(SUCCESS_ACCEPT_FRIEND, statusCode);
+        assertEquals(ACTIVE, friendRequest.getStatus());
+        verify(memberFacade, times(1)).getCurrentMember();
+        verify(friendFactory, times(1)).findWaitRequestBy(opponent.getId(), currentMember.getId());
+    }
+
+    @Test
+    void accept_already_on_friend() {
+        // given
+        Member currentMember = createMember(1L);
+        Member opponent = createMember(1L);
+        Friend friendRequest = new Friend(currentMember, opponent, ACTIVE, new Date());
+
+        when(memberFacade.getCurrentMember()).thenReturn(currentMember);
+        when(friendFactory.findWaitRequestBy(opponent.getId(), currentMember.getId())).thenReturn(Optional.of(friendRequest));
+
+        // when, then
+        assertThrows(BaseException.class, () -> friendService.accept(opponent.getId()));
         assertEquals(ACTIVE, friendRequest.getStatus());
         verify(memberFacade, times(1)).getCurrentMember();
         verify(friendFactory, times(1)).findWaitRequestBy(opponent.getId(), currentMember.getId());
