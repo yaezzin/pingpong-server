@@ -66,12 +66,6 @@ public class MemberController {
     }
 
     @ResponseBody
-    @GetMapping("/{id}/friends")
-    public BaseResponse<List<Friend>> getMyFriends(@PathVariable Long id) {
-        return new BaseResponse<>(memberService.getMyFriends(id));
-    }
-
-    @ResponseBody
     @GetMapping("/search")
     public BaseResponse<List<MemberSearchResponse>> findByNickname(@RequestParam("nickname") String nickname) {
         return new BaseResponse<>(memberService.findByNickname(nickname));

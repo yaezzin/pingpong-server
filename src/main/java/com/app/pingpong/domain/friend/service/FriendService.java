@@ -5,6 +5,7 @@ import com.app.pingpong.domain.friend.dto.response.FriendResponse;
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendFactory;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
+import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.global.exception.BaseException;
@@ -13,6 +14,9 @@ import com.app.pingpong.global.util.MemberFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.app.pingpong.global.common.Status.*;
 import static com.app.pingpong.global.exception.StatusCode.*;
@@ -81,5 +85,46 @@ public class FriendService {
             throw new BaseException(ALREADY_ON_FRIEND);
         }
         friend.setStatus(DELETE);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Friend> getMyFriends() {
+        Long currentMember = memberFacade.getCurrentMember().getId();
+        List<Friend> friends = friendRepository.findAllFriendsByMemberId(currentMember);
+
+        List friendList = new ArrayList();
+        for (Friend friend : friends) {
+            if (isMyFriendRequest(friend, currentMember)) {
+                addRespondentInfoToFriendList(friend, friendList);
+            }
+            if (isOpponentFriendRequest(friend, currentMember)) {
+                addApplicantInfoToFriendList(friend, friendList);
+            }
+        }
+        return friendList;
+    }
+
+    private boolean isMyFriendRequest(Friend f, Long memberId) {
+        if (f.getApplicant().getId() == memberId) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isOpponentFriendRequest(Friend f, Long memberId) {
+        if (f.getRespondent().getId() == memberId) {
+            return true;
+        }
+        return false;
+    }
+
+    private void addRespondentInfoToFriendList(Friend f, List friendList) {
+        Member respondent = f.getRespondent();
+        friendList.add(MemberResponse.of(respondent));
+    }
+
+    private void addApplicantInfoToFriendList(Friend f, List friendList) {
+        Member applicant = f.getApplicant();
+        friendList.add(MemberResponse.of(applicant));
     }
 }

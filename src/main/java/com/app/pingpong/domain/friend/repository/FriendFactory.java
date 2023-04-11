@@ -41,5 +41,26 @@ public class FriendFactory {
                 .where(waitFriendRequest)
                 .fetchOne());
     }
+
+    public boolean isFriend(Long loginUserId, Long searchedUserId) {
+        BooleanExpression isActiveFriend = QFriend.friend.status.eq(Status.ACTIVE);
+        BooleanExpression isLoginUser = QFriend.friend.applicant.id.eq(loginUserId).or(QFriend.friend.respondent.id.eq(loginUserId));
+        BooleanExpression isSearchedUser = QFriend.friend.applicant.id.eq(searchedUserId).or(QFriend.friend.respondent.id.eq(searchedUserId));
+
+        return queryFactory.selectFrom(QFriend.friend)
+                .where(isActiveFriend, isLoginUser, isSearchedUser)
+                .fetchCount() > 0;
+    }
+
+    public int findFriendCount(Long id) {
+        BooleanExpression friendCondition = QFriend.friend.applicant.id.eq(id)
+                .or(QFriend.friend.respondent.id.eq(id))
+                .and(QFriend.friend.status.eq(ACTIVE));
+
+        Long count_long = queryFactory.select(friendCondition.count())
+                .from(QFriend.friend)
+                .fetchOne();
+        return Long.valueOf(count_long).intValue();
+    }
 }
 

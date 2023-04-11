@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.member.service;
 
 import com.app.pingpong.domain.friend.entity.Friend;
+import com.app.pingpong.domain.friend.repository.FriendFactory;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
@@ -42,7 +43,7 @@ import static com.app.pingpong.global.util.RegexUtil.isRegexNickname;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final FriendRepository friendRepository;
+    private final FriendFactory friendFactory;
     private final MemberTeamRepository memberTeamRepository;
     private final PlanRepository planRepository;
 
@@ -95,31 +96,15 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberDetailResponse getMyPage(Long id) {
         Member member = findMemberByIdAndStatus(id, ACTIVE);
-        int friendCount = friendRepository.findFriendCount(id);
+        int friendCount = friendFactory.findFriendCount(id);
         return MemberDetailResponse.of(member, friendCount);
     }
 
     @Transactional(readOnly = true)
     public MemberDetailResponse getOppPage(Long id) {
         Member member = findMemberByIdAndStatus(id, ACTIVE);
-        int friendCount = friendRepository.findFriendCount(id);
+        int friendCount = friendFactory.findFriendCount(id);
         return MemberDetailResponse.of(member, friendCount);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Friend> getMyFriends(Long id) {
-        List<Friend> friends = friendRepository.findAllFriendsByMemberId(id);
-
-        List friendList = new ArrayList();
-        for (Friend friend : friends) {
-            if (isMyFriendRequest(friend, id)) {
-                addRespondentInfoToFriendList(friend, friendList);
-            }
-            if (isOpponentFriendRequest(friend, id)) {
-                addApplicantInfoToFriendList(friend, friendList);
-            }
-        }
-        return friendList;
     }
 
     @Transactional
@@ -154,7 +139,7 @@ public class MemberService {
 
         List<MemberSearchResponse> friendshipList= new ArrayList<>();
         for (Member findMember : findMembers) {
-            boolean isFriend = friendRepository.isFriend(memberFacade.getCurrentMember().getId(), findMember.getId());
+            boolean isFriend = friendFactory.isFriend(memberFacade.getCurrentMember().getId(), findMember.getId());
             friendshipList.add(MemberSearchResponse.of(findMember, isFriend));
         }
         return friendshipList;
@@ -220,30 +205,6 @@ public class MemberService {
     /* Here's extracted Method from Main Method */
     private Member findMemberByIdAndStatus(Long id, Status status) {
         return memberRepository.findByIdAndStatus(id, status).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-    }
-
-    private boolean isMyFriendRequest(Friend f, Long memberId) {
-        if (f.getApplicant().getId() == memberId) {
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isOpponentFriendRequest(Friend f, Long memberId) {
-        if (f.getRespondent().getId() == memberId) {
-            return true;
-        }
-        return false;
-    }
-
-    private void addRespondentInfoToFriendList(Friend f, List friendList) {
-        Member respondent = f.getRespondent();
-        friendList.add(MemberResponse.of(respondent));
-    }
-
-    private void addApplicantInfoToFriendList(Friend f, List friendList) {
-        Member applicant = f.getApplicant();
-        friendList.add(MemberResponse.of(applicant));
     }
 
     /* String 타입인 Redis의 key값 (ex."id1")에서 숫자(ex. 1)만 추출한다. */

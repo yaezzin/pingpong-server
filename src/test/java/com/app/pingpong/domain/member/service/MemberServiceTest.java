@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.member.service;
 
 import com.app.pingpong.domain.friend.entity.Friend;
+import com.app.pingpong.domain.friend.repository.FriendFactory;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.friend.service.FriendService;
 import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
@@ -59,7 +60,7 @@ public class MemberServiceTest {
     @PersistenceContext EntityManager em;
 
     @Mock private MemberRepository memberRepository;
-    @Mock private FriendRepository friendRepository;
+    @Mock private FriendFactory friendFactory;
     @Mock private MemberTeamRepository memberTeamRepository;
     @Mock private PlanRepository planRepository;
 
@@ -72,7 +73,7 @@ public class MemberServiceTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        memberService = new MemberService(memberRepository, friendRepository, memberTeamRepository, planRepository,
+        memberService = new MemberService(memberRepository, friendFactory, memberTeamRepository, planRepository,
                 redisTemplate, memberFacade, passwordEncoder, s3Uploader);
         memberRepository.deleteAll();
     }
@@ -171,14 +172,14 @@ public class MemberServiceTest {
         // given
         Member member = createMember();
         when(memberRepository.findByIdAndStatus(member.getId(), ACTIVE)).thenReturn(Optional.of(member));
-        given(friendRepository.findFriendCount(eq(member.getId()))).willReturn(10);
+        given(friendFactory.findFriendCount(eq(member.getId()))).willReturn(10);
 
         // when
         MemberDetailResponse response = memberService.getMyPage(member.getId());
 
         // then
         assertNotNull(response);
-        assertEquals(response.getUserId(), member.getId());
+        assertEquals(response.getMemberId(), member.getId());
         assertThat(response.getFriendCount()).isEqualTo(10);
     }
 
@@ -187,11 +188,11 @@ public class MemberServiceTest {
     public void getOppPage() {
         Member member = createMember();
         when(memberRepository.findByIdAndStatus(member.getId(), ACTIVE)).thenReturn(Optional.of(member));
-        given(friendRepository.findFriendCount(eq(member.getId()))).willReturn(10);
+        given(friendFactory.findFriendCount(eq(member.getId()))).willReturn(10);
 
         MemberDetailResponse response = memberService.getOppPage(member.getId());
         assertNotNull(response);
-        assertEquals(response.getUserId(), member.getId());
+        assertEquals(response.getMemberId(), member.getId());
         assertThat(response.getFriendCount()).isEqualTo(10);
     }
 
