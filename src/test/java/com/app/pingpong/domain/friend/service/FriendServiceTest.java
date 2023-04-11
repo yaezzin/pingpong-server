@@ -9,6 +9,7 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.global.common.Status;
 import com.app.pingpong.global.exception.BaseException;
+import com.app.pingpong.global.exception.StatusCode;
 import com.app.pingpong.global.util.MemberFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +26,9 @@ import java.util.Optional;
 
 import static com.app.pingpong.domain.member.entity.Authority.ROLE_USER;
 import static com.app.pingpong.global.common.Status.ACTIVE;
+import static com.app.pingpong.global.common.Status.WAIT;
 import static com.app.pingpong.global.exception.StatusCode.MEMBER_NOT_FOUND;
+import static com.app.pingpong.global.exception.StatusCode.SUCCESS_ACCEPT_FRIEND;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -34,8 +37,8 @@ public class FriendServiceTest {
     @Mock private MemberRepository memberRepository;
     @Mock private FriendRepository friendRepository;
     @Mock private FriendFactory friendFactory;
+    @Mock private MemberFacade memberFacade;
     @InjectMocks private FriendService friendService;
-    @Mock private EntityManager em;
 
     @BeforeEach
     void setUp() {
@@ -59,8 +62,8 @@ public class FriendServiceTest {
 
         when(memberRepository.findByIdAndStatus(request.getApplicantId(), ACTIVE)).thenReturn(Optional.of(applicant));
         when(memberRepository.findByIdAndStatus(request.getRespondentId(), ACTIVE)).thenReturn(Optional.of(respondent));
-        when(friendFactory.existsRequestToRespondent(applicant.getId(), respondent.getId(), Status.WAIT)).thenReturn(false);
-        when(friendFactory.existsRequestToRespondent(respondent.getId(), applicant.getId(), Status.WAIT)).thenReturn(false);
+        when(friendFactory.existsRequestToRespondent(applicant.getId(), respondent.getId(), WAIT)).thenReturn(false);
+        when(friendFactory.existsRequestToRespondent(respondent.getId(), applicant.getId(), WAIT)).thenReturn(false);
         when(friendFactory.existsRequestToRespondent(applicant.getId(), respondent.getId(), Status.ACTIVE)).thenReturn(false);
 
         // when
@@ -71,8 +74,28 @@ public class FriendServiceTest {
         assertEquals(friendResponse.getApplicantId(), applicant.getId());
         assertEquals(friendResponse.getRespondentId(), respondent.getId());
         verify(memberRepository, times(2)).findByIdAndStatus(anyLong(), eq(Status.ACTIVE));
-        verify(friendFactory, times(2)).existsRequestToRespondent(anyLong(), anyLong(), eq(Status.WAIT));
+        verify(friendFactory, times(2)).existsRequestToRespondent(anyLong(), anyLong(), eq(WAIT));
         verify(friendFactory, times(1)).existsRequestToRespondent(anyLong(), anyLong(), eq(Status.ACTIVE));
+    }
+
+    @Test
+    void accept_success() {
+        // given
+        Member currentMember = createMember(1L);
+        Member opponent = createMember(2L);
+        Friend friendRequest = new Friend(currentMember, opponent, WAIT, new Date());
+
+        when(memberFacade.getCurrentMember()).thenReturn(currentMember);
+        when(friendFactory.findWaitRequestBy(opponent.getId(), currentMember.getId())).thenReturn(Optional.of(friendRequest));
+
+        // when
+        StatusCode statusCode = friendService.accept(opponent.getId());
+
+        // then
+        assertEquals(SUCCESS_ACCEPT_FRIEND, statusCode);
+        assertEquals(ACTIVE, friendRequest.getStatus());
+        verify(memberFacade, times(1)).getCurrentMember();
+        verify(friendFactory, times(1)).findWaitRequestBy(opponent.getId(), currentMember.getId());
     }
 
     private Member createMember(Long Id) {
