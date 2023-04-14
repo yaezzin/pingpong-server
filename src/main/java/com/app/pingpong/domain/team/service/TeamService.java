@@ -119,28 +119,6 @@ public class TeamService {
         return TeamPlanResponse.of(planRepository.save(plan));
     }
 
-    private Member checkManagerExistsAndMembership(Long teamId, TeamPlanRequest request) {
-        Member manager = memberRepository.findByIdAndStatus(request.getManagerId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, manager.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-        return manager;
-    }
-
-    private void checkMakerExistsAndMemberShip(Long teamId) {
-        Member maker = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));;
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, maker.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-    }
-
-    private Plan createPlan(Long teamId, Member manager, TeamPlanRequest request) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        Plan plan = request.toEntity();
-        plan.setManager(manager);
-        plan.setTeam(team);
-        plan.setStatus(ACTIVE);
-        plan.setAchievement(INCOMPLETE);
-        return plan;
-    }
-
-
     @Transactional
     public TeamPlanResponse deletePlan(Long teamId, Long planId) {
         Member member = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));;
@@ -152,22 +130,10 @@ public class TeamService {
 
     @Transactional
     public TeamPlanResponse passPlan(Long teamId, TeamPlanPassRequest request) {
-        Member currentMember = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, currentMember.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-
-        Member mandator = memberRepository.findByIdAndStatus(request.getMandaterId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, mandator.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-
-        Plan plan = planRepository.findById(request.getPlanId()).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
-        if (plan.getManager().getId() != currentMember.getId()) {
-            throw new BaseException(INVALID_MANAGER);
-        }
-        if (plan.getStatus() != ACTIVE) {
-            throw new BaseException(INVALID_PLAN);
-        }
-
-        plan.setManager(mandator);
-        return TeamPlanResponse.of(plan);
+       Member currentMember = checkCurrentMemberExistsInTeam(teamId);
+       Member mandator = checkMandatorInTeam(teamId, request);
+       Plan plan = passPlan(request, mandator);
+       return TeamPlanResponse.of(plan);
     }
 
     @Transactional
@@ -425,6 +391,51 @@ public class TeamService {
         MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, memberFacade.getCurrentMember().getId(), WAIT)
                 .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
         memberTeam.setStatus(DELETE);
+    }
+
+    private Member checkManagerExistsAndMembership(Long teamId, TeamPlanRequest request) {
+        Member manager = memberRepository.findByIdAndStatus(request.getManagerId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, manager.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        return manager;
+    }
+
+    private void checkMakerExistsAndMemberShip(Long teamId) {
+        Member maker = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));;
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, maker.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+    }
+
+    private Plan createPlan(Long teamId, Member manager, TeamPlanRequest request) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Plan plan = request.toEntity();
+        plan.setManager(manager);
+        plan.setTeam(team);
+        plan.setStatus(ACTIVE);
+        plan.setAchievement(INCOMPLETE);
+        return plan;
+    }
+
+    private Member checkCurrentMemberExistsInTeam(Long teamId) {
+        Member currentMember = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, currentMember.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        return currentMember;
+    }
+
+    private Member checkMandatorInTeam(Long teamId, TeamPlanPassRequest request) {
+        Member mandator = memberRepository.findByIdAndStatus(request.getMandatorId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, mandator.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        return mandator;
+    }
+
+    private Plan passPlan(TeamPlanPassRequest request, Member mandator) {
+        Plan plan = planRepository.findById(request.getPlanId()).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        if (plan.getManager().getId() != memberFacade.getCurrentMember().getId()) {
+            throw new BaseException(INVALID_MANAGER);
+        }
+        if (plan.getStatus() != ACTIVE) {
+            throw new BaseException(INVALID_PLAN);
+        }
+        plan.setManager(mandator);
+        return plan;
     }
 
     private List<TeamCompactResponse> getTeamMemberStatus(Team team) {

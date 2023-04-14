@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TeamPlanPassRequest {
     private Long planId;
-    private Long mandaterId;
+    private Long mandatorId;
 }

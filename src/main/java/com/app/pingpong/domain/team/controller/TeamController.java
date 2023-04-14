@@ -72,7 +72,7 @@ public class TeamController {
 
     @ResponseBody
     @PostMapping("/{id}/plans")
-    public BaseResponse<TeamPlanResponse> createPlan(@PathVariable Long id, @RequestBody TeamPlanRequest request) {
+    public BaseResponse<TeamPlanResponse> createPlan(@PathVariable("id") Long id, @RequestBody TeamPlanRequest request) {
         return new BaseResponse<>(teamService.createPlan(id, request));
     }
 
