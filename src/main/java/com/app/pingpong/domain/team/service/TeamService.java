@@ -113,22 +113,33 @@ public class TeamService {
 
     @Transactional
     public TeamPlanResponse createPlan(Long teamId, TeamPlanRequest request) {
-        // 1. 할 일을 담당할 사람이 존재하는지 확인 & 팀에 있는지 확인
+        Member manager = checkManagerExistsAndMembership(teamId, request); // manager != maker
+        checkMakerExistsAndMemberShip(teamId);
+        Plan plan = createPlan(teamId, manager, request);
+        return TeamPlanResponse.of(planRepository.save(plan));
+    }
+
+    private Member checkManagerExistsAndMembership(Long teamId, TeamPlanRequest request) {
         Member manager = memberRepository.findByIdAndStatus(request.getManagerId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         memberTeamRepository.findByTeamIdAndMemberId(teamId, manager.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        return manager;
+    }
 
-        // 2. 플랜을 생성하려는 멤버가 팀에 속해있는지 확인
+    private void checkMakerExistsAndMemberShip(Long teamId) {
         Member maker = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));;
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, manager.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, maker.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+    }
 
+    private Plan createPlan(Long teamId, Member manager, TeamPlanRequest request) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Plan plan = request.toEntity();
         plan.setManager(manager);
         plan.setTeam(team);
         plan.setStatus(ACTIVE);
         plan.setAchievement(INCOMPLETE);
-        return TeamPlanResponse.of(planRepository.save(plan));
+        return plan;
     }
+
 
     @Transactional
     public TeamPlanResponse deletePlan(Long teamId, Long planId) {
