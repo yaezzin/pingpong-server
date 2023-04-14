@@ -1,6 +1,5 @@
 package com.app.pingpong.domain.team.controller;
 
-import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
 import com.app.pingpong.domain.team.dto.request.TeamAchieveRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
@@ -53,6 +52,7 @@ public class TeamController {
         return new BaseResponse<>(teamService.emit(teamId, emitterId));
     }
 
+    /* ㅇㅕ기서부터 명세서 작성*/
     @ResponseBody
     @PostMapping("/{id}/accept")
     public BaseResponse<StatusCode> accept(@PathVariable("id") Long teamId) {

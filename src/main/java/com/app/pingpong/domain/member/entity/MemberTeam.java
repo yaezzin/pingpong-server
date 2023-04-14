@@ -2,6 +2,7 @@ package com.app.pingpong.domain.member.entity;
 
 import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.global.common.Status;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;

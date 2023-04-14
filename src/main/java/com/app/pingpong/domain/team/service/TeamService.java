@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.app.pingpong.global.common.Status.*;
@@ -46,30 +47,78 @@ public class TeamService {
 
     @Transactional
     public TeamResponse create(TeamRequest request) {
-        Member loginMember = userFacade.getCurrentMember();
-        checkTeam(loginMember, request);
+        Member host = userFacade.getCurrentMember();
+        checkTeam(host, request);
 
-        Team newTeam = teamRepository.save(request.toEntity());
-        newTeam.setHost(loginMember);
-        newTeam.setStatus(Status.ACTIVE);
-        setTeamToHost(newTeam, loginMember);
-        setTeamToUsers(newTeam, loginMember, request);
+        Team team = teamRepository.save(request.toEntity());
 
-        return TeamResponse.of(memberTeamRepository.findAllByTeamId(newTeam.getId()));
+        setTeam(team, host);
+        setTeamToHost(team, host);
+        setTeamToUsers(team, host, request);
+
+        return TeamResponse.of(memberTeamRepository.findAllByTeamId(team.getId()));
+    }
+
+    private void setTeam(Team team, Member host) {
+        team.setHost(host);
+        team.setStatus(Status.ACTIVE);
+    }
+
+    private void checkTeam(Member loginMember, TeamRequest request) {
+        if (teamRepository.findByHostId(loginMember.getId()).size() > 6) {
+            throw new BaseException(EXCEED_HOST_TEAM_SIZE);
+        }
+        if (request.getMemberId().size() > 10 || request.getMemberId().size() < 1) {
+            throw new BaseException(INVALID_TEAM_MEMBER_SIZE);
+        }
+        for (Long id : request.getMemberId()) {
+            memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(INVALID_INVITER));
+        }
+    }
+
+    private void setTeamToHost(Team team, Member loginMember) {
+        MemberTeam memberTeam = new MemberTeam();
+        memberTeam.setTeam(team);
+        memberTeam.setMember(loginMember);
+        memberTeam.setStatus(Status.ACTIVE);
+        memberTeamRepository.save(memberTeam);
+    }
+
+    private void setTeamToUsers(Team newTeam, Member host, TeamRequest request) {
+        request.getMemberId().stream()
+                .map(memberRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(member -> {
+                    if (member.getId().equals(host.getId())) {
+                        throw new BaseException(INVALID_TEAM_MEMBER);
+                    }
+                    MemberTeam memberTeam = new MemberTeam();
+                    memberTeam.setTeam(newTeam);
+                    memberTeam.setMember(member);
+                    memberTeam.setStatus(WAIT);
+                    memberTeamRepository.save(memberTeam);
+                });
     }
 
     @Transactional
     public StatusCode delete(Long id) {
-        Team team= teamRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        if (userFacade.getCurrentMember().getId() != team.getHost().getId()) {
+        Team team = teamRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        checkHost(team.getHost());
+        deleteTeamAndMembers(team);
+        return SUCCESS_DELETE_TEAM;
+    }
+
+    private void checkHost(Member host) {
+        if (userFacade.getCurrentMember().getId() != host.getId()) {
             throw new BaseException(INVALID_HOST);
         }
+    }
+
+    private void deleteTeamAndMembers(Team team) {
         team.setStatus(DELETE);
-        List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(id);
-        for (MemberTeam member : memberTeam) {
-            member.setStatus(DELETE);
-        }
-        return SUCCESS;
+        List<MemberTeam> memberTeams = memberTeamRepository.findAllByTeamId(team.getId());
+        memberTeams.forEach(memberTeam -> memberTeam.setStatus(DELETE));
     }
 
     @Transactional
@@ -331,39 +380,7 @@ public class TeamService {
         return SUCCESS_RECOVER_TRASH;
     }
 
-    private void checkTeam(Member loginMember, TeamRequest request) {
-        if (teamRepository.findByHostId(loginMember.getId()).size() > 6) {
-            throw new BaseException(EXCEED_HOST_TEAM_SIZE);
-        }
-        if (request.getMemberId().size() > 10 || request.getMemberId().size() < 1) {
-            throw new BaseException(INVALID_TEAM_MEMBER_SIZE);
-        }
-        for (Long id : request.getMemberId()) {
-            memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(INVALID_INVITER));
-        }
-    }
 
-    private void setTeamToHost(Team team, Member loginMember) {
-        MemberTeam memberTeam = new MemberTeam();
-        memberTeam.setTeam(team);
-        memberTeam.setMember(loginMember);
-        memberTeam.setStatus(Status.ACTIVE);
-        memberTeamRepository.save(memberTeam);
-    }
-
-    private void setTeamToUsers(Team newTeam, Member currentUser, TeamRequest request) {
-        for (Long memberId : request.getMemberId()) {
-            MemberTeam memberTeam = new MemberTeam();
-            memberTeam.setTeam(newTeam);
-            memberTeam.setStatus(WAIT);
-            if (memberId == currentUser.getId()) {
-                throw new BaseException(INVALID_TEAM_MEMBER);
-            }
-            Member member = memberRepository.findById(memberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-            memberTeam.setMember(member);
-            memberTeamRepository.save(memberTeam);
-        }
-    }
 
     private void checkHostForEmit(Team team, Member host, Long emitterId) {
         if (team.getHost().getId() != host.getId()) {

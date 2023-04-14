@@ -22,6 +22,7 @@ public enum StatusCode {
     SUCCESS_COMPLETE_PLAN(true, 200, "해당 할 일을 완료하였습니다."),
     SUCCESS_INCOMPLETE_PLAN(true, 200, "해당 할 일의 완료를 취소하였습니다."),
     SUCCESS_SAVE_SEARCH_LOG(true, 200, "검색 기록 저장에 성공하였습니다"),
+    SUCCESS_DELETE_TEAM(true, 200, "팀 삭제에 성공하였습니다."),
 
     /* 400 : Bad Request   */
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다."),

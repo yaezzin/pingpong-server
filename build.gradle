@@ -61,9 +61,6 @@ dependencies {
 	// dsl
 	implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
 	annotationProcessor "com.querydsl:querydsl-apt:${queryDslVersion}"
-	//implementation 'com.querydsl:querydsl-jpa'
-	//implementation 'com.querydsl:querydsl-apt'
-	//implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
 }
 
 tasks.named('test') {
