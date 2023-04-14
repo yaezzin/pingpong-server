@@ -138,25 +138,15 @@ public class TeamService {
 
     @Transactional
     public StatusCode completePlan(Long teamId, Long planId) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        Member currentMember = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        Plan plan = planRepository.findByIdAndTeamIdAndStatus(planId, teamId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
-        if (plan.getManager().getId() != currentMember.getId()) {
-            throw new BaseException(INVALID_COMPLETE_PLAN);
-        }
-        plan.setAchievement(COMPLETE);
+        checkMemberInTeam(teamId);
+        complete(teamId, planId);
         return SUCCESS_COMPLETE_PLAN;
     }
 
     @Transactional
     public StatusCode incompletePlan(Long teamId, Long planId) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        Member currentMember = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        Plan plan = planRepository.findByIdAndTeamIdAndStatus(planId, teamId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
-        if (plan.getAchievement() == INCOMPLETE) {
-            throw new BaseException(ALREADY_INCOMPLETE_PLAN);
-        }
-        plan.setAchievement(INCOMPLETE);
+        checkMemberInTeam(teamId);
+        incomplete(teamId, planId);
         return SUCCESS_INCOMPLETE_PLAN;
     }
 
@@ -436,6 +426,28 @@ public class TeamService {
         }
         plan.setManager(mandator);
         return plan;
+    }
+
+    private void checkMemberInTeam(Long teamId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Member member = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, member.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+    }
+
+    private void complete(Long teamId, Long planId) {
+        Plan plan = planRepository.findByIdAndTeamIdAndStatus(planId, teamId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        if (plan.getManager().getId() != memberFacade.getCurrentMember().getId()) {
+            throw new BaseException(INVALID_COMPLETE_PLAN);
+        }
+        plan.setAchievement(COMPLETE);
+    }
+
+    private void incomplete(Long teamId, Long planId) {
+        Plan plan = planRepository.findByIdAndTeamIdAndStatus(planId, teamId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        if (plan.getAchievement() == INCOMPLETE) {
+            throw new BaseException(ALREADY_INCOMPLETE_PLAN);
+        }
+        plan.setAchievement(INCOMPLETE);
     }
 
     private List<TeamCompactResponse> getTeamMemberStatus(Team team) {
