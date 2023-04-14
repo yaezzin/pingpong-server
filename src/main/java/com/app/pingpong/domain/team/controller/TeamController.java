@@ -35,9 +35,9 @@ public class TeamController {
     }
 
     @ResponseBody
-    @GetMapping("/{id}/members")
-    public BaseResponse<List<TeamMemberResponse>> getTeamMembers(@PathVariable Long id) {
-        return new BaseResponse<>(teamService.getTeamMembers(id));
+    @PatchMapping("/{id}")
+    public void update() {
+
     }
 
     @ResponseBody
@@ -52,7 +52,12 @@ public class TeamController {
         return new BaseResponse<>(teamService.emit(teamId, emitterId));
     }
 
-    /* ㅇㅕ기서부터 명세서 작성*/
+    @ResponseBody
+    @GetMapping("/{id}/members")
+    public BaseResponse<List<TeamMemberResponse>> getTeamMembers(@PathVariable("id") Long id) {
+        return new BaseResponse<>(teamService.getTeamMembers(id));
+    }
+
     @ResponseBody
     @PostMapping("/{id}/accept")
     public BaseResponse<StatusCode> accept(@PathVariable("id") Long teamId) {
@@ -60,7 +65,7 @@ public class TeamController {
     }
 
     @ResponseBody
-    @PostMapping("/refuse")
+    @PostMapping("/{id}/refuse")
     public BaseResponse<StatusCode> refuse(@PathVariable("id") Long teamId) {
         return new BaseResponse<>(teamService.refuse(teamId));
     }
