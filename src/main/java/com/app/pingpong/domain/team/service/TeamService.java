@@ -152,62 +152,57 @@ public class TeamService {
 
     @Transactional(readOnly = true)
     public TeamPlanDetailResponse getTeamCalendarByDate(Long teamId, LocalDate date) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-
-        List<MemberTeam> memberTeam = memberTeamRepository.findALLByTeamIdAndStatus(teamId, ACTIVE);
-        List<Member> members = memberTeam.stream().map(MemberTeam::getMember).collect(Collectors.toList());
-        List<Long> memberIdList = members.stream().map(Member::getId).collect(Collectors.toList());
-
-        List<MemberResponse> memberList = new ArrayList<>();
-        for (Long id : memberIdList) {
-            Member member = memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-            memberList.add(MemberResponse.builder()
-                    .memberId(member.getId())
-                    .nickname(member.getNickname())
-                    .profileImage(member.getProfileImage())
-                    .build()
-            );
-        }
-
-        List<Plan> plans = planRepository.findAllByTeamIdAndDateAndStatus(teamId, date, ACTIVE);
-        List<TeamPlanResponse> planList = new ArrayList<>();
-        for (Plan plan : plans) {
-            planList.add(TeamPlanResponse.builder()
-                    .planId(plan.getId())
-                    .managerId(plan.getManager().getId())
-                    .title(plan.getTitle())
-                    .date(plan.getDate())
-                    .status(plan.getStatus())
-                    .achievement(plan.getAchievement())
-                    .build()
-            );
-        }
+        Team team = checkMemberInTeam(teamId);
+        List<MemberResponse> memberList = getMembersByTeamId(teamId);
+        List<TeamPlanResponse> planList = getPlansByDate(teamId, date);
         return TeamPlanDetailResponse.of(team, memberList, planList);
+    }
+
+    private List<MemberResponse> getMembersByTeamId(Long teamId) {
+        List<MemberResponse> memberList = memberTeamRepository.findALLByTeamIdAndStatus(teamId, ACTIVE).stream()
+                .map(MemberTeam::getMember)
+                .map(member -> MemberResponse.builder()
+                        .memberId(member.getId())
+                        .nickname(member.getNickname())
+                        .profileImage(member.getProfileImage())
+                        .build())
+                .collect(Collectors.toList());
+        return memberList;
+    }
+
+    private List<TeamPlanResponse> getPlansByDate(Long teamId, LocalDate date) {
+        List<TeamPlanResponse> planList = planRepository
+                .findAllByTeamIdAndDateAndStatus(teamId, date, ACTIVE)
+                .stream()
+                .map(plan -> TeamPlanResponse.builder()
+                        .planId(plan.getId())
+                        .managerId(plan.getManager().getId())
+                        .title(plan.getTitle())
+                        .date(plan.getDate())
+                        .status(plan.getStatus())
+                        .achievement(plan.getAchievement())
+                        .build()
+                )
+                .collect(Collectors.toList());
+        return planList;
     }
 
     @Transactional
     public List<TeamAchieveResponse> getTeamAchievementRate(Long teamId, TeamAchieveRequest request) {
-        // 팀에 있는 모든 일정을 월 별 날짜별로 가져옴
-        List<Plan> plans = planRepository.findAllByTeamIdAndStatusAndDateBetween(teamId, ACTIVE, request.getStartDate(), request.getEndDate());
-        List<LocalDate> dateList = plans.stream().map(Plan::getDate).collect(Collectors.toList());
+        List<LocalDate> dateList = planRepository.findAllByTeamIdAndStatusAndDateBetween(teamId, ACTIVE, request.getStartDate(), request.getEndDate())
+                .stream()
+                .map(Plan::getDate)
+                .distinct()
+                .collect(Collectors.toList());
 
-        int complete = 0;
-        int incomplete = 0;
-        double achievement = 0;
-        List<TeamAchieveResponse> response = new ArrayList<>();
-        for (LocalDate date :dateList) {
-            List<Plan> plan = planRepository.findAllByTeamIdAndStatusAndDate(teamId, ACTIVE, date);
-            List<Status> achieves = plan.stream().map(Plan::getAchievement).collect(Collectors.toList());
-            for (Status achieve : achieves) {
-                if (achieve == COMPLETE) {
-                    complete += 1;
-                } else {
-                    incomplete += 1;
-                }
-            }
-            achievement = ((double)(complete) / (double) (complete + incomplete) * 100.0);
-            response.add(new TeamAchieveResponse(date, achievement));
-        }
+        List<TeamAchieveResponse> response = dateList.stream().map(date -> {
+            List<Plan> plans = planRepository.findAllByTeamIdAndStatusAndDate(teamId, ACTIVE, date);
+            long complete = plans.stream().filter(plan -> plan.getAchievement() == COMPLETE).count();
+            long incomplete = plans.size() - complete;
+            double achievement = (complete + incomplete) == 0 ? 0 : ((double) complete / (double) (complete + incomplete) * 100.0);
+            return new TeamAchieveResponse(date, achievement);
+        }).collect(Collectors.toList());
+
         return response;
     }
 
@@ -428,10 +423,11 @@ public class TeamService {
         return plan;
     }
 
-    private void checkMemberInTeam(Long teamId) {
+    private Team checkMemberInTeam(Long teamId) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member member = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         memberTeamRepository.findByTeamIdAndMemberId(teamId, member.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        return team;
     }
 
     private void complete(Long teamId, Long planId) {
