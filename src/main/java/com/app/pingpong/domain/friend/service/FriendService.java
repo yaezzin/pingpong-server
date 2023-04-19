@@ -52,6 +52,23 @@ public class FriendService {
         return SUCCESS_REFUSE_FRIEND;
     }
 
+    @Transactional(readOnly = true)
+    public List<Friend> getMyFriends() {
+        Long currentMember = memberFacade.getCurrentMember().getId();
+        List<Friend> friends = friendRepository.findAllFriendsByMemberId(currentMember);
+
+        List friendList = new ArrayList();
+        for (Friend friend : friends) {
+            if (isMyFriendRequest(friend, currentMember)) {
+                addRespondentInfoToFriendList(friend, friendList);
+            }
+            if (isOpponentFriendRequest(friend, currentMember)) {
+                addApplicantInfoToFriendList(friend, friendList);
+            }
+        }
+        return friendList;
+    }
+
     private void checkFriendRequest(Member applicant, Member respondent) {
         /* 내가 상대방에게 보낸 친구 신청이 있는지 확인 -> WAIT */
         if (friendFactory.existsRequestToRespondent(applicant.getId(), respondent.getId(), WAIT)) {
@@ -110,23 +127,5 @@ public class FriendService {
         Member applicant = f.getApplicant();
         friendList.add(MemberResponse.of(applicant));
     }
-
-    @Transactional(readOnly = true)
-    public List<Friend> getMyFriends() {
-        Long currentMember = memberFacade.getCurrentMember().getId();
-        List<Friend> friends = friendRepository.findAllFriendsByMemberId(currentMember);
-
-        List friendList = new ArrayList();
-        for (Friend friend : friends) {
-            if (isMyFriendRequest(friend, currentMember)) {
-                addRespondentInfoToFriendList(friend, friendList);
-            }
-            if (isOpponentFriendRequest(friend, currentMember)) {
-                addApplicantInfoToFriendList(friend, friendList);
-            }
-        }
-        return friendList;
-    }
-
 }
 

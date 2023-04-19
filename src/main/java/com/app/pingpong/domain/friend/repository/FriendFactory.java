@@ -24,11 +24,11 @@ public class FriendFactory {
                 .and(QFriend.friend.respondent.id.eq(respondentId))
                 .and(QFriend.friend.status.eq(status));
 
-        Boolean exists = queryFactory.selectOne()
+        Integer exists = queryFactory.selectOne()
                 .from(QFriend.friend)
                 .where(activeFriendRequest)
-                .fetchOne() != null;
-        return exists;
+                .fetchFirst();
+        return exists != null;
     }
 
     public Optional<Friend> findWaitRequestBy(Long applicantId, Long respondentId) {

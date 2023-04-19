@@ -158,35 +158,6 @@ public class TeamService {
         return TeamPlanDetailResponse.of(team, memberList, planList);
     }
 
-    private List<MemberResponse> getMembersByTeamId(Long teamId) {
-        List<MemberResponse> memberList = memberTeamRepository.findALLByTeamIdAndStatus(teamId, ACTIVE).stream()
-                .map(MemberTeam::getMember)
-                .map(member -> MemberResponse.builder()
-                        .memberId(member.getId())
-                        .nickname(member.getNickname())
-                        .profileImage(member.getProfileImage())
-                        .build())
-                .collect(Collectors.toList());
-        return memberList;
-    }
-
-    private List<TeamPlanResponse> getPlansByDate(Long teamId, LocalDate date) {
-        List<TeamPlanResponse> planList = planRepository
-                .findAllByTeamIdAndDateAndStatus(teamId, date, ACTIVE)
-                .stream()
-                .map(plan -> TeamPlanResponse.builder()
-                        .planId(plan.getId())
-                        .managerId(plan.getManager().getId())
-                        .title(plan.getTitle())
-                        .date(plan.getDate())
-                        .status(plan.getStatus())
-                        .achievement(plan.getAchievement())
-                        .build()
-                )
-                .collect(Collectors.toList());
-        return planList;
-    }
-
     @Transactional
     public List<TeamAchieveResponse> getTeamAchievementRate(Long teamId, TeamAchieveRequest request) {
         List<LocalDate> dateList = planRepository.findAllByTeamIdAndStatusAndDateBetween(teamId, ACTIVE, request.getStartDate(), request.getEndDate())
@@ -198,6 +169,7 @@ public class TeamService {
         List<TeamAchieveResponse> response = dateList.stream().map(date -> {
             List<Plan> plans = planRepository.findAllByTeamIdAndStatusAndDate(teamId, ACTIVE, date);
             long complete = plans.stream().filter(plan -> plan.getAchievement() == COMPLETE).count();
+            System.out.println("===== complete " + complete);
             long incomplete = plans.size() - complete;
             double achievement = (complete + incomplete) == 0 ? 0 : ((double) complete / (double) (complete + incomplete) * 100.0);
             return new TeamAchieveResponse(date, achievement);
@@ -444,6 +416,35 @@ public class TeamService {
             throw new BaseException(ALREADY_INCOMPLETE_PLAN);
         }
         plan.setAchievement(INCOMPLETE);
+    }
+
+    private List<MemberResponse> getMembersByTeamId(Long teamId) {
+        List<MemberResponse> memberList = memberTeamRepository.findALLByTeamIdAndStatus(teamId, ACTIVE).stream()
+                .map(MemberTeam::getMember)
+                .map(member -> MemberResponse.builder()
+                        .memberId(member.getId())
+                        .nickname(member.getNickname())
+                        .profileImage(member.getProfileImage())
+                        .build())
+                .collect(Collectors.toList());
+        return memberList;
+    }
+
+    private List<TeamPlanResponse> getPlansByDate(Long teamId, LocalDate date) {
+        List<TeamPlanResponse> planList = planRepository
+                .findAllByTeamIdAndDateAndStatus(teamId, date, ACTIVE)
+                .stream()
+                .map(plan -> TeamPlanResponse.builder()
+                        .planId(plan.getId())
+                        .managerId(plan.getManager().getId())
+                        .title(plan.getTitle())
+                        .date(plan.getDate())
+                        .status(plan.getStatus())
+                        .achievement(plan.getAchievement())
+                        .build()
+                )
+                .collect(Collectors.toList());
+        return planList;
     }
 
     private List<TeamCompactResponse> getTeamMemberStatus(Team team) {
