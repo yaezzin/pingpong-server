@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.app.pingpong.global.common.Status.*;
 import static com.app.pingpong.global.exception.StatusCode.*;
@@ -31,11 +33,11 @@ public class FriendService {
     private final MemberFacade memberFacade;
 
     @Transactional
-    public FriendResponse add(FriendRequest request) {
+    public FriendResponse apply(FriendRequest request) {
         Member applicant = memberRepository.findByIdAndStatus(request.getApplicantId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Member respondent = memberRepository.findByIdAndStatus(request.getRespondentId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         checkFriendRequest(applicant, respondent);
-        return FriendResponse.of(friendRepository.save(request.toEntity(applicant, respondent)));
+        return FriendResponse.of(friendRepository.save(request.toEntity(applicant.getId(), respondent.getId())));
     }
 
     @Transactional
@@ -53,18 +55,13 @@ public class FriendService {
     }
 
     @Transactional(readOnly = true)
-    public List<Friend> getMyFriends() {
+    public List<MemberResponse> getMyFriends() {
         Long currentMember = memberFacade.getCurrentMember().getId();
-        List<Friend> friends = friendRepository.findAllFriendsByMemberId(currentMember);
+        List<Member> friends = friendRepository.findAllFriendsByMemberId(currentMember);
 
-        List friendList = new ArrayList();
-        for (Friend friend : friends) {
-            if (isMyFriendRequest(friend, currentMember)) {
-                addRespondentInfoToFriendList(friend, friendList);
-            }
-            if (isOpponentFriendRequest(friend, currentMember)) {
-                addApplicantInfoToFriendList(friend, friendList);
-            }
+        List<MemberResponse> friendList = new ArrayList<>();
+        for (Member m : friends) {
+            friendList.add(MemberResponse.of(m));
         }
         return friendList;
     }
@@ -104,28 +101,29 @@ public class FriendService {
         friend.setStatus(DELETE);
     }
 
+    /*
     private boolean isMyFriendRequest(Friend f, Long memberId) {
-        if (f.getApplicant().getId() == memberId) {
+        if (f.getApplicant() == memberId) {
             return true;
         }
         return false;
     }
 
     private boolean isOpponentFriendRequest(Friend f, Long memberId) {
-        if (f.getRespondent().getId() == memberId) {
+        if (f.getRespondent() == memberId) {
             return true;
         }
         return false;
     }
 
     private void addRespondentInfoToFriendList(Friend f, List friendList) {
-        Member respondent = f.getRespondent();
-        friendList.add(MemberResponse.of(respondent));
+        Member member = memberRepository.findById(f.getRespondent()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        friendList.add(MemberResponse.of(member));
     }
 
     private void addApplicantInfoToFriendList(Friend f, List friendList) {
         Member applicant = f.getApplicant();
         friendList.add(MemberResponse.of(applicant));
-    }
+    } */
 }
 

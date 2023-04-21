@@ -20,11 +20,9 @@ public class Friend {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    private Member applicant;
+    private Long applicant;
 
-    @OneToOne
-    private Member respondent;
+    private Long respondent;
 
     @Enumerated(EnumType.STRING)
     private Status status;
@@ -32,7 +30,7 @@ public class Friend {
     private Date createdAt;
 
     @Builder
-    public Friend(Member applicant, Member respondent, Status status, Date createdAt) {
+    public Friend(Long applicant, Long respondent, Status status, Date createdAt) {
         this.applicant = applicant;
         this.respondent = respondent;
         this.status = status;

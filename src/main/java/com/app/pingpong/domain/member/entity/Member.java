@@ -1,5 +1,6 @@
 package com.app.pingpong.domain.member.entity;
 
+import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.global.common.Status;
 import lombok.*;
@@ -38,6 +39,12 @@ public class Member {
 
     @OneToMany(mappedBy = "manager")
     private List<Plan> plans = new ArrayList<>();
+
+    @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL)
+    private List<Friend> sentFriendRequests = new ArrayList<>();
+
+    @OneToMany(mappedBy = "respondent", cascade = CascadeType.ALL)
+    private List<Friend> receivedFriendRequests = new ArrayList<>();
 
     @Builder
     public Member(String socialId, String email, String nickname, String profileImage, Status status, Authority authority) {

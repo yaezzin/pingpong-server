@@ -19,7 +19,7 @@ public class FriendRequest {
     private Long respondentId; // 피신청인 id (= 내가 친구 걸은 사람)
 
     @Builder
-    public Friend toEntity(Member applicant, Member respondent) {
+    public Friend toEntity(Long applicant, Long respondent) {
         return Friend.builder()
                 .applicant(applicant)
                 .respondent(respondent)

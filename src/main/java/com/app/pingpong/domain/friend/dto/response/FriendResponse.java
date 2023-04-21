@@ -13,6 +13,6 @@ public class FriendResponse {
     private Long respondentId;
 
     public static FriendResponse of(Friend friend) {
-        return new FriendResponse(friend.getApplicant().getId(), friend.getRespondent().getId());
+        return new FriendResponse(friend.getApplicant(), friend.getRespondent());
     }
 }
