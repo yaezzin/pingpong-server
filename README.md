@@ -1,17 +1,13 @@
 # 🏓 Ping Pong
 
 자세한 내용은 다음 링크에서 확인 가능합니다.
-* [Wiki]()
-* [Api 명세서](https://docs.google.com/spreadsheets/d/1gironPuvcwKDzbzAOUrbPqZ8V65owz-T/edit?usp=sharing&ouid=107228890700982767967&rtpof=true&sd=true)
+* [Wiki](https://github.com/pping-ppong/Server/wiki)
+* [API 명세서](https://docs.google.com/spreadsheets/d/1gironPuvcwKDzbzAOUrbPqZ8V65owz-T/edit?usp=sharing&ouid=107228890700982767967&rtpof=true&sd=true)
 * [ERD]()
 
 ## 사용기술 및 환경
 
-* Spring Boot, Spring Data JPA, Spring Security, JUnit5
-* MySQL, Redis
-* Github Action, Jenkins, Docker
-* Gradle
-* Aws
+```Spring Boot```, ```Spring Data JPA```, ```JUnit5```, ```MySQL```, ```Redis```, ```Github Action```, ```Jenkins```, ```Docker```, ```Gradle```, ```Aws```
 
 ## Issue
 
