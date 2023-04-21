@@ -79,7 +79,7 @@ public class MemberController {
 
     @ResponseBody
     @GetMapping("/search-log")
-    public BaseResponse<List<MemberResponse>> saveSearchLog() {
+    public BaseResponse<List<Object>> saveSearchLog() {
         return new BaseResponse<>(memberService.getSearchLog());
     }
 
