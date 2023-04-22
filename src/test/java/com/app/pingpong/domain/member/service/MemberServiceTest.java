@@ -1,11 +1,7 @@
 package com.app.pingpong.domain.member.service;
 
-import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendFactory;
-import com.app.pingpong.domain.friend.repository.FriendRepository;
-import com.app.pingpong.domain.friend.service.FriendService;
 import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
-import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.*;
@@ -19,7 +15,6 @@ import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.global.exception.BaseException;
-import com.app.pingpong.global.exception.StatusCode;
 import com.app.pingpong.global.util.MemberFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +23,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,12 +30,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static com.app.pingpong.domain.member.entity.Authority.ROLE_USER;
+import static com.app.pingpong.global.common.Authority.ROLE_USER;
 import static com.app.pingpong.global.common.Status.ACTIVE;
 
 import static com.app.pingpong.global.common.Status.COMPLETE;

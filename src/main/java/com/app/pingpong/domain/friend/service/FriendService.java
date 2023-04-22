@@ -55,9 +55,10 @@ public class FriendService {
     }
 
     @Transactional(readOnly = true)
-    public List<MemberResponse> getMyFriends() {
-        Long currentMember = memberFacade.getCurrentMember().getId();
-        List<Member> friends = friendRepository.findAllFriendsByMemberId(currentMember);
+    public List<MemberResponse> getMyFriends(Long id) {
+        //Long currentMember = memberFacade.getCurrentMember().getId();
+        System.out.println("======= id" + id);
+        List<Member> friends = friendRepository.findAllFriendsByMemberId(id);
 
         List<MemberResponse> friendList = new ArrayList<>();
         for (Member m : friends) {

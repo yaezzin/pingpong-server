@@ -1,7 +1,7 @@
 package com.app.pingpong.domain.member.entity;
 
-import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.team.entity.Plan;
+import com.app.pingpong.global.common.Authority;
 import com.app.pingpong.global.common.Status;
 import lombok.*;
 

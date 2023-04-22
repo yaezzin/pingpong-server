@@ -19,12 +19,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.Optional;
 
-import static com.app.pingpong.domain.member.entity.Authority.ROLE_USER;
+import static com.app.pingpong.global.common.Authority.ROLE_USER;
 import static com.app.pingpong.global.common.Status.*;
 import static com.app.pingpong.global.exception.StatusCode.*;
 import static org.junit.jupiter.api.Assertions.*;

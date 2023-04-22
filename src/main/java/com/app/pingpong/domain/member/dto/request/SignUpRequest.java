@@ -1,6 +1,6 @@
 package com.app.pingpong.domain.member.dto.request;
 
-import com.app.pingpong.domain.member.entity.Authority;
+import com.app.pingpong.global.common.Authority;
 import com.app.pingpong.domain.member.entity.Member;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
