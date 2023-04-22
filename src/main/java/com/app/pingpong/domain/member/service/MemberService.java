@@ -126,25 +126,25 @@ public class MemberService {
     }
 
     @Transactional
-    public StatusCode saveSearchLog(SearchLogRequest request) {
-        if (request.getId() == memberFacade.getCurrentMember().getId()) {
+    public StatusCode saveSearchLog(SearchLogRequest request, Long loginMemberId) {
+        if (request.getId() == loginMemberId) {
             throw new BaseException(INVALID_SAVE_SEARCH_LOG);
         }
 
         /* save search log into Redis */
         Member member = findMemberByIdAndStatus(request.getId(), ACTIVE);
         ListOperations<String, Object> listOps = redisTemplate.opsForList();
-        String loginUserId = "id" + memberFacade.getCurrentMember().getId();
+        String currentMemberId = "id" + loginMemberId;
         String memberId = "id" + member.getId();
-        listOps.leftPush(loginUserId, memberId);
+        listOps.leftPush(currentMemberId, memberId);
 
         return SUCCESS_SAVE_SEARCH_LOG;
     }
 
     /* When the member is clicked, the member information is recorded in Redis.*/
     @Transactional(readOnly = true)
-    public List<Object> getSearchLog() {
-        String loginMemberId = "id" + memberFacade.getCurrentMember().getId();
+    public List<Object> getSearchLog(Long id) {
+        String loginMemberId = "id" + id;
         List<String> numList = extractNumberAndAddToList(loginMemberId);
         List<Object> responses = addMemberToListByExtractedNum(numList);
         return responses;
@@ -152,9 +152,8 @@ public class MemberService {
 
     /* Retrieves all the teams that a current member belongs to, and then retrieves all the members belonging to each team. */
     @Transactional(readOnly = true)
-    public List<MemberTeamResponse> getMemberTeams() {
-        Long currentMember = memberFacade.getCurrentMember().getId();
-        List<MemberTeam> memberTeams = memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(currentMember, ACTIVE);
+    public List<MemberTeamResponse> getMemberTeams(Long loginMemberId) {
+        List<MemberTeam> memberTeams = memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(loginMemberId, ACTIVE);
 
         List<MemberTeamResponse> teamList = new ArrayList<>();
         for (MemberTeam mt : memberTeams) {
@@ -167,12 +166,11 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public List<MemberAchieveResponse> getMemberAchievementRate(MemberAchieveRequest request) {
-        Long currentMember = memberFacade.getCurrentMember().getId();
-        List<Plan> plans = planRepository.findAllByManagerIdAndStatusAndDateBetween(currentMember, ACTIVE, request.getStartDate(), request.getEndDate());
+    public List<MemberAchieveResponse> getMemberAchievementRate(MemberAchieveRequest request, Long loginMemberId) {
+        List<Plan> plans = planRepository.findAllByManagerIdAndStatusAndDateBetween(loginMemberId, ACTIVE, request.getStartDate(), request.getEndDate());
 
         return plans.stream().map(Plan::getDate).distinct().map(date -> {
-            List<Plan> plansOnDate = planRepository.findAllByManagerIdAndStatusAndDate(currentMember, ACTIVE, date);
+            List<Plan> plansOnDate = planRepository.findAllByManagerIdAndStatusAndDate(loginMemberId, ACTIVE, date);
             long complete = plansOnDate.stream().filter(plan -> plan.getAchievement() == COMPLETE).count();
             long incomplete = plansOnDate.size() - complete;
             double achievement = (complete + incomplete > 0) ? ((double)complete / (double)(complete + incomplete) * 100.0) : 0.0;
@@ -181,15 +179,13 @@ public class MemberService {
     }
 
     @Transactional
-    public List<MemberPlanDetailResponse> getMemberCalendarByDate(LocalDate date) {
-        Long currentMemberId = memberFacade.getCurrentMember().getId();
-
-        List<MemberTeam> memberTeams = memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(currentMemberId, ACTIVE);
+    public List<MemberPlanDetailResponse> getMemberCalendarByDate(LocalDate date, Long loginMemberId) {
+        List<MemberTeam> memberTeams = memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(loginMemberId, ACTIVE);
         List<Team> teams = memberTeams.stream().map(MemberTeam::getTeam).collect(Collectors.toList());
 
         List<MemberPlanDetailResponse> response = new ArrayList<>();
         for (Team team : teams) {
-            List<Plan> plans = planRepository.findAllByTeamIdAndManagerIdAndStatusAndDate(team.getId(), currentMemberId, ACTIVE, date);
+            List<Plan> plans = planRepository.findAllByTeamIdAndManagerIdAndStatusAndDate(team.getId(), loginMemberId, ACTIVE, date);
             List<TeamPlanResponse> planList = plans.stream().map(this::createTeamPlanResponse).collect(Collectors.toList());
             response.add(MemberPlanDetailResponse.of(team, planList));
         }

@@ -7,9 +7,13 @@ import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.*;
 import com.app.pingpong.domain.member.service.MemberService;
+import com.app.pingpong.global.aop.CheckLoginStatus;
+import com.app.pingpong.global.aop.CurrentLoginMemberId;
+import com.app.pingpong.global.common.Authority;
 import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.StatusCode;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.Check;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,31 +77,37 @@ public class MemberController {
 
     @ResponseBody
     @PostMapping("/search-log")
-    public BaseResponse<StatusCode> saveSearchLog(@RequestBody SearchLogRequest request) {
-        return new BaseResponse<>(memberService.saveSearchLog(request));
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> saveSearchLog(@RequestBody SearchLogRequest request, Long id) {
+        return new BaseResponse<>(memberService.saveSearchLog(request, id));
     }
 
     @ResponseBody
     @GetMapping("/search-log")
-    public BaseResponse<List<Object>> saveSearchLog() {
-        return new BaseResponse<>(memberService.getSearchLog());
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<List<Object>> saveSearchLog(@CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(memberService.getSearchLog(id));
     }
 
     @ResponseBody
     @GetMapping("/teams")
-    public BaseResponse<List<MemberTeamResponse>> getMemberTeams() {
-        return new BaseResponse<>(memberService.getMemberTeams());
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<List<MemberTeamResponse>> getMemberTeams(@CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(memberService.getMemberTeams(id));
     }
 
     @ResponseBody
     @GetMapping("/calendars/achievement")
-    public BaseResponse<List<MemberAchieveResponse>> getMemberAchievement(@RequestBody MemberAchieveRequest request) {
-        return new BaseResponse<>(memberService.getMemberAchievementRate(request));
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<List<MemberAchieveResponse>> getMemberAchievement(@RequestBody MemberAchieveRequest request,
+                                                                          @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(memberService.getMemberAchievementRate(request, id));
     }
 
     @ResponseBody
     @GetMapping("/calendars")
-    public BaseResponse<List<MemberPlanDetailResponse>> getMemberCalendarByDate(@RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
-        return new BaseResponse<>(memberService.getMemberCalendarByDate(date));
+    public BaseResponse<List<MemberPlanDetailResponse>> getMemberCalendarByDate(@RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+                                                                                @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(memberService.getMemberCalendarByDate(date, id));
     }
 }
