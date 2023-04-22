@@ -167,10 +167,10 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public List<MemberAchieveResponse> getMemberAchievementRate(MemberAchieveRequest request, Long loginMemberId) {
-        List<Plan> plans = planRepository.findAllByManagerIdAndStatusAndDateBetween(loginMemberId, ACTIVE, request.getStartDate(), request.getEndDate());
+        List<Plan> plans = planRepository.findAllByManagerIdAndStatusAndDateBetweenOrderByDateAsc(loginMemberId, ACTIVE, request.getStartDate(), request.getEndDate());
 
         return plans.stream().map(Plan::getDate).distinct().map(date -> {
-            List<Plan> plansOnDate = planRepository.findAllByManagerIdAndStatusAndDate(loginMemberId, ACTIVE, date);
+            List<Plan> plansOnDate = planRepository.findAllByManagerIdAndStatusAndDateOrderByDateAsc(loginMemberId, ACTIVE, date);
             long complete = plansOnDate.stream().filter(plan -> plan.getAchievement() == COMPLETE).count();
             long incomplete = plansOnDate.size() - complete;
             double achievement = (complete + incomplete > 0) ? ((double)complete / (double)(complete + incomplete) * 100.0) : 0.0;
