@@ -179,14 +179,16 @@ public class TeamService {
     }
 
     @Transactional(readOnly = true)
-    public List<TeamPlanResponse> getTrash(Long teamId) {
+    public List<TeamPlanResponse> getTrash(Long teamId, Long loginMemberId) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
 
-        Member currentMember = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, currentMember.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-
-        List<Plan> plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(teamId, DELETE);
-
+        List<Plan> plansInTrash;
+        if (loginMemberId == team.getHost().getId()) {
+            plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(teamId, DELETE);
+        } else {
+            plansInTrash = planRepository.findAllByManagerIdAndTeamIdAndStatusOrderByWastedTimeDesc(loginMemberId, teamId, DELETE);
+        }
         return TeamPlanResponse.of(plansInTrash);
     }
 

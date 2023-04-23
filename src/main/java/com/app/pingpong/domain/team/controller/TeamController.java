@@ -6,6 +6,9 @@ import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
 import com.app.pingpong.domain.team.dto.response.*;
 import com.app.pingpong.domain.team.service.TeamService;
+import com.app.pingpong.global.aop.CheckLoginStatus;
+import com.app.pingpong.global.aop.CurrentLoginMemberId;
+import com.app.pingpong.global.common.Authority;
 import com.app.pingpong.global.common.BaseResponse;
 import com.app.pingpong.global.exception.StatusCode;
 import lombok.RequiredArgsConstructor;
@@ -116,8 +119,9 @@ public class TeamController {
 
     @ResponseBody
     @GetMapping("/{id}/trash")
-    public BaseResponse<List<TeamPlanResponse>> getTrash(@PathVariable Long id) {
-        return new BaseResponse<>(teamService.getTrash(id));
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<List<TeamPlanResponse>> getTrash(@PathVariable("id") Long teamId, @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(teamService.getTrash(teamId, id));
     }
 
     @ResponseBody

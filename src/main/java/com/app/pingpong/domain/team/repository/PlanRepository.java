@@ -12,6 +12,8 @@ import java.util.Optional;
 @Repository
 public interface PlanRepository extends JpaRepository<Plan, Long> {
     List<Plan> findAllByTeamIdAndStatusOrderByWastedTimeDesc(Long teamId, Status status);
+    List<Plan> findAllByManagerIdAndTeamIdAndStatusOrderByWastedTimeDesc(Long memberId, Long teamId, Status status);
+
     List<Plan> findAllByTeamIdAndStatusAndDateBetween(Long teamId, Status status, LocalDate startDate, LocalDate endDate);
     List<Plan> findAllByManagerIdAndStatusAndDateBetween(Long memberId, Status status, LocalDate startDate, LocalDate endDate);
     List<Plan> findAllByManagerIdAndStatusAndDateBetweenOrderByDateAsc(Long id, Status status, LocalDate startDate, LocalDate endDate);
