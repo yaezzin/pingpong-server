@@ -193,22 +193,22 @@ public class TeamService {
     }
 
     @Transactional
-    public StatusCode deleteAllTrash(Long teamId) {
+    public StatusCode deleteAllTrash(Long teamId, Long loginMemberId) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-
-        Member currentMember = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, currentMember.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-
-        if (currentMember.getId() != team.getHost().getId()) {
-            throw new BaseException(INVALID_HOST);
-        }
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        isHost(loginMemberId, team);
 
         List<Plan> plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(teamId, DELETE);
         for (Plan p : plansInTrash) {
             p.setStatus(PERMANENT);
         }
-
         return SUCCESS_DELETE_ALL_TRASH;
+    }
+
+    private void isHost(Long loginMemberId, Team team) {
+        if (loginMemberId != team.getHost().getId()) {
+            throw new BaseException(INVALID_HOST);
+        }
     }
 
     @Transactional
