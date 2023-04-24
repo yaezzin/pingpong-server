@@ -95,27 +95,36 @@ public class TeamController {
 
     @ResponseBody
     @PatchMapping("/{teamId}/plans/pass")
-    public BaseResponse<TeamPlanResponse> passPlan(@PathVariable("teamId") Long teamId, @RequestBody TeamPlanPassRequest request) {
-        return new BaseResponse<>(teamService.passPlan(teamId, request));
+    public BaseResponse<TeamPlanResponse> passPlan(@PathVariable("teamId") Long teamId,
+                                                   @CurrentLoginMemberId Long loginMemberId,
+                                                   @RequestBody TeamPlanPassRequest request) {
+        return new BaseResponse<>(teamService.passPlan(teamId, loginMemberId, request));
     }
 
     @ResponseBody
     @PatchMapping("/{teamId}/plans/{planId}/complete")
-    public BaseResponse<StatusCode> completePlan(@PathVariable("teamId") Long teamId, @PathVariable("planId") Long planId) {
-        return new BaseResponse<>(teamService.completePlan(teamId, planId));
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> completePlan(@PathVariable("teamId") Long teamId,
+                                                 @PathVariable("planId") Long planId,
+                                                 @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(teamService.completePlan(teamId, planId, id));
     }
 
     @ResponseBody
     @PatchMapping("/{teamId}/plans/{planId}/incomplete")
-    public BaseResponse<StatusCode> incompletePlan(@PathVariable("teamId") Long teamId, @PathVariable("planId") Long planId) {
-        return new BaseResponse<>(teamService.incompletePlan(teamId, planId));
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> incompletePlan(@PathVariable("teamId") Long teamId,
+                                                   @PathVariable("planId") Long planId,
+                                                   @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(teamService.incompletePlan(teamId, planId, id));
     }
 
     @ResponseBody
     @GetMapping("/{id}/calendars")
     public BaseResponse<TeamPlanDetailResponse> getTeamCalendarByDate(@PathVariable Long id,
-                                                                      @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
-        return new BaseResponse<>(teamService.getTeamCalendarByDate(id, date));
+                                                                      @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+                                                                      @CurrentLoginMemberId Long loginMemberId) {
+        return new BaseResponse<>(teamService.getTeamCalendarByDate(id, date, loginMemberId));
     }
 
     @ResponseBody
