@@ -142,7 +142,10 @@ public class TeamController {
 
     @ResponseBody
     @PatchMapping("/{teamId}/trash/{planId}")
-    public BaseResponse<StatusCode> recoverTrash(@PathVariable("teamId") Long teamId, @PathVariable("planId") Long planId) {
-        return new BaseResponse<>(teamService.recoverTrash(teamId, planId));
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> recoverTrash(@PathVariable("teamId") Long teamId,
+                                                 @PathVariable("planId") Long planId,
+                                                 @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(teamService.recoverTrash(teamId, planId, id));
     }
 }

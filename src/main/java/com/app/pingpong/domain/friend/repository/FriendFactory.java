@@ -20,8 +20,8 @@ public class FriendFactory {
     private final JPAQueryFactory queryFactory;
 
     public boolean existsRequestToRespondent(Long applicantId, Long respondentId, Status status) {
-        BooleanExpression activeFriendRequest = QFriend.friend.applicant.id.eq(applicantId)
-                .and(QFriend.friend.respondent.id.eq(respondentId))
+        BooleanExpression activeFriendRequest = QFriend.friend.applicant.eq(applicantId)
+                .and(QFriend.friend.respondent.eq(respondentId))
                 .and(QFriend.friend.status.eq(status));
 
         Integer exists = queryFactory.selectOne()
@@ -33,8 +33,8 @@ public class FriendFactory {
 
     public Optional<Friend> findWaitRequestBy(Long applicantId, Long respondentId) {
         QFriend friend = QFriend.friend;
-        BooleanExpression waitFriendRequest = friend.applicant.id.eq(applicantId)
-                .and(friend.respondent.id.eq(respondentId))
+        BooleanExpression waitFriendRequest = friend.applicant.eq(applicantId)
+                .and(friend.respondent.eq(respondentId))
                 .and(friend.status.eq(WAIT));
 
         return Optional.ofNullable(queryFactory.selectFrom(friend)
@@ -44,8 +44,8 @@ public class FriendFactory {
 
     public boolean isFriend(Long loginUserId, Long searchedUserId) {
         BooleanExpression isActiveFriend = QFriend.friend.status.eq(Status.ACTIVE);
-        BooleanExpression isLoginUser = QFriend.friend.applicant.id.eq(loginUserId).or(QFriend.friend.respondent.id.eq(loginUserId));
-        BooleanExpression isSearchedUser = QFriend.friend.applicant.id.eq(searchedUserId).or(QFriend.friend.respondent.id.eq(searchedUserId));
+        BooleanExpression isLoginUser = QFriend.friend.applicant.eq(loginUserId).or(QFriend.friend.respondent.eq(loginUserId));
+        BooleanExpression isSearchedUser = QFriend.friend.applicant.eq(searchedUserId).or(QFriend.friend.respondent.eq(searchedUserId));
 
         return queryFactory.selectFrom(QFriend.friend)
                 .where(isActiveFriend, isLoginUser, isSearchedUser)
@@ -53,8 +53,8 @@ public class FriendFactory {
     }
 
     public int findFriendCount(Long id) {
-        BooleanExpression friendCondition = QFriend.friend.applicant.id.eq(id)
-                .or(QFriend.friend.respondent.id.eq(id))
+        BooleanExpression friendCondition = QFriend.friend.applicant.eq(id)
+                .or(QFriend.friend.respondent.eq(id))
                 .and(QFriend.friend.status.eq(ACTIVE));
 
         Long count_long = queryFactory.select(friendCondition.count())
