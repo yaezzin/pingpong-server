@@ -133,8 +133,11 @@ public class TeamController {
 
     @ResponseBody
     @DeleteMapping("/{teamId}/trash/{planId}")
-    public BaseResponse<StatusCode> deleteTrash(@PathVariable("teamId") Long teamId, @PathVariable("planId") Long planId) {
-        return new BaseResponse<>(teamService.deleteTrash(teamId, planId));
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> deleteTrash(@PathVariable("teamId") Long teamId,
+                                                @PathVariable("planId") Long planId,
+                                                @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(teamService.deleteTrash(teamId, planId, id));
     }
 
     @ResponseBody
