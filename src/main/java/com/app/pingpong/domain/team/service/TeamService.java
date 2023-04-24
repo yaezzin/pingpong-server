@@ -1,7 +1,6 @@
 package com.app.pingpong.domain.team.service;
 
 import com.app.pingpong.domain.friend.repository.FriendFactory;
-import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
@@ -16,10 +15,10 @@ import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.domain.team.repository.TeamRepository;
-import com.app.pingpong.global.common.Status;
-import com.app.pingpong.global.exception.BaseException;
-import com.app.pingpong.global.exception.StatusCode;
-import com.app.pingpong.global.util.MemberFacade;
+import com.app.pingpong.global.common.status.Status;
+import com.app.pingpong.global.common.exception.BaseException;
+import com.app.pingpong.global.common.exception.StatusCode;
+import com.app.pingpong.global.common.util.MemberFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,8 +30,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.app.pingpong.global.common.Status.*;
-import static com.app.pingpong.global.exception.StatusCode.*;
+import static com.app.pingpong.global.common.status.Status.*;
+import static com.app.pingpong.global.common.exception.StatusCode.*;
 
 @RequiredArgsConstructor
 @Service

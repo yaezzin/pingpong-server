@@ -1,6 +1,6 @@
 package com.app.pingpong.domain.member.repository;
 
-import com.app.pingpong.global.common.Authority;
+import com.app.pingpong.global.common.status.Authority;
 import com.app.pingpong.domain.member.entity.Member;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,8 +10,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.util.List;
 import java.util.Optional;
 
-import static com.app.pingpong.global.common.Status.ACTIVE;
-import static com.app.pingpong.global.common.Status.DELETE;
+import static com.app.pingpong.global.common.status.Status.ACTIVE;
+import static com.app.pingpong.global.common.status.Status.DELETE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

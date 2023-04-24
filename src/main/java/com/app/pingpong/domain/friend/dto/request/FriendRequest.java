@@ -1,7 +1,6 @@
 package com.app.pingpong.domain.friend.dto.request;
 
 import com.app.pingpong.domain.friend.entity.Friend;
-import com.app.pingpong.domain.member.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-import static com.app.pingpong.global.common.Status.WAIT;
+import static com.app.pingpong.global.common.status.Status.WAIT;
 
 @Getter
 @NoArgsConstructor

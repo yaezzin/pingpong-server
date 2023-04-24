@@ -1,13 +1,13 @@
 package com.app.pingpong.domain.s3;
 
-import com.app.pingpong.global.common.BaseResponse;
+import com.app.pingpong.global.common.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-import static com.app.pingpong.global.exception.StatusCode.SUCCESS_DELETE_AWS_S3;
+import static com.app.pingpong.global.common.exception.StatusCode.SUCCESS_DELETE_AWS_S3;
 
 @RestController
 @RequiredArgsConstructor

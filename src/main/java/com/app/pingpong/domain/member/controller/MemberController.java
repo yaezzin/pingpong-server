@@ -1,6 +1,5 @@
 package com.app.pingpong.domain.member.controller;
 
-import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
@@ -9,11 +8,10 @@ import com.app.pingpong.domain.member.dto.response.*;
 import com.app.pingpong.domain.member.service.MemberService;
 import com.app.pingpong.global.aop.CheckLoginStatus;
 import com.app.pingpong.global.aop.CurrentLoginMemberId;
-import com.app.pingpong.global.common.Authority;
-import com.app.pingpong.global.common.BaseResponse;
-import com.app.pingpong.global.exception.StatusCode;
+import com.app.pingpong.global.common.status.Authority;
+import com.app.pingpong.global.common.response.BaseResponse;
+import com.app.pingpong.global.common.exception.StatusCode;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.Check;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 

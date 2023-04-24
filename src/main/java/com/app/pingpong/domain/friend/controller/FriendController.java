@@ -6,9 +6,9 @@ import com.app.pingpong.domain.friend.service.FriendService;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.global.aop.CheckLoginStatus;
 import com.app.pingpong.global.aop.CurrentLoginMemberId;
-import com.app.pingpong.global.common.Authority;
-import com.app.pingpong.global.common.BaseResponse;
-import com.app.pingpong.global.exception.StatusCode;
+import com.app.pingpong.global.common.status.Authority;
+import com.app.pingpong.global.common.response.BaseResponse;
+import com.app.pingpong.global.common.exception.StatusCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

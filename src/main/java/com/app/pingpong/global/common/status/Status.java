@@ -1,4 +1,4 @@
-package com.app.pingpong.global.common;
+package com.app.pingpong.global.common.status;
 
 public enum Status {
     ACTIVE, // 1. 생성시

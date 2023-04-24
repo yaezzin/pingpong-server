@@ -1,8 +1,7 @@
 package com.app.pingpong.domain.member.repository;
 
-import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
-import com.app.pingpong.global.common.Status;
+import com.app.pingpong.global.common.status.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -6,16 +6,12 @@ import com.app.pingpong.domain.social.dto.request.MemberLogoutRequest;
 import com.app.pingpong.domain.social.dto.request.TokenRequest;
 import com.app.pingpong.domain.social.dto.response.MemberInfoResponse;
 import com.app.pingpong.domain.social.dto.response.MemberLoginResponse;
-import com.app.pingpong.domain.social.dto.response.MemberLogoutResponse;
 import com.app.pingpong.domain.social.dto.response.TokenResponse;
 import com.app.pingpong.domain.social.service.SocialService;
-import com.app.pingpong.global.common.BaseResponse;
-import com.app.pingpong.global.exception.StatusCode;
-import com.app.pingpong.global.security.JwtTokenProvider;
+import com.app.pingpong.global.common.response.BaseResponse;
+import com.app.pingpong.global.common.exception.StatusCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.UnsupportedEncodingException;
 
 @RestController
 @RequiredArgsConstructor

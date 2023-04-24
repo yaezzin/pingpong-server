@@ -1,4 +1,4 @@
-package com.app.pingpong.global.exception;
+package com.app.pingpong.global.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

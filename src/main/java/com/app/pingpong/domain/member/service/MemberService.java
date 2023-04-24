@@ -1,8 +1,6 @@
 package com.app.pingpong.domain.member.service;
 
-import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendFactory;
-import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
@@ -18,11 +16,11 @@ import com.app.pingpong.domain.team.dto.response.TeamPlanResponse;
 import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.PlanRepository;
-import com.app.pingpong.global.common.BaseResponse;
-import com.app.pingpong.global.common.Status;
-import com.app.pingpong.global.exception.BaseException;
-import com.app.pingpong.global.exception.StatusCode;
-import com.app.pingpong.global.util.MemberFacade;
+import com.app.pingpong.global.common.response.BaseResponse;
+import com.app.pingpong.global.common.status.Status;
+import com.app.pingpong.global.common.exception.BaseException;
+import com.app.pingpong.global.common.exception.StatusCode;
+import com.app.pingpong.global.common.util.MemberFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -34,9 +32,9 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.app.pingpong.global.common.Status.*;
-import static com.app.pingpong.global.exception.StatusCode.*;
-import static com.app.pingpong.global.util.RegexUtil.isRegexNickname;
+import static com.app.pingpong.global.common.status.Status.*;
+import static com.app.pingpong.global.common.exception.StatusCode.*;
+import static com.app.pingpong.global.common.util.RegexUtil.isRegexNickname;
 
 @RequiredArgsConstructor
 @Service

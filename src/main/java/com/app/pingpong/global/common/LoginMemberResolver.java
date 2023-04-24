@@ -1,7 +1,7 @@
 package com.app.pingpong.global.common;
 
 import com.app.pingpong.global.aop.CurrentLoginMemberId;
-import com.app.pingpong.global.util.MemberFacade;
+import com.app.pingpong.global.common.util.MemberFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.lang.Nullable;

@@ -1,11 +1,11 @@
 package com.app.pingpong.domain.member.dto.request;
 
-import com.app.pingpong.global.common.Authority;
+import com.app.pingpong.global.common.status.Authority;
 import com.app.pingpong.domain.member.entity.Member;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static com.app.pingpong.global.common.Status.ACTIVE;
+import static com.app.pingpong.global.common.status.Status.ACTIVE;
 
 @Getter
 @NoArgsConstructor

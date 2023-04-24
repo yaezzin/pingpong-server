@@ -1,6 +1,6 @@
-package com.app.pingpong.global.exception;
+package com.app.pingpong.global.common.exception;
 
-import com.app.pingpong.global.common.BaseResponse;
+import com.app.pingpong.global.common.response.BaseResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

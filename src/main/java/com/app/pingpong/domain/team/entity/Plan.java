@@ -1,10 +1,9 @@
 package com.app.pingpong.domain.team.entity;
 
 import com.app.pingpong.domain.member.entity.Member;
-import com.app.pingpong.global.common.Status;
+import com.app.pingpong.global.common.status.Status;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 

@@ -1,15 +1,14 @@
-package com.app.pingpong.global.common;
+package com.app.pingpong.global.common.response;
 
-import com.app.pingpong.global.exception.StatusCode;
+import com.app.pingpong.global.common.exception.StatusCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
-import static com.app.pingpong.global.exception.StatusCode.SUCCESS;
+import static com.app.pingpong.global.common.exception.StatusCode.SUCCESS;
 
 @Getter
 @Builder

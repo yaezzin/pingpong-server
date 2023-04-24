@@ -2,7 +2,7 @@ package com.app.pingpong.domain.friend.repository;
 
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.entity.QFriend;
-import com.app.pingpong.global.common.Status;
+import com.app.pingpong.global.common.status.Status;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-import static com.app.pingpong.global.common.Status.ACTIVE;
-import static com.app.pingpong.global.common.Status.WAIT;
+import static com.app.pingpong.global.common.status.Status.ACTIVE;
+import static com.app.pingpong.global.common.status.Status.WAIT;
 
 @RequiredArgsConstructor
 @Repository

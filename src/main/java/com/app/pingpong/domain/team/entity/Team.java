@@ -2,7 +2,7 @@ package com.app.pingpong.domain.team.entity;
 
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
-import com.app.pingpong.global.common.Status;
+import com.app.pingpong.global.common.status.Status;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

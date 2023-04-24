@@ -1,6 +1,6 @@
 package com.app.pingpong.global.aop;
 
-import com.app.pingpong.global.common.Authority;
+import com.app.pingpong.global.common.status.Authority;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

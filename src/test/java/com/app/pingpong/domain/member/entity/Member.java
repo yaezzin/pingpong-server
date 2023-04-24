@@ -1,8 +1,8 @@
 package com.app.pingpong.domain.member.entity;
 
 import com.app.pingpong.domain.team.entity.Plan;
-import com.app.pingpong.global.common.Authority;
-import com.app.pingpong.global.common.Status;
+import com.app.pingpong.global.common.status.Authority;
+import com.app.pingpong.global.common.status.Status;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -10,7 +10,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.app.pingpong.global.common.Status.ACTIVE;
+import static com.app.pingpong.global.common.status.Status.ACTIVE;
 
 @Getter
 @Setter

@@ -1,7 +1,7 @@
 package com.app.pingpong.global.security;
 
 import com.app.pingpong.domain.social.dto.response.TokenResponse;
-import com.app.pingpong.global.exception.BaseException;
+import com.app.pingpong.global.common.exception.BaseException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-import static com.app.pingpong.global.exception.StatusCode.DATABASE_ERROR;
+import static com.app.pingpong.global.common.exception.StatusCode.DATABASE_ERROR;
 
 @Component
 public class JwtTokenProvider {

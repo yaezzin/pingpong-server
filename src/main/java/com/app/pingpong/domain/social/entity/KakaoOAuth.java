@@ -1,8 +1,6 @@
 package com.app.pingpong.domain.social.entity;
 
-import com.app.pingpong.domain.social.dto.request.MemberLogoutRequest;
 import com.app.pingpong.domain.social.dto.response.MemberInfoResponse;
-import com.app.pingpong.global.exception.StatusCode;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

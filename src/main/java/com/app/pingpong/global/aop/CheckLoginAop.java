@@ -1,14 +1,14 @@
 package com.app.pingpong.global.aop;
 
 import com.app.pingpong.domain.member.repository.MemberRepository;
-import com.app.pingpong.global.exception.BaseException;
+import com.app.pingpong.global.common.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import static com.app.pingpong.global.exception.StatusCode.MEMBER_NOT_FOUND;
+import static com.app.pingpong.global.common.exception.StatusCode.MEMBER_NOT_FOUND;
 
 @Aspect
 @Component

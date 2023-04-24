@@ -1,4 +1,4 @@
-package com.app.pingpong.global.util;
+package com.app.pingpong.global.common.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

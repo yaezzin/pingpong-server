@@ -1,8 +1,8 @@
 package com.app.pingpong.domain.member.entity;
 
 import com.app.pingpong.domain.team.entity.Plan;
-import com.app.pingpong.global.common.Authority;
-import com.app.pingpong.global.common.Status;
+import com.app.pingpong.global.common.status.Authority;
+import com.app.pingpong.global.common.status.Status;
 import lombok.*;
 
 import javax.persistence.*;

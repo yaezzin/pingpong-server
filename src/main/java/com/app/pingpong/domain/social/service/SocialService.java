@@ -11,8 +11,8 @@ import com.app.pingpong.domain.social.dto.response.MemberLoginResponse;
 import com.app.pingpong.domain.social.dto.response.TokenResponse;
 import com.app.pingpong.domain.social.entity.GoogleOAuth;
 import com.app.pingpong.domain.social.entity.KakaoOAuth;
-import com.app.pingpong.global.exception.BaseException;
-import com.app.pingpong.global.exception.StatusCode;
+import com.app.pingpong.global.common.exception.BaseException;
+import com.app.pingpong.global.common.exception.StatusCode;
 import com.app.pingpong.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,7 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.app.pingpong.global.exception.StatusCode.*;
+import static com.app.pingpong.global.common.exception.StatusCode.*;
 
 @RequiredArgsConstructor
 @Service

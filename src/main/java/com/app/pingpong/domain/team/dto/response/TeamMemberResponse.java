@@ -3,7 +3,7 @@ package com.app.pingpong.domain.team.dto.response;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.team.entity.Team;
-import com.app.pingpong.global.common.Status;
+import com.app.pingpong.global.common.status.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
