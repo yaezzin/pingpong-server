@@ -44,9 +44,10 @@ public class TeamController {
     }
 
     @ResponseBody
-    @PatchMapping("/{id}/host")
-    public BaseResponse<TeamHostResponse> updateHost(@PathVariable("id") Long id, @RequestParam Long delegatorId) {
-        return new BaseResponse<>(teamService.updateHost(id, delegatorId));
+    @PatchMapping("/{teamId}/host")
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<TeamHostResponse> updateHost(@PathVariable("teamId") Long teamId, @RequestParam Long delegatorId, @CurrentLoginMemberId Long loginMemberId) {
+        return new BaseResponse<>(teamService.updateHost(teamId, delegatorId, loginMemberId));
     }
 
     @ResponseBody
@@ -71,6 +72,13 @@ public class TeamController {
     @PostMapping("/{id}/refuse")
     public BaseResponse<StatusCode> refuse(@PathVariable("id") Long teamId) {
         return new BaseResponse<>(teamService.refuse(teamId));
+    }
+
+    @ResponseBody
+    @PostMapping("/{id}/resign")
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> resign(@PathVariable("id") Long teamId, @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(teamService.resign(teamId, id));
     }
 
     @ResponseBody

@@ -68,9 +68,9 @@ public class TeamService {
     }
 
     @Transactional
-    public TeamHostResponse updateHost(Long teamId, Long delegatorId) {
+    public TeamHostResponse updateHost(Long teamId, Long delegatorId, Long loginMemberId) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        Member host = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        Member host = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Member delegator = memberRepository.findByIdAndStatus(delegatorId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         checkHostForDelegate(team, host, delegator);
         return TeamHostResponse.of(team, getTeamMemberStatus(team));
@@ -109,6 +109,27 @@ public class TeamService {
         checkTeamExists(teamId);
         refuseTeamInvitation(teamId);
         return SUCCESS_REFUSE_TEAM_INVITATION;
+    }
+
+    @Transactional
+    public void resign(Long teamId, Long loginMemberId) {
+        checkTeamExists(teamId);
+
+        // 해당 유저가 팀에 속해있는지 확인
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        MemberTeam mt = memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+
+        // 해당 유저가 방장인지 확인
+        if (team.getHost().getId() == loginMemberId) {
+            throw new BaseException(INVALID_RESIGN);
+        }
+
+        if (mt.equals(WAIT) || mt.equals(DELETE)) {
+            throw new BaseException();
+        }
+
+        mt.setStatus(DELETE);
+        return SUCCESS_RESIGN_TEAM;
     }
 
     @Transactional
