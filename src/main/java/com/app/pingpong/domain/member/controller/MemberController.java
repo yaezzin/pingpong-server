@@ -8,9 +8,9 @@ import com.app.pingpong.domain.member.dto.response.*;
 import com.app.pingpong.domain.member.service.MemberService;
 import com.app.pingpong.global.aop.CheckLoginStatus;
 import com.app.pingpong.global.aop.CurrentLoginMemberId;
-import com.app.pingpong.global.common.status.Authority;
-import com.app.pingpong.global.common.response.BaseResponse;
 import com.app.pingpong.global.common.exception.StatusCode;
+import com.app.pingpong.global.common.response.BaseResponse;
+import com.app.pingpong.global.common.status.Authority;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -69,8 +69,9 @@ public class MemberController {
 
     @ResponseBody
     @GetMapping("/search")
-    public BaseResponse<List<MemberSearchResponse>> findByNickname(@RequestParam("nickname") String nickname) {
-        return new BaseResponse<>(memberService.findByNickname(nickname));
+    public BaseResponse<List<MemberSearchResponse>> findByNickname(@RequestParam("nickname") String nickname,
+                                                                   @RequestParam(name = "id", required = false) Long id) {
+        return new BaseResponse<>(memberService.findByNickname(nickname, id));
     }
 
     @ResponseBody

@@ -18,15 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.app.pingpong.global.common.status.Status.*;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
+import static com.app.pingpong.global.common.status.Status.*;
 
 @RequiredArgsConstructor
 @Service
 public class FriendService {
 
-    private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
+    private final FriendRepository friendRepository;
     private final FriendFactory friendFactory;
     private final MemberFacade memberFacade;
 
@@ -96,30 +96,5 @@ public class FriendService {
         }
         friend.setStatus(DELETE);
     }
-
-    /*
-    private boolean isMyFriendRequest(Friend f, Long memberId) {
-        if (f.getApplicant() == memberId) {
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isOpponentFriendRequest(Friend f, Long memberId) {
-        if (f.getRespondent() == memberId) {
-            return true;
-        }
-        return false;
-    }
-
-    private void addRespondentInfoToFriendList(Friend f, List friendList) {
-        Member member = memberRepository.findById(f.getRespondent()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        friendList.add(MemberResponse.of(member));
-    }
-
-    private void addApplicantInfoToFriendList(Friend f, List friendList) {
-        Member applicant = f.getApplicant();
-        friendList.add(MemberResponse.of(applicant));
-    } */
 }
 
