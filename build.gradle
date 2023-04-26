@@ -1,9 +1,9 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '2.7.8'
-	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
-	id 'com.ewerk.gradle.plugins.querydsl' version '1.0.10'
-	id 'jacoco'
+    id 'java'
+    id 'org.springframework.boot' version '2.7.8'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'com.ewerk.gradle.plugins.querydsl' version '1.0.10'
+    id 'jacoco'
 }
 
 group = 'com.app'
@@ -11,178 +11,181 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
 ext {
-	queryDslVersion = '5.0.0'
+    queryDslVersion = '5.0.0'
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
 
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'junit:junit:4.13.2'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'junit:junit:4.13.2'
 
-	implementation 'org.projectlombok:lombok:1.18.26'
-	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.mysql:mysql-connector-j'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.projectlombok:lombok:1.18.26'
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	// security
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	testImplementation 'org.springframework.security:spring-security-test'
+    // security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
 
-	implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
-	implementation 'io.jsonwebtoken:jjwt-impl:0.11.2'
-	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
-	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2', 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2', 'io.jsonwebtoken:jjwt-jackson:0.11.2'
 
-	// oauth
-	dependencies { implementation 'com.google.code.gson:gson:2.8.7' }
+    // oauth
+    dependencies { implementation 'com.google.code.gson:gson:2.8.7' }
 
-	// h2
-	implementation 'com.h2database:h2'
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    // h2
+    implementation 'com.h2database:h2'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 
-	// s3
-	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    // s3
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
-	// redis
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis:2.3.1.RELEASE'
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis:2.3.1.RELEASE'
 
-	// dsl
-	implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
-	annotationProcessor "com.querydsl:querydsl-apt:${queryDslVersion}"
+    // dsl
+    implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
+    annotationProcessor "com.querydsl:querydsl-apt:${queryDslVersion}"
 
-	// aop
-	implementation 'org.springframework.boot:spring-boot-starter-aop'
+    // aop
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'org.springframework.data:spring-data-mongodb'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
-	finalizedBy 'jacocoTestReport'
+    useJUnitPlatform()
+    finalizedBy 'jacocoTestReport'
 }
 
 jar {
-	enabled = false
+    enabled = false
 }
 
 jacoco {
-	toolVersion = '0.8.5'
-	reportsDir = file("${buildDir}/reports/jacoco/index.html")
+    toolVersion = '0.8.5'
+    reportsDir = file("${buildDir}/reports/jacoco/index.html")
 }
 
 jacocoTestReport {
-	reports {
-		xml.enabled true
-		csv.enabled true
-		html.enabled true
+    reports {
+        xml.enabled true
+        csv.enabled true
+        html.enabled true
 
-		xml.destination file("${buildDir}/jacoco/index.xml")
-		csv.destination file("${buildDir}/jacoco/index.csv")
-		html.destination file("${buildDir}/jacoco/index.html")
-	}
+        xml.destination file("${buildDir}/jacoco/index.xml")
+        csv.destination file("${buildDir}/jacoco/index.csv")
+        html.destination file("${buildDir}/jacoco/index.html")
+    }
 
-	def Qdomains = []
-	for (qPattern in '**/QA'..'**/QZ') {
-		Qdomains.add(qPattern + '*')
-	}
+    def Qdomains = []
+    for (qPattern in '**/QA'..'**/QZ') {
+        Qdomains.add(qPattern + '*')
+    }
 
-	afterEvaluate {
-		classDirectories.setFrom(
-				files(classDirectories.files.collect {
-					fileTree(dir: it, excludes: [
-							"**/*Application*",
-							"**/*Config*",
-							"**/*Dto*",
-							"**/*Request*",
-							"**/*Response*",
-							"**/*Interceptor*",
-							"**/*Exception*",
-							"**/*OAuth*"
-					] + Qdomains)
-				})
-		)
-	}
-	finalizedBy 'jacocoTestCoverageVerification'
+    afterEvaluate {
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, excludes: [
+                            "**/*Application*",
+                            "**/*Config*",
+                            "**/*Dto*",
+                            "**/*Request*",
+                            "**/*Response*",
+                            "**/*Interceptor*",
+                            "**/*Exception*",
+                            "**/*OAuth*"
+                    ] + Qdomains)
+                })
+        )
+    }
+    finalizedBy 'jacocoTestCoverageVerification'
 }
 
 jacocoTestCoverageVerification {
-	def Qdomains = []
-	for (qPattern in '*.QA'..'*.QZ') {
-		Qdomains.add(qPattern + '*')
-	}
+    def Qdomains = []
+    for (qPattern in '*.QA'..'*.QZ') {
+        Qdomains.add(qPattern + '*')
+    }
 
-	violationRules {
-		rule {
-			enabled = true // 활성화
-			element = 'CLASS' // 클래스 단위로 커버리지 체크
+    violationRules {
+        rule {
+            enabled = true // 활성화
+            element = 'CLASS' // 클래스 단위로 커버리지 체크
 
-			includes = [
-					'**/*Controller*',
-					'**/*Service*',
-					'**/*Repository*'
-			]
+            includes = [
+                    '**/*Controller*',
+                    '**/*Service*',
+                    '**/*Repository*'
+            ]
 
-			// 라인 커버리지 제한을 80%로 설정
-			limit {
-				counter = 'LINE'
-				value = 'COVEREDRATIO'
-				minimum = 0.80
-			}
+            // 라인 커버리지 제한을 80%로 설정
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.80
+            }
 
-			// 브랜치 커버리지 제한을 80%로 설정
-			limit {
-				counter = 'BRANCH'
-				value = 'COVEREDRATIO'
-				minimum = 0.80
-			}
+            // 브랜치 커버리지 제한을 80%로 설정
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.80
+            }
 
-			// 빈 줄을 제외한 코드의 라인수를 최대 200라인으로 제한합니다.
-			limit {
-				counter = 'LINE'
-				value = 'TOTALCOUNT'
-				maximum = 200
-			}
+            // 빈 줄을 제외한 코드의 라인수를 최대 200라인으로 제한합니다.
+            limit {
+                counter = 'LINE'
+                value = 'TOTALCOUNT'
+                maximum = 200
+            }
 
-			excludes = [
+            excludes = [
 
-			] + Qdomains + [
-					"**/*Repository*"
-			]
-		}
+            ] + Qdomains + [
+                    "**/*Repository*"
+            ]
+        }
 
-	}
+    }
 }
 
 def querydslDir = "$buildDir/generated/querydsl"
 
 querydsl {
-	jpa = true
-	querydslSourcesDir = querydslDir
+    jpa = true
+    querydslSourcesDir = querydslDir
 }
 
 sourceSets {
-	main.java.srcDir querydslDir
+    main.java.srcDir querydslDir
 }
 
-compileQuerydsl{
-	options.annotationProcessorPath = configurations.querydsl
+compileQuerydsl {
+    options.annotationProcessorPath = configurations.querydsl
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-	querydsl.extendsFrom compileClasspath
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    querydsl.extendsFrom compileClasspath
 }
 
