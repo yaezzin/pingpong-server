@@ -5,13 +5,13 @@
 * [API 명세서](https://docs.google.com/spreadsheets/d/1gironPuvcwKDzbzAOUrbPqZ8V65owz-T/edit?usp=sharing&ouid=107228890700982767967&rtpof=true&sd=true)
 * [ERD]()
 
-## 사용기술 및 환경
+## 사용기술
 
-```Spring Boot```, ```Spring Data JPA```, ```JUnit5```, ```MySQL```, ```Redis```, ```Github Action```, ```Jenkins```, ```Docker```, ```Gradle```, ```Aws```
+```Spring Boot```, ```Spring Data JPA```, ```JUnit5```, ```MySQL```,```MongoDB```, ```Redis```, ```Aws```, ```Github Action```, ```Jenkins```, ```Docker```, 
 
 ## Issue
 
-* [QueryDsl을 통해 조회 성능 개선기](https://github.com/pping-ppong/Server/issues/1)
+* [QueryDsl을 이용해 조회 성능 개선하기](https://github.com/pping-ppong/Server/issues/1) 
 * [연관관계 매핑에 대한 고민 - @ManyToOne 지양하기?](https://github.com/pping-ppong/Server/issues/2)
 * [검색 기록 저장 및 조회 기능 구현기 with Redis](https://github.com/pping-ppong/Server/issues/3)
 * [AOP를 활용한 중복코드 리팩토링](https://github.com/pping-ppong/Server/issues/4)
