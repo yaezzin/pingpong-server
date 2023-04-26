@@ -10,7 +10,7 @@ import java.util.List;
 public interface NotificationRepository extends MongoRepository<Notification, Long> {
     Notification findByMemberIdAndOpponentId(Long memberId, Long opponentId);
 
-    List<Notification> findAllByMemberIdOrderByCreatedAtAsc(Long memberId);
-
     List<Notification> findAllByOpponentIdOrderByCreatedAtAsc(Long opponentId);
+
+    boolean existsAllByOpponentIdAndIsClicked(Long opponentId, Boolean isClicked);
 }

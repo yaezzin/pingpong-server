@@ -38,4 +38,10 @@ public class NotificationController {
     public BaseResponse<List<NotificationResponse>> findAll(@CurrentLoginMemberId Long id) {
         return new BaseResponse<>(notificationService.findAll(id));
     }
+
+    @GetMapping("/un-read")
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> existUnReadNotification(@CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(notificationService.existUnReadNotification(id));
+    }
 }

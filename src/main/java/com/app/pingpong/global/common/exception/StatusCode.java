@@ -25,6 +25,8 @@ public enum StatusCode {
     SUCCESS_DELETE_TEAM(true, 200, "팀 삭제에 성공하였습니다."),
     SUCCESS_RESIGN_TEAM(true, 200, "팀 나가기에 성공하였습니다."),
     SUCCESS_SEND_NOTIFICATION(true, 200, "알림 전송을 성공하였습니다."),
+    SUCCESS_EXISTS_NOTIFY(true, 200, "모든 알림을 읽었습니다."),
+    SUCCESS_EXISTS_UNREAD_NOTIFY(true, 200, "읽지 않은 알림이 존재하지 합니다"),
 
     /* 400 : Bad Request   */
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다."),
