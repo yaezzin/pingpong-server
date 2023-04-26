@@ -4,21 +4,21 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.notification.dto.request.NotificationFriendRequest;
 import com.app.pingpong.domain.notification.dto.request.NotificationRequest;
-import com.app.pingpong.domain.notification.dto.response.NotificationFriendResponse;
-import com.app.pingpong.domain.notification.dto.response.NotificationTodoResponse;
+import com.app.pingpong.domain.notification.dto.response.NotificationResponse;
 import com.app.pingpong.domain.notification.entity.Notification;
 import com.app.pingpong.domain.notification.repository.NotificationRepository;
 import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.global.common.exception.BaseException;
+import com.app.pingpong.global.common.exception.StatusCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-import static com.app.pingpong.global.common.exception.StatusCode.MEMBER_NOT_FOUND;
-import static com.app.pingpong.global.common.exception.StatusCode.PLAN_NOT_FOUND;
+import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static com.app.pingpong.global.common.status.Status.*;
 
 @RequiredArgsConstructor
@@ -29,32 +29,55 @@ public class NotificationService {
     private final MemberRepository memberRepository;
     private final PlanRepository planRepository;
 
-    public NotificationTodoResponse notifyTodo(NotificationRequest request, Long loginMemberId) {
-        // 할 일 넘긴 것 저장
-        Notification notification = new Notification(loginMemberId, TODO, false, false, LocalDateTime.now());
-        notificationRepository.save(notification);
-
-        // 리턴할 정보들
-        Member member = memberRepository.findByIdAndStatus(request.getMemberId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+    @Transactional
+    public StatusCode notifyTodo(NotificationRequest request, Long loginMemberId) {
+        Member opp = memberRepository.findByIdAndStatus(request.getMemberId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        Member me = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Plan plan = planRepository.findByIdAndStatus(request.getPlanId(), ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        String message = me.getNickname() + "님이 할 일 " + plan.getTitle() + "을 회원님께 넘겼어요";
 
-        return NotificationTodoResponse.of(member.getNickname(), plan.getTitle());
+        Notification notification = Notification.builder()
+                .memberId(request.getMemberId())
+                .opponentId(loginMemberId)
+                .type(TODO)
+                .message(message)
+                .build();
+
+        notificationRepository.save(notification);
+        return SUCCESS_SEND_NOTIFICATION;
     }
 
-    public NotificationFriendResponse notifyFriend(NotificationFriendRequest request, Long loginMemberId) {
-        Notification notification = new Notification(loginMemberId, FRIEND, false, false, LocalDateTime.now());
+    @Transactional
+    public StatusCode notifyFriend(NotificationFriendRequest request, Long loginMemberId) {
+        Member opp = memberRepository.findByIdAndStatus(request.getMemberId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        Member me = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+
+        String message = me.getNickname() + "님이 친구 신청을 보냈어요";
+        Notification notification = Notification.builder()
+                .memberId(loginMemberId)
+                .opponentId(request.getMemberId())
+                .type(FRIEND)
+                .message(message)
+                .build();
         notificationRepository.save(notification);
 
-        Member member = memberRepository.findByIdAndStatus(request.getMemberId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        System.out.println("=====" + notification.getMemberId() + "====" + notification.getOpponentId());
+        System.out.println("====" + notification.getMessage());
 
-        return NotificationFriendResponse.of(member.getNickname());
+        return SUCCESS_SEND_NOTIFICATION;
     }
 
-
-    public List<Notification> findAll() {
-        List<Notification> notifications = notificationRepository.findAllByOrderByCreatedAtDesc();
-
-
-        return notifications;
+    @Transactional
+    public List<NotificationResponse> findAll(Long loginMemberId) {
+        List<Notification> notifications = notificationRepository.findAllByOpponentIdOrderByCreatedAtAsc(loginMemberId);
+        List<NotificationResponse> list = new ArrayList<>();
+        for (Notification notification : notifications) {
+            if (notification.getOpponentId() != null) {
+                Member member = memberRepository.findById(notification.getOpponentId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+                notification.setClicked();
+                list.add(new NotificationResponse(notification.getType(), member.getProfileImage(), notification.getMessage(), notification.getIsClicked(), notification.getIsAccepted()));
+            }
+        }
+        return list;
     }
 }

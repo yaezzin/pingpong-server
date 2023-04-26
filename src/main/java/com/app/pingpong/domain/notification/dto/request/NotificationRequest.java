@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationRequest {
-    private Long memberId; // 나에게 할일을 미룬 사람의 id
+    private Long memberId; // 내가 할 일을 미루려고 하는 사람의 id
     private Long planId; // 할 일 id
 }

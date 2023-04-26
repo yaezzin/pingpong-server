@@ -8,9 +8,10 @@ import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
+import com.app.pingpong.domain.notification.entity.Notification;
+import com.app.pingpong.domain.notification.repository.NotificationRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
-import com.app.pingpong.global.common.util.MemberFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +29,8 @@ public class FriendService {
     private final MemberRepository memberRepository;
     private final FriendRepository friendRepository;
     private final FriendFactory friendFactory;
-    private final MemberFacade memberFacade;
+    private final NotificationRepository notificationRepository;
 
-    @Transactional
     public FriendResponse apply(FriendRequest request) {
         Member applicant = memberRepository.findByIdAndStatus(request.getApplicantId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Member respondent = memberRepository.findByIdAndStatus(request.getRespondentId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
@@ -38,17 +38,17 @@ public class FriendService {
         return FriendResponse.of(friendRepository.save(request.toEntity(applicant.getId(), respondent.getId())));
     }
 
-    @Transactional
-    public StatusCode accept(Long opponentId) {
-        Friend request = getWaitingFriendRequest(opponentId);
+    public StatusCode accept(Long opponentId, Long loginMemberId) {
+        Friend request = getWaitingFriendRequest(opponentId, loginMemberId);
         checkAndSetStatusActive(request);
+        setNotificationAccepted(opponentId, loginMemberId);
         return SUCCESS_ACCEPT_FRIEND;
     }
 
-    @Transactional
-    public StatusCode refuse(Long opponentId) {
-        Friend request = getWaitingFriendRequest(opponentId);
+    public StatusCode refuse(Long opponentId, Long loginMemberId) {
+        Friend request = getWaitingFriendRequest(opponentId, loginMemberId);
         checkAndSetStatusDelete(request);
+        setNotificationAccepted(opponentId, loginMemberId);
         return SUCCESS_REFUSE_FRIEND;
     }
 
@@ -77,9 +77,8 @@ public class FriendService {
         }
     }
 
-    private Friend getWaitingFriendRequest(Long opponentId) {
-        Member currentMember = memberFacade.getCurrentMember();
-        Friend friend = friendFactory.findWaitRequestBy(opponentId, currentMember.getId()).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
+    private Friend getWaitingFriendRequest(Long opponentId, Long loginMemberId) {
+        Friend friend = friendFactory.findWaitRequestBy(opponentId, loginMemberId).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
         return friend;
     }
 
@@ -95,6 +94,12 @@ public class FriendService {
             throw new BaseException(ALREADY_ON_FRIEND);
         }
         friend.setStatus(DELETE);
+    }
+
+    private void setNotificationAccepted(Long opponentId, Long loginMemberId) {
+        Notification notification = notificationRepository.findByMemberIdAndOpponentId(opponentId, loginMemberId);
+        notification.setAccepted();
+        notificationRepository.save(notification);
     }
 }
 

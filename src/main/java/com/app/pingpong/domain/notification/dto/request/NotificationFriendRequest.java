@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationFriendRequest {
-    private Long memberId; // 나에게 친구를 신청한 사람의 id
+    private Long memberId; // 내가 친구 신청을 한 유저의 id
 }

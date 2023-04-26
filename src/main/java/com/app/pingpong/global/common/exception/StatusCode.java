@@ -24,6 +24,7 @@ public enum StatusCode {
     SUCCESS_SAVE_SEARCH_LOG(true, 200, "검색 기록 저장에 성공하였습니다"),
     SUCCESS_DELETE_TEAM(true, 200, "팀 삭제에 성공하였습니다."),
     SUCCESS_RESIGN_TEAM(true, 200, "팀 나가기에 성공하였습니다."),
+    SUCCESS_SEND_NOTIFICATION(true, 200, "알림 전송을 성공하였습니다."),
 
     /* 400 : Bad Request   */
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다."),
@@ -63,6 +64,7 @@ public enum StatusCode {
     TEAM_NOT_FOUND(false, 404, "존재하지 않는 그룹입니다."),
     TEAM_INVITATION_NOT_FOUND(false, 404, "해당 그룹에 대한 초대가 존재하지 않습니다."),
     PLAN_NOT_FOUND(false, 404, "해당 할 일을 찾을 수 없습니다."),
+    NOTIFICATION_NOT_FOUND(false, 404, "알림이 존재하지 않습니다."),
 
     /* 500 */
     DATABASE_ERROR(false, 500, "데이터베이스 오류입니다.");
