@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.member.service;
 
 import com.app.pingpong.domain.friend.repository.FriendFactory;
+import com.app.pingpong.domain.image.S3Uploader;
 import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
@@ -11,7 +12,6 @@ import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberSearchRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
-import com.app.pingpong.domain.s3.S3Uploader;
 import com.app.pingpong.domain.team.dto.response.TeamPlanResponse;
 import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
