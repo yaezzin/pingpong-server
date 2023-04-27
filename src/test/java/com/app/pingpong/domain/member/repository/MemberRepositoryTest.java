@@ -1,7 +1,7 @@
 package com.app.pingpong.domain.member.repository;
 
-import com.app.pingpong.global.common.status.Authority;
 import com.app.pingpong.domain.member.entity.Member;
+import com.app.pingpong.global.common.status.Authority;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.util.List;
 import java.util.Optional;
 
+import static com.app.pingpong.factory.MemberFactory.createMember;
 import static com.app.pingpong.global.common.status.Status.ACTIVE;
 import static com.app.pingpong.global.common.status.Status.DELETE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DataJpaTest
 public class MemberRepositoryTest {
 
-    @Autowired MemberRepository memberRepository;
+    @Autowired
+    MemberRepository memberRepository;
 
     @Test
     @DisplayName("이메일로 멤버 조회")
@@ -91,16 +93,12 @@ public class MemberRepositoryTest {
     }
 
     @Test
-    @DisplayName("상태값이 active이고, 해당 닉네임으로 유저가 존재하는지 확인")
+    @DisplayName("상태값이 'ACTIVE'이고, 해당 닉네임으로 유저가 존재하는지 확인")
     public void existsMemberByNicknameAndStatus() {
         // given, when
         Member member = memberRepository.save(createMember());
 
         // then
         memberRepository.existsMemberByNicknameAndStatus("nickname");
-    }
-
-    private Member createMember() {
-        return new Member("123", "email", "nickname", "profileImage", ACTIVE, Authority.ROLE_USER);
     }
 }
