@@ -34,13 +34,14 @@ public class MemberSearchRepositoryTest {
                 .willReturn(memberList.subList(10, 20));
 
         // when
+        long start = System.nanoTime();
         List<Member> members = memberSearchRepository.findByNicknameContainsWithNoOffset(ACTIVE, "nickname", 10L, 10);
+        long end = System.nanoTime();
 
         //then
         assertThat(members).hasSize(10);
         assertThat(members.get(0).getId()).isEqualTo(memberList.get(10).getId());
+        System.out.println("Execution Time: " + (end - start) + " ns");
     }
-
-
 }
 
