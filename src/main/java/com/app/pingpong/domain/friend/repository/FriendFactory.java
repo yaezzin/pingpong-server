@@ -57,10 +57,11 @@ public class FriendFactory {
                 .or(QFriend.friend.respondent.eq(id))
                 .and(QFriend.friend.status.eq(ACTIVE));
 
-        Long count_long = queryFactory.select(friendCondition.count())
+        int count_long = queryFactory.select(QFriend.friend.count())
                 .from(QFriend.friend)
-                .fetchOne();
-        return Long.valueOf(count_long).intValue();
+                .where(friendCondition)
+                .fetchOne().intValue();
+        return count_long;
     }
 }
 

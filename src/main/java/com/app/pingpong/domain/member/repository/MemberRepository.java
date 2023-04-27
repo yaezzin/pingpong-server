@@ -18,14 +18,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<List<Member>> findByStatusAndNicknameContains(Status status, String nickname);
 
-    List<Member> findAllByIdBetween(Long id1, Long id2);
-
+    @Query("select count(m.id) > 0 from Member m where m.nickname =:nickname and m.status = 'ACTIVE'")
+    boolean existsMemberByNicknameAndStatus(@Param("nickname") String nickname);
 
     boolean existsByEmail(String email);
 
     boolean existsMemberByNickname(String nickname);
 
-    @Query("select count(m.id) > 0 from Member m where m.nickname =:nickname and m.status = 'ACTIVE'")
-    boolean existsMemberByNicknameAndStatus(@Param("nickname") String nickname);
 
 }

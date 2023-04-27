@@ -109,13 +109,7 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public List<MemberSearchResponse> findByNickname(String nickname, Long id) {
-        long startTime = System.nanoTime();
-
         List<Member> findMembers = memberSearchRepository.findByNicknameContainsWithNoOffset(ACTIVE, nickname, id, 10);
-        long endTime = System.nanoTime();
-        long duration = endTime - startTime;
-
-        System.out.println("실행 시간: " + duration + " ns");
 
         /* save log into Redis */
         ListOperations<String, Object> listOps = redisTemplate.opsForList();
@@ -169,7 +163,7 @@ public class MemberService {
             teamList.add(MemberTeamResponse.of(team, MemberResponse.of(members)));
         }
         return teamList;
-    }
+    }/
 
     @Transactional(readOnly = true)
     public List<MemberAchieveResponse> getMemberAchievementRate(MemberAchieveRequest request, Long loginMemberId) {

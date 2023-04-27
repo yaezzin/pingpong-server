@@ -95,24 +95,24 @@ jacocoTestReport {
         html.destination file("${buildDir}/jacoco/index.html")
     }
 
-    def Qdomains = []
-    for (qPattern in '**/QA'..'**/QZ') {
-        Qdomains.add(qPattern + '*')
-    }
-
     afterEvaluate {
         classDirectories.setFrom(
                 files(classDirectories.files.collect {
                     fileTree(dir: it, excludes: [
+                            "**/social/**/*",
+                            "**/global/**/*",
                             "**/*Application*",
                             "**/*Config*",
-                            "**/*Dto*",
                             "**/*Request*",
                             "**/*Response*",
                             "**/*Interceptor*",
                             "**/*Exception*",
-                            "**/*OAuth*"
-                    ] + Qdomains)
+                            "**/*OAuth*",
+                            "**/domain/team/entity/**/*",
+                            "**/domain/friend/entity/**/*",
+                            "**/domain/member/entity/**/*",
+                            "**/domain/notification/entity/**/*"
+                    ])
                 })
         )
     }
@@ -156,12 +156,6 @@ jacocoTestCoverageVerification {
                 value = 'TOTALCOUNT'
                 maximum = 200
             }
-
-            excludes = [
-
-            ] + Qdomains + [
-                    "**/*Repository*"
-            ]
         }
 
     }
