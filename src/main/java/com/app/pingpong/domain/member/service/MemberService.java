@@ -233,6 +233,7 @@ public class MemberService {
         for (String num : numList) {
             if (isLong(num)) {
                 Long memberId = Long.parseLong(num);
+                System.out.println("========= memberId " + memberId);
                 Member member = findMemberByIdAndStatus(memberId, ACTIVE);
                 memberList.add(MemberResponse.of(member));
             } else {

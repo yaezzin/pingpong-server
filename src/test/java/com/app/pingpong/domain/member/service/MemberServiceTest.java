@@ -8,9 +8,13 @@ import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
+import com.app.pingpong.domain.member.dto.response.MemberTeamResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberSearchRepository;
+import com.app.pingpong.domain.member.repository.MemberTeamRepository;
+import com.app.pingpong.domain.team.entity.Team;
+import com.app.pingpong.domain.team.repository.TeamRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
 import com.app.pingpong.global.common.response.BaseResponse;
@@ -21,6 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,6 +34,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 
 import static com.app.pingpong.factory.MemberFactory.createMember;
+import static com.app.pingpong.factory.MemberTeamFactory.createMemberTeam;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static com.app.pingpong.global.common.status.Status.ACTIVE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,10 +58,19 @@ public class MemberServiceTest {
     MemberSearchRepository memberSearchRepository;
 
     @Autowired
+    MemberTeamRepository memberTeamRepository;
+
+    @Autowired
+    TeamRepository teamRepository;
+
+    @Autowired
     FriendFactory friendFactory;
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    RedisTemplate<String, Object> redisTemplate;
 
     @BeforeEach
     public void setUp() {
@@ -184,7 +199,7 @@ public class MemberServiceTest {
         // given
         Member loginMember = memberRepository.save(createMember());
         Member opponentMember = memberRepository.save(createMember());
-        Friend friend = new Friend(loginMember.getId(), opponentMember.getId(), ACTIVE, now());
+        Friend friend = new Friend(opponentMember.getId(), loginMember.getId(), ACTIVE, now());
         int friendCount = friendFactory.findFriendCount(opponentMember.getId());
 
         // when
@@ -227,7 +242,6 @@ public class MemberServiceTest {
 
         SearchLogRequest request = new SearchLogRequest(searchMember.getId());
 
-
         //when
         StatusCode response = memberService.saveSearchLog(request, loginMember.getId());
 
@@ -248,4 +262,29 @@ public class MemberServiceTest {
             memberService.saveSearchLog(request, searchMember.getId());
         });
     }
+
+    @Test
+    @DisplayName("자신이 속한 모든 팀 조회")
+    public void getMemberTeams() {
+        // given
+        Member member1 = memberRepository.save(createMember());
+        Member member2 = memberRepository.save(createMember());
+        Member member3 = memberRepository.save(createMember());
+
+        Team team = new Team("team1");
+        team.setHost(member1);
+        teamRepository.save(team);
+
+        memberTeamRepository.save(createMemberTeam(member1, team));
+        memberTeamRepository.save(createMemberTeam(member2, team));
+        memberTeamRepository.save(createMemberTeam(member3, team));
+
+        // when
+        List<MemberTeamResponse> response = memberService.getMemberTeams(member1.getId());
+
+        // then
+        assertThat(response.size()).isEqualTo(1);
+        assertThat(response.get(0).getTeamName()).isEqualTo(team.getName());
+    }
+
 }
