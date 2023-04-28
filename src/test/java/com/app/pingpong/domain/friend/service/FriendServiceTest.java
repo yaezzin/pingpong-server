@@ -1,5 +1,6 @@
 package com.app.pingpong.domain.friend.service;
 
+import com.app.pingpong.domain.friend.dto.request.FriendRefuseRequest;
 import com.app.pingpong.domain.friend.dto.request.FriendRequest;
 import com.app.pingpong.domain.friend.dto.response.FriendResponse;
 import com.app.pingpong.domain.friend.entity.Friend;
@@ -181,12 +182,14 @@ public class FriendServiceTest {
     public void refuse() {
         Member loginMember = memberRepository.save(createMember("applicant"));
         Member opponent = memberRepository.save(createMember("respondent"));
+        FriendRefuseRequest request = new FriendRefuseRequest(opponent.getId());
+
         Friend friendship = friendRepository.save(new Friend(opponent.getId(), loginMember.getId(), WAIT, now()));
-        NotificationFriendRequest request = new NotificationFriendRequest(loginMember.getId());
+        NotificationFriendRequest notificationRequest = new NotificationFriendRequest(loginMember.getId());
 
         // when
-        StatusCode code = notificationService.notifyFriend(request, opponent.getId());
-        StatusCode response = friendService.refuse(opponent.getId(), loginMember.getId());
+        StatusCode code = notificationService.notifyFriend(notificationRequest, opponent.getId());
+        StatusCode response = friendService.refuse(request, loginMember.getId());
 
         // then
         assertThat(response).isEqualTo(SUCCESS_REFUSE_FRIEND);
@@ -200,10 +203,11 @@ public class FriendServiceTest {
         // given
         Member loginMember = memberRepository.save(createMember("applicant"));
         Member opponent = memberRepository.save(createMember("respondent"));
+        FriendRefuseRequest request = new FriendRefuseRequest(opponent.getId());
 
         // when, then
         assertThrows(BaseException.class, () -> {
-            friendService.refuse(opponent.getId(), loginMember.getId());
+            friendService.refuse(request, loginMember.getId());
         });
     }
 
@@ -213,13 +217,14 @@ public class FriendServiceTest {
         // given
         Member loginMember = memberRepository.save(createMember("applicant"));
         Member opponent = memberRepository.save(createMember("respondent"));
+        FriendRefuseRequest request = new FriendRefuseRequest(opponent.getId());
         Friend friendship = friendRepository.save(new Friend(opponent.getId(), loginMember.getId(), ACTIVE, now()));
-        NotificationFriendRequest request = new NotificationFriendRequest(loginMember.getId());
-        StatusCode code = notificationService.notifyFriend(request, opponent.getId());
+        NotificationFriendRequest notificationRequest = new NotificationFriendRequest(loginMember.getId());
+        StatusCode code = notificationService.notifyFriend(notificationRequest, opponent.getId());
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> {
-            friendService.refuse(opponent.getId(), loginMember.getId());
+            friendService.refuse(request, loginMember.getId());
         });
         assertThat(exception.getStatus()).isEqualTo(ALREADY_ON_FRIEND);
     }

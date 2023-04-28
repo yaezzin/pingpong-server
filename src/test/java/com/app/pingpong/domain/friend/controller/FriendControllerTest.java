@@ -2,7 +2,6 @@ package com.app.pingpong.domain.friend.controller;
 
 import com.app.pingpong.domain.friend.dto.request.FriendRequest;
 import com.app.pingpong.domain.friend.service.FriendService;
-import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,10 +14,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.mockito.BDDMockito.given;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,6 +50,7 @@ public class FriendControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
+        verify(friendService).apply(any());
     }
 
     @Test
@@ -59,19 +58,12 @@ public class FriendControllerTest {
     public void getMyFriends() throws Exception {
         // given
         Long memberId = 1L;
-        List<MemberResponse> friendList = Arrays.asList(
-                new MemberResponse(2L, "friend1", "profile"),
-                new MemberResponse(3L, "friend2", "profile"));
-
-        given(friendService.getMyFriends(memberId)).willReturn(friendList);
 
         // when, then
         mockMvc.perform(get("/api/friends")
-                        .param("id", memberId.toString())
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .param("id", memberId.toString()))
                 .andExpect(status().isOk());
+        verify(friendService).getMyFriends(anyLong());
     }
-
-
 }
 

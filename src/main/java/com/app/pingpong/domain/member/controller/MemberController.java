@@ -77,14 +77,14 @@ public class MemberController {
     @ResponseBody
     @PostMapping("/search-log")
     @CheckLoginStatus(auth = Authority.ROLE_USER)
-    public BaseResponse<StatusCode> saveSearchLog(@RequestBody SearchLogRequest request, Long id) {
+    public BaseResponse<StatusCode> saveSearchLog(@RequestBody SearchLogRequest request, @CurrentLoginMemberId Long id) {
         return new BaseResponse<>(memberService.saveSearchLog(request, id));
     }
 
     @ResponseBody
     @GetMapping("/search-log")
     @CheckLoginStatus(auth = Authority.ROLE_USER)
-    public BaseResponse<List<Object>> saveSearchLog(@CurrentLoginMemberId Long id) {
+    public BaseResponse<List<Object>> getSearchLog(@CurrentLoginMemberId Long id) {
         return new BaseResponse<>(memberService.getSearchLog(id));
     }
 

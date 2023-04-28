@@ -1,5 +1,6 @@
 package com.app.pingpong.domain.friend.controller;
 
+import com.app.pingpong.domain.friend.dto.request.FriendRefuseRequest;
 import com.app.pingpong.domain.friend.dto.request.FriendRequest;
 import com.app.pingpong.domain.friend.dto.response.FriendResponse;
 import com.app.pingpong.domain.friend.service.FriendService;
@@ -37,8 +38,8 @@ public class FriendController {
     @ResponseBody
     @PostMapping("/refuse")
     @CheckLoginStatus(auth = Authority.ROLE_USER)
-    public BaseResponse<StatusCode> refuse(@RequestParam("opponentId") Long opponentId, @CurrentLoginMemberId Long id) {
-        return new BaseResponse<>(friendService.refuse(opponentId, id));
+    public BaseResponse<StatusCode> refuse(@RequestBody FriendRefuseRequest request, @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(friendService.refuse(request, id));
     }
 
     @ResponseBody

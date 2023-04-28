@@ -1,5 +1,6 @@
 package com.app.pingpong.domain.friend.service;
 
+import com.app.pingpong.domain.friend.dto.request.FriendRefuseRequest;
 import com.app.pingpong.domain.friend.dto.request.FriendRequest;
 import com.app.pingpong.domain.friend.dto.response.FriendResponse;
 import com.app.pingpong.domain.friend.entity.Friend;
@@ -45,10 +46,10 @@ public class FriendService {
         return SUCCESS_ACCEPT_FRIEND;
     }
 
-    public StatusCode refuse(Long opponentId, Long loginMemberId) {
-        Friend request = getWaitingFriendRequest(opponentId, loginMemberId);
-        setStatusDelete(request);
-        setNotificationAccepted(opponentId, loginMemberId);
+    public StatusCode refuse(FriendRefuseRequest request, Long loginMemberId) {
+        Friend friend = getWaitingFriendRequest(request.getOpponentId(), loginMemberId);
+        setStatusDelete(friend);
+        setNotificationAccepted(request.getOpponentId(), loginMemberId);
         return SUCCESS_REFUSE_FRIEND;
     }
 
