@@ -1,7 +1,11 @@
 package com.app.pingpong.domain.member.dto.response;
 
 import com.app.pingpong.domain.member.entity.Member;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.List;
@@ -12,6 +16,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder
 public class MemberResponse implements Serializable {
+    @JsonProperty("memberId")
     private Long memberId;
     private String nickname;
     private String profileImage;

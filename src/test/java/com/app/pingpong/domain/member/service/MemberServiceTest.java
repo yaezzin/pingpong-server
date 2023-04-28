@@ -14,6 +14,7 @@ import com.app.pingpong.domain.member.repository.MemberSearchRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
 import com.app.pingpong.global.common.response.BaseResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,6 +56,11 @@ public class MemberServiceTest {
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    public void setUp() {
+        memberRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("회원가입")
@@ -124,7 +130,7 @@ public class MemberServiceTest {
 
         // then
         assertThat(response).isNotNull();
-        assertThat(response.getMemberId()).isEqualTo(1);
+        assertThat(response.getMemberId()).isEqualTo(member.getId());
     }
 
     @Test
@@ -202,7 +208,6 @@ public class MemberServiceTest {
         SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
-
 
         // when
         List<MemberSearchResponse> response = memberService.findByNickname("nickname", 10L);
