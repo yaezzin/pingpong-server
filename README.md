@@ -18,8 +18,8 @@
 * [공통 응답객체 만들기](https://github.com/pping-ppong/Server/issues/5)
 * [No offset 방식으로 성능 개선하기](https://github.com/pping-ppong/Server/issues/6)
 * [알림 서비스 구현기 - Redis or MongoDB?](https://github.com/pping-ppong/Server/issues/7)
-* [FCM을 사용하여 푸시알림 구현 - 비동기 처리](https://github.com/pping-ppong/Server/issues/8)
-* [Lambda를 이용한 이미지 리사이징](https://github.com/pping-ppong/Server/issues/9)
-* [Jenkins와 Docker를 이용한 CI/CD](https://github.com/pping-ppong/Server/issues/10)
-* [TDD 적용기](https://github.com/pping-ppong/Server/issues/11)
-* [Jacoco를 통해 테스트 커버리지 측정하기](https://github.com/pping-ppong/Server/issues/12)
+* [TDD 적용기](https://github.com/pping-ppong/Server/issues/8)
+* [Jacoco를 통해 테스트 커버리지 측정하기](https://github.com/pping-ppong/Server/issues/9)
+* [Lambda를 이용한 이미지 리사이징](https://github.com/pping-ppong/Server/issues/10)
+* [Jenkins와 Docker를 이용한 CI/CD](https://github.com/pping-ppong/Server/issues/11)
+
