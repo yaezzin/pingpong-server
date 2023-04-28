@@ -2,18 +2,17 @@ package com.app.pingpong.domain.member.service;
 
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendFactory;
+import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
-import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
-import com.app.pingpong.domain.member.dto.response.MemberResponse;
-import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
-import com.app.pingpong.domain.member.dto.response.MemberTeamResponse;
+import com.app.pingpong.domain.member.dto.response.*;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberSearchRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.team.entity.Team;
+import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.domain.team.repository.TeamRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
@@ -31,10 +30,14 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.app.pingpong.factory.MemberFactory.createMember;
 import static com.app.pingpong.factory.MemberTeamFactory.createMemberTeam;
+import static com.app.pingpong.factory.PlanFactory.createCompletedPlan;
+import static com.app.pingpong.factory.PlanFactory.createInCompletedPlan;
+import static com.app.pingpong.factory.TeamFactory.createTeam;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static com.app.pingpong.global.common.status.Status.ACTIVE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,6 +62,9 @@ public class MemberServiceTest {
 
     @Autowired
     MemberTeamRepository memberTeamRepository;
+
+    @Autowired
+    PlanRepository planRepository;
 
     @Autowired
     TeamRepository teamRepository;
@@ -287,4 +293,57 @@ public class MemberServiceTest {
         assertThat(response.get(0).getTeamName()).isEqualTo(team.getName());
     }
 
+    @Test
+    @DisplayName("성취율 조회")
+    public void getMemberAchievementRate() {
+        Member member = memberRepository.save(createMember());
+        Team team = teamRepository.save(createTeam(member));
+        memberTeamRepository.save(createMemberTeam(member, team));
+
+        planRepository.save(createCompletedPlan(member, team, LocalDate.of(2023, 3, 1)));
+        planRepository.save(createCompletedPlan(member, team, LocalDate.of(2023, 3, 2)));
+        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 2)));
+        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 3)));
+        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 3)));
+
+        MemberAchieveRequest request = new MemberAchieveRequest(LocalDate.of(2023, 3, 1), LocalDate.of(2023, 3, 31));
+
+        // when
+        List<MemberAchieveResponse> response = memberService.getMemberAchievementRate(request, member.getId());
+
+        for (int i = 0; i < response.size(); i++) {
+            System.out.println("=== " + response.get(i).getDate());
+        }
+
+        // then
+        assertThat(response.get(0).getAchievement()).isEqualTo(100);
+        assertThat(response.get(1).getAchievement()).isEqualTo(50);
+        assertThat(response.get(2).getAchievement()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("유저 캘린더 조회")
+    public void getMemberCalendarByDate() {
+        // given
+        LocalDate date1 = LocalDate.of(2023, 3, 1);
+        LocalDate date2 = LocalDate.of(2023, 3, 2);
+
+        Member member = memberRepository.save(createMember());
+        Team team = teamRepository.save(createTeam(member));
+        memberTeamRepository.save(createMemberTeam(member, team));
+
+        planRepository.save(createCompletedPlan(member, team, LocalDate.of(2023, 3, 1)));
+        planRepository.save(createCompletedPlan(member, team, LocalDate.of(2023, 3, 2)));
+        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 2)));
+        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 3)));
+        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 3)));
+
+        // when
+        List<MemberPlanDetailResponse> response1 = memberService.getMemberCalendarByDate(date1, member.getId());
+        List<MemberPlanDetailResponse> response2 = memberService.getMemberCalendarByDate(date2, member.getId());
+
+        // then
+        assertThat(response1.get(0).getPlanList().size()).isEqualTo(1);
+        assertThat(response2.get(0).getPlanList().size()).isEqualTo(2);
+    }
 }
