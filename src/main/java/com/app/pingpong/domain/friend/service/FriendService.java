@@ -40,14 +40,14 @@ public class FriendService {
 
     public StatusCode accept(Long opponentId, Long loginMemberId) {
         Friend request = getWaitingFriendRequest(opponentId, loginMemberId);
-        checkAndSetStatusActive(request);
+        setStatusActive(request);
         setNotificationAccepted(opponentId, loginMemberId);
         return SUCCESS_ACCEPT_FRIEND;
     }
 
     public StatusCode refuse(Long opponentId, Long loginMemberId) {
         Friend request = getWaitingFriendRequest(opponentId, loginMemberId);
-        checkAndSetStatusDelete(request);
+        setStatusDelete(request);
         setNotificationAccepted(opponentId, loginMemberId);
         return SUCCESS_REFUSE_FRIEND;
     }
@@ -78,21 +78,19 @@ public class FriendService {
     }
 
     private Friend getWaitingFriendRequest(Long opponentId, Long loginMemberId) {
+        boolean friendship = friendFactory.isFriend(opponentId, loginMemberId);
+        if (friendship) {
+            throw new BaseException(ALREADY_ON_FRIEND);
+        }
         Friend friend = friendFactory.findWaitRequestBy(opponentId, loginMemberId).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
         return friend;
     }
 
-    private void checkAndSetStatusActive(Friend friend) {
-        if (friend.getStatus().equals(ACTIVE)) {
-            throw new BaseException(ALREADY_ON_FRIEND);
-        }
+    private void setStatusActive(Friend friend) {
         friend.setStatus(ACTIVE);
     }
 
-    private void checkAndSetStatusDelete(Friend friend) {
-        if (friend.getStatus().equals(ACTIVE)) {
-            throw new BaseException(ALREADY_ON_FRIEND);
-        }
+    private void setStatusDelete(Friend friend) {
         friend.setStatus(DELETE);
     }
 

@@ -90,7 +90,7 @@ public class MemberServiceTest {
     @DisplayName("닉네임 유효성 검사 - 중복되는 닉네임")
     public void existsNickname() {
         // given
-        Member member = createMember();
+        Member member = memberRepository.save(createMember());
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> {
@@ -238,8 +238,7 @@ public class MemberServiceTest {
 
         SearchLogRequest request = new SearchLogRequest(searchMember.getId());
 
-        // when : 원래는 로그인한 유저의 pk를 전달해야하나, 실패 테스트를 위해 searchMember pk 전달
-        // then
+        // when, then : 원래는 로그인한 유저의 pk를 전달해야하나, 실패 테스트를 위해 searchMember pk 전달
         assertThrows(BaseException.class, () -> {
             memberService.saveSearchLog(request, searchMember.getId());
         });

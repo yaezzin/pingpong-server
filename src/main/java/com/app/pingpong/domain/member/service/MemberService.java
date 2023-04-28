@@ -163,7 +163,7 @@ public class MemberService {
             teamList.add(MemberTeamResponse.of(team, MemberResponse.of(members)));
         }
         return teamList;
-    }/
+    }
 
     @Transactional(readOnly = true)
     public List<MemberAchieveResponse> getMemberAchievementRate(MemberAchieveRequest request, Long loginMemberId) {
