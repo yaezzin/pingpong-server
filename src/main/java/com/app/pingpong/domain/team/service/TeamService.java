@@ -131,7 +131,6 @@ public class TeamService {
     @Transactional
     public TeamPlanResponse deletePlan(Long teamId, Long planId) {
         Member member = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        ;
         memberTeamRepository.findByTeamIdAndMemberId(teamId, member.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
         plan.setStatus(DELETE);
@@ -298,6 +297,16 @@ public class TeamService {
         memberTeams.forEach(memberTeam -> memberTeam.setStatus(DELETE));
     }
 
+    private void checkHostForDelegate(Team team, Member host, Member delegator) {
+        if (team.getHost().getId() != host.getId()) {
+            throw new BaseException(INVALID_HOST);
+        }
+        if (host.getId() == delegator.getId()) {
+            throw new BaseException(ALREADY_TEAM_HOST);
+        }
+        team.setHost(delegator);
+    }
+
     private List<Member> getMembersFromMemberTeams(List<MemberTeam> memberTeams) {
         return memberTeams.stream()
                 .map(MemberTeam::getMember)
@@ -326,16 +335,6 @@ public class TeamService {
         Member mandator = memberRepository.findByIdAndStatus(request.getMandatorId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         memberTeamRepository.findByTeamIdAndMemberId(teamId, mandator.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
         return mandator;
-    }
-
-    private void checkHostForDelegate(Team team, Member host, Member delegator) {
-        if (team.getHost().getId() != host.getId()) {
-            throw new BaseException(INVALID_HOST);
-        }
-        if (host.getId() == delegator.getId()) {
-            throw new BaseException(ALREADY_TEAM_HOST);
-        }
-        team.setHost(delegator);
     }
 
     private void checkHostForEmit(Team team, Member host, Long emitterId) {

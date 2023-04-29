@@ -5,10 +5,13 @@ import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
+import com.app.pingpong.domain.team.dto.response.TeamHostResponse;
 import com.app.pingpong.domain.team.dto.response.TeamResponse;
 import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.TeamRepository;
 import com.app.pingpong.global.common.exception.BaseException;
+import com.app.pingpong.global.common.exception.StatusCode;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +44,13 @@ public class TeamServiceTest {
 
     @Autowired
     MemberTeamRepository memberTeamRepository;
+
+    @BeforeEach
+    public void setUp() {
+        memberRepository.deleteAll();
+        teamRepository.deleteAll();
+        memberTeamRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("팀 생성 성공")
@@ -114,6 +124,84 @@ public class TeamServiceTest {
         });
         assertThat(exception.getStatus()).isEqualTo(EXCEED_HOST_TEAM_SIZE);
     }
+
+    @Test
+    @DisplayName("팀 삭제 성공")
+    public void delete() {
+        Member host = memberRepository.save(createMember());
+        setAuthenticatedMember(host);
+
+        Team team = teamRepository.save(createTeam(host));
+        for (int i = 0; i < 5; i++) {
+            Member member = memberRepository.save(createMember("email" + i + "email@com", "nickname" + i));
+            MemberTeam memberTeam = memberTeamRepository.save(createMemberTeam(member, team));
+        }
+
+        // when
+        StatusCode code = teamService.delete(team.getId());
+
+        // then
+        assertThat(code).isEqualTo(SUCCESS_DELETE_TEAM);
+    }
+
+    @Test
+    @DisplayName("팀 삭제 실패 - 권한 없음")
+    public void delete_fail() {
+        Member host = memberRepository.save(createMember("email1@email.con", "nickname"));
+        Member anotherMember = memberRepository.save(createMember("email2@email.con", "nickname"));
+        setAuthenticatedMember(anotherMember);
+
+        Team team = teamRepository.save(createTeam(host));
+        memberTeamRepository.save(createMemberTeam(host, team));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            teamService.delete(team.getId());
+        });
+        assertThat(exception.getStatus()).isEqualTo(INVALID_HOST);
+    }
+
+    @Test
+    @DisplayName("호스트 변경 성공")
+    public void updateHost() {
+        Member host = memberRepository.save(createMember("email1@email.con", "nickname"));
+        setAuthenticatedMember(host);
+        Member delegator = memberRepository.save(createMember("email2@email.con", "nickname"));
+
+        Team team = teamRepository.save(createTeam(host));
+        memberTeamRepository.save(createMemberTeam(host, team));
+        memberTeamRepository.save(createMemberTeam(delegator, team));
+
+        // when
+        TeamHostResponse response = teamService.updateHost(team.getId(), delegator.getId(), host.getId());
+
+        // then
+        assertThat(response.getHostId()).isEqualTo(delegator.getId());
+    }
+
+    @Test
+    @DisplayName("호스트 변경 실패 - 위임받으려는 자가 이미 방장인 경우")
+    public void updateHost_fail() {
+        Member host = memberRepository.save(createMember("email1@email.con", "nickname"));
+        setAuthenticatedMember(host);
+        Member delegator = memberRepository.save(createMember("email2@email.con", "nickname"));
+
+        Team team = teamRepository.save(createTeam(host));
+        memberTeamRepository.save(createMemberTeam(host, team));
+        memberTeamRepository.save(createMemberTeam(delegator, team));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            teamService.updateHost(team.getId(), host.getId(), host.getId());
+        });
+        assertThat(exception.getStatus()).isEqualTo(ALREADY_TEAM_HOST);
+
+        BaseException exception1 = assertThrows(BaseException.class, () -> {
+            teamService.updateHost(team.getId(), host.getId(), delegator.getId());
+        });
+        assertThat(exception1.getStatus()).isEqualTo(INVALID_HOST);
+    }
+
 
     private void setAuthenticatedMember(Member member) {
         Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), member.getSocialId());
