@@ -13,7 +13,6 @@ public class MemberFactory {
 
     public static Member createMember(String email, String nickname) {
         return new Member("123", email, nickname, "profileImage", ACTIVE, Authority.ROLE_USER);
-
     }
 
     public static Member createMember(String nickname) {

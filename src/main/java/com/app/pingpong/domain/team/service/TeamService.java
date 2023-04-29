@@ -15,9 +15,9 @@ import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.domain.team.repository.TeamRepository;
-import com.app.pingpong.global.common.status.Status;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
+import com.app.pingpong.global.common.status.Status;
 import com.app.pingpong.global.common.util.MemberFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.app.pingpong.global.common.status.Status.*;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
+import static com.app.pingpong.global.common.status.Status.*;
 
 @RequiredArgsConstructor
 @Service
@@ -130,7 +130,8 @@ public class TeamService {
 
     @Transactional
     public TeamPlanResponse deletePlan(Long teamId, Long planId) {
-        Member member = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));;
+        Member member = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        ;
         memberTeamRepository.findByTeamIdAndMemberId(teamId, member.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
         plan.setStatus(DELETE);
@@ -243,11 +244,6 @@ public class TeamService {
         return SUCCESS_RECOVER_TRASH;
     }
 
-    private void setTeam(Team team, Member host) {
-        team.setHost(host);
-        team.setStatus(Status.ACTIVE);
-    }
-
     private void checkTeam(Member loginMember, TeamRequest request) {
         if (teamRepository.findByHostId(loginMember.getId()).size() > 6) {
             throw new BaseException(EXCEED_HOST_TEAM_SIZE);
@@ -258,6 +254,11 @@ public class TeamService {
         for (Long id : request.getMemberId()) {
             memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(INVALID_INVITER));
         }
+    }
+
+    private void setTeam(Team team, Member host) {
+        team.setHost(host);
+        team.setStatus(Status.ACTIVE);
     }
 
     private void setTeamToHost(Team team, Member loginMember) {
@@ -384,7 +385,8 @@ public class TeamService {
     }
 
     private void checkMakerExistsAndMemberShip(Long teamId) {
-        Member maker = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));;
+        Member maker = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        ;
         memberTeamRepository.findByTeamIdAndMemberId(teamId, maker.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
     }
 
