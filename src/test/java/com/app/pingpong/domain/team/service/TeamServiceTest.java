@@ -202,6 +202,25 @@ public class TeamServiceTest {
         assertThat(exception1.getStatus()).isEqualTo(INVALID_HOST);
     }
 
+    @Test
+    @DisplayName("방출")
+    public void emit() {
+        Member host = memberRepository.save(createMember("email1@email.con", "nickname"));
+        Member emit = memberRepository.save(createMember("email2@email.con", "nickname"));
+        setAuthenticatedMember(host);
+
+        Team team = teamRepository.save(createTeam(host));
+        memberTeamRepository.save(createMemberTeam(host, team));
+        memberTeamRepository.save(createMemberTeam(emit, team));
+
+        // when
+        TeamHostResponse response = teamService.emit(team.getId(), emit.getId());
+
+        // then
+        assertThat(response.getResponses().get(0).getMemberId()).isEqualTo(host.getId());
+        assertThat(response.getResponses().get(1).getMemberId()).isEqualTo(emit.getId());
+    }
+
 
     private void setAuthenticatedMember(Member member) {
         Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), member.getSocialId());

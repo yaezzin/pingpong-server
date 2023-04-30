@@ -459,13 +459,20 @@ public class TeamService {
     private List<TeamCompactResponse> getTeamMemberStatus(Team team) {
         List<TeamCompactResponse> list = new ArrayList<>();
         List<Member> members = team.getMembers().stream().map(MemberTeam::getMember).collect(Collectors.toList());
-        for (Member m : members) {
-            MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), m.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-            list.add(TeamCompactResponse.builder()
-                    .memberId(m.getId())
-                    .status(m1.getStatus())
-                    .build());
+
+        List<MemberTeam> all = memberTeamRepository.findAllByTeamId(team.getId());
+        for (MemberTeam mt : all) {
+            list.add(TeamCompactResponse.builder().memberId(mt.getMember().getId()).status(mt.getStatus()).build());
         }
+
+
+        //for (Member m : members) {
+        //    MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), m.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        //    list.add(TeamCompactResponse.builder()
+        //            .memberId(m.getId())
+        //            .status(m1.getStatus())
+        //            .build());
+        //}
         return list;
     }
 }
