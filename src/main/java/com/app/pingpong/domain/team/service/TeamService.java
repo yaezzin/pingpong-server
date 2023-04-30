@@ -317,8 +317,8 @@ public class TeamService {
         List<TeamMemberResponse> list = new ArrayList<>();
         for (Member findMember : members) {
             boolean isFriend = friendFactory.isFriend(team.getHost().getId(), findMember.getId());
-            MemberTeam isStatus = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), findMember.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-            list.add(TeamMemberResponse.of(findMember, team, isFriend, isStatus));
+            MemberTeam status = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), findMember.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+            list.add(TeamMemberResponse.of(findMember, team, isFriend, status));
         }
         return list;
     }

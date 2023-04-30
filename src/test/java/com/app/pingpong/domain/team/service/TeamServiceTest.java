@@ -6,6 +6,7 @@ import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
 import com.app.pingpong.domain.team.dto.response.TeamHostResponse;
+import com.app.pingpong.domain.team.dto.response.TeamMemberResponse;
 import com.app.pingpong.domain.team.dto.response.TeamResponse;
 import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.TeamRepository;
@@ -221,7 +222,30 @@ public class TeamServiceTest {
         assertThat(response.getResponses().get(1).getMemberId()).isEqualTo(emit.getId());
     }
 
+    @Test
+    @DisplayName("팀 멤버 조회 by 호스트 관점")
+    public void getTeamMembers() {
+        Member host = memberRepository.save(createMember("email1@email.con", "nickname"));
+        Member member = memberRepository.save(createMember("email2@email.con", "nickname"));
+        setAuthenticatedMember(host);
 
+        Team team = teamRepository.save(createTeam(host));
+        memberTeamRepository.save(createMemberTeam(host, team));
+        memberTeamRepository.save(createMemberTeam(member, team));
+
+        // when
+        List<TeamMemberResponse> response = teamService.getTeamMembers(team.getId());
+
+        // then
+        assertThat(response.get(0).getHostId()).isEqualTo(host.getId());
+        assertThat(response.get(1).getMemberId()).isEqualTo(member.getId());
+        assertThat(response.get(1).getNickname()).isEqualTo(member.getNickname());
+    }
+
+    @Test
+    @DisplayName("팀 수락 성공")
+
+    // private
     private void setAuthenticatedMember(Member member) {
         Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), member.getSocialId());
         SecurityContextHolder.getContext().setAuthentication(authentication);
