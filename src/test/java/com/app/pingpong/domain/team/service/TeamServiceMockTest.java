@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static com.app.pingpong.factory.MemberFactory.createMember;
-import static com.app.pingpong.factory.MemberTeamFactory.createWaitMemberTeam;
+import static com.app.pingpong.factory.MemberTeamFactory.*;
 import static com.app.pingpong.factory.TeamFactory.createTeam;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static com.app.pingpong.global.common.status.Status.ACTIVE;
@@ -104,8 +104,55 @@ public class TeamServiceMockTest {
     @Test
     @DisplayName("탈퇴 성공 테스트")
     public void resign() {
+        Member member = createMember();
+        Team team = createTeam(member);
+        MemberTeam memberTeam = createMemberTeam(member, team);
 
+        given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.of(memberTeam));
+
+        // when
+        StatusCode code = teamService.resign(1L, 1L);
+
+        // then
+        assertThat(code).isEqualTo(SUCCESS_RESIGN_TEAM);
     }
 
+    @Test
+    @DisplayName("탈퇴 실패 테스트 - 아직 팀 초대를 수락하지 않은 경우")
+    public void resign_fail_not_invite() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+        MemberTeam memberTeam = createWaitMemberTeam(member, team);
 
+        given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.of(memberTeam));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.resign(1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(INVALID_RESIGN_STATUS);
+    }
+
+    @Test
+    @DisplayName("탈퇴 실패 테스트 - 이미 탈퇴한 경우")
+    public void resign_fail_already_resign() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+        MemberTeam memberTeam = createDeleteMemberTeam(member, team);
+
+        given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.of(memberTeam));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.resign(1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(INVALID_RESIGN_STATUS);
+    }
+
+    @Test
+    @DisplayName("일정 생성 성공 테스트")
+    public void createPlan() {
+
+    }
 }

@@ -350,12 +350,6 @@ public class TeamService {
         return memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
     }
 
-    private Member checkMandatorInTeam(Long teamId, TeamPlanPassRequest request) {
-        Member mandator = memberRepository.findByIdAndStatus(request.getMandatorId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, mandator.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-        return mandator;
-    }
-
     private void checkHostForEmit(Team team, Member host, Long emitterId) {
         if (team.getHost().getId() != host.getId()) {
             throw new BaseException(INVALID_HOST);
@@ -375,6 +369,12 @@ public class TeamService {
         if (memberTeam.getStatus().equals(WAIT) || memberTeam.getStatus().equals(DELETE)) {
             throw new BaseException(INVALID_RESIGN_STATUS);
         }
+    }
+
+    private Member checkMandatorInTeam(Long teamId, TeamPlanPassRequest request) {
+        Member mandator = memberRepository.findByIdAndStatus(request.getMandatorId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, mandator.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        return mandator;
     }
 
     private Member checkManagerExistsAndMembership(Long teamId, TeamPlanRequest request) {
