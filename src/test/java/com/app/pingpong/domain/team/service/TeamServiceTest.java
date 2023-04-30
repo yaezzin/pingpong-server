@@ -204,7 +204,7 @@ public class TeamServiceTest {
     }
 
     @Test
-    @DisplayName("방출")
+    @DisplayName("방출 성공")
     public void emit() {
         Member host = memberRepository.save(createMember("email1@email.con", "nickname"));
         Member emit = memberRepository.save(createMember("email2@email.con", "nickname"));
@@ -243,7 +243,38 @@ public class TeamServiceTest {
     }
 
     @Test
-    @DisplayName("팀 수락 성공")
+    @DisplayName("팀 수락 실패 - 이미 수락 한 경우")
+    public void accept_fail_already_accept() {
+        Member host = memberRepository.save(createMember("email1@email.con", "nickname"));
+        Member member = memberRepository.save(createMember("email2@email.con", "nickname"));
+        setAuthenticatedMember(host);
+
+        Team team = teamRepository.save(createTeam(host));
+        memberTeamRepository.save(createMemberTeam(host, team));
+        memberTeamRepository.save(createMemberTeam(member, team));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            teamService.accept(team.getId());
+        });
+        assertThat(exception.getStatus()).isEqualTo(ALREADY_ACCEPT_TEAM_INVITATION);
+    }
+
+    @Test
+    @DisplayName("팀 수락 실패 - 팀 존재X")
+    public void accept_fail_team_not_found() {
+        Member host = memberRepository.save(createMember("email1@email.con", "nickname"));
+        Member member = memberRepository.save(createMember("email2@email.con", "nickname"));
+        setAuthenticatedMember(host);
+        Team team = createTeam(host);
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            teamService.accept(team.getId());
+        });
+        assertThat(exception.getStatus()).isEqualTo(TEAM_NOT_FOUND);
+    }
+
 
     // private
     private void setAuthenticatedMember(Member member) {

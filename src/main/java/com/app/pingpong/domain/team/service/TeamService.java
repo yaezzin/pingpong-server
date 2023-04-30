@@ -327,6 +327,25 @@ public class TeamService {
         return teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
     }
 
+    private void checkTeamInvitationAlreadyExists(Long teamId) {
+        if (memberTeamRepository.existsByTeamIdAndMemberIdAndStatus(teamId, memberFacade.getCurrentMember().getId(), ACTIVE)) {
+            throw new BaseException(ALREADY_ACCEPT_TEAM_INVITATION);
+        }
+    }
+
+    private void inviteMemberToTeam(Long teamId) {
+        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, memberFacade.getCurrentMember().getId(), WAIT)
+                .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
+        memberTeam.setStatus(ACTIVE);
+        memberTeam.setParticipatedAt(new Date());
+    }
+
+    private void refuseTeamInvitation(Long teamId) {
+        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, memberFacade.getCurrentMember().getId(), WAIT)
+                .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
+        memberTeam.setStatus(DELETE);
+    }
+
     private MemberTeam checkMemberInTeam(Long teamId, Long loginMemberId) {
         return memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
     }
@@ -356,25 +375,6 @@ public class TeamService {
         if (memberTeam.getStatus().equals(WAIT) || memberTeam.getStatus().equals(DELETE)) {
             throw new BaseException(INVALID_RESIGN_STATUS);
         }
-    }
-
-    private void checkTeamInvitationAlreadyExists(Long teamId) {
-        if (memberTeamRepository.existsByTeamIdAndMemberIdAndStatus(teamId, memberFacade.getCurrentMember().getId(), ACTIVE)) {
-            throw new BaseException(ALREADY_ACCEPT_TEAM_INVITATION);
-        }
-    }
-
-    private void inviteMemberToTeam(Long teamId) {
-        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, memberFacade.getCurrentMember().getId(), WAIT)
-                .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
-        memberTeam.setStatus(ACTIVE);
-        memberTeam.setParticipatedAt(new Date());
-    }
-
-    private void refuseTeamInvitation(Long teamId) {
-        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, memberFacade.getCurrentMember().getId(), WAIT)
-                .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
-        memberTeam.setStatus(DELETE);
     }
 
     private Member checkManagerExistsAndMembership(Long teamId, TeamPlanRequest request) {

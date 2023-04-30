@@ -20,8 +20,6 @@ import com.app.pingpong.global.common.response.BaseResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -48,7 +46,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @DataJpaTest
-@ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
 
     @Autowired
