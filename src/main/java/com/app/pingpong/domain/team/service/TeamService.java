@@ -385,7 +385,6 @@ public class TeamService {
 
     private void checkMakerExistsAndMemberShip(Long teamId) {
         Member maker = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        ;
         memberTeamRepository.findByTeamIdAndMemberId(teamId, maker.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
     }
 
