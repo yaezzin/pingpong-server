@@ -29,4 +29,8 @@ public class TeamMemberResponse {
                 .status(isStatus.getStatus())
                 .build();
     }
+
+    public boolean getFriendStatus() {
+        return isFriend;
+    }
 }

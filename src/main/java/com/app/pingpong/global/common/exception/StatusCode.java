@@ -51,7 +51,7 @@ public enum StatusCode {
 
     USER_ALREADY_FRIEND_REQUEST(false, 400, "해당 유저에게 이미 친구 신청을 하였습니다."),
     USER_ALREADY_GET_FRIEND_REQUEST(false, 400, "나에게 이미 친구 신청을 보낸 유저입니다."),
-    USER_ALREADY_EMIT(false, 400, "이미 방출된 유저입니다"),
+    MEMBER_ALREADY_EMIT(false, 400, "이미 방출된 유저입니다"),
     ALREADY_ON_FRIEND(false, 400, "이미 친구인 유저입니다."),
     ALREADY_TEAM_HOST(false, 400, "이미 해당 그룹의 호스트입니다."),
     ALREADY_ACCEPT_TEAM_INVITATION(false, 400, "이미 해당 그룹의 초대를 수락하였습니다."),

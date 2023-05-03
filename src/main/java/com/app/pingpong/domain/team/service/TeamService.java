@@ -68,29 +68,22 @@ public class TeamService {
 
     @Transactional
     public TeamHostResponse updateHost(Long teamId, Long delegatorId, Long loginMemberId) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        Member host = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        Member delegator = memberRepository.findByIdAndStatus(delegatorId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        checkHostForDelegate(team, host, delegator);
+        Team team = checkHostForDelegate(teamId, loginMemberId, delegatorId);
         return TeamHostResponse.of(team, getTeamMemberStatus(team));
     }
 
     @Transactional
     public TeamHostResponse emit(Long teamId, Long emitterId) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        Member host = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        checkHostForEmit(team, host, emitterId);
-        memberRepository.findByIdAndStatus(emitterId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, emitterId, ACTIVE).orElseThrow(() -> new BaseException(USER_ALREADY_EMIT));
-        memberTeam.setStatus(DELETE);
+        Team team = checkHostForEmit(teamId, emitterId);
+        emitMember(teamId, emitterId);
         return TeamHostResponse.of(team, getTeamMemberStatus(team));
     }
 
     /* host 관점 */
     @Transactional
     public List<TeamMemberResponse> getTeamMembers(Long teamId) {
-        List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(teamId);
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        List<MemberTeam> memberTeam = memberTeamRepository.findAllByTeamId(teamId);
         List<Member> members = getMembersFromMemberTeams(memberTeam);
         return buildTeamMemberResponseList(members, team);
     }
@@ -226,12 +219,6 @@ public class TeamService {
         return SUCCESS_DELETE_TRASH;
     }
 
-    private void isHost(Long loginMemberId, Team team) {
-        if (loginMemberId != team.getHost().getId()) {
-            throw new BaseException(INVALID_HOST);
-        }
-    }
-
     @Transactional
     public StatusCode recoverTrash(Long teamId, Long planId, Long loginMemberId) {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
@@ -274,9 +261,6 @@ public class TeamService {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .forEach(member -> {
-                    if (member.getId().equals(host.getId())) {
-                        throw new BaseException(INVALID_TEAM_MEMBER);
-                    }
                     MemberTeam memberTeam = new MemberTeam();
                     memberTeam.setTeam(newTeam);
                     memberTeam.setMember(member);
@@ -286,7 +270,7 @@ public class TeamService {
     }
 
     private void checkHost(Member host) {
-        if (memberFacade.getCurrentMember().getId() != host.getId()) {
+        if (!memberFacade.getCurrentMember().equals(host)) {
             throw new BaseException(INVALID_HOST);
         }
     }
@@ -297,14 +281,47 @@ public class TeamService {
         memberTeams.forEach(memberTeam -> memberTeam.setStatus(DELETE));
     }
 
-    private void checkHostForDelegate(Team team, Member host, Member delegator) {
-        if (team.getHost().getId() != host.getId()) {
+    private Team checkHostForDelegate(Long teamId, Long loginMemberId, Long delegatorId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Member host = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        Member delegator = memberRepository.findByIdAndStatus(delegatorId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+
+        if (!team.getHost().equals(host)) {
             throw new BaseException(INVALID_HOST);
         }
-        if (host.getId() == delegator.getId()) {
+        if (team.getHost().equals(delegator)) {
             throw new BaseException(ALREADY_TEAM_HOST);
         }
         team.setHost(delegator);
+        return team;
+    }
+
+    private List<TeamCompactResponse> getTeamMemberStatus(Team team) {
+        List<TeamCompactResponse> list = new ArrayList<>();
+        List<MemberTeam> all = memberTeamRepository.findAllByTeamId(team.getId());
+        for (MemberTeam mt : all) {
+            list.add(TeamCompactResponse.builder().memberId(mt.getMember().getId()).status(mt.getStatus()).build());
+        }
+        return list;
+    }
+
+    private Team checkHostForEmit(Long teamId, Long emitterId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Member host = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        Member emitter = memberRepository.findByIdAndStatus(emitterId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+
+        if (!team.getHost().equals(host)) {
+            throw new BaseException(INVALID_HOST);
+        }
+        if (host.equals(emitter)) {
+            throw new BaseException(INVALID_EMITTER);
+        }
+        return team;
+    }
+
+    private void emitMember(Long teamId, Long emitterId) {
+        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, emitterId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_ALREADY_EMIT));
+        memberTeam.setStatus(DELETE);
     }
 
     private List<Member> getMembersFromMemberTeams(List<MemberTeam> memberTeams) {
@@ -350,14 +367,6 @@ public class TeamService {
         return memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
     }
 
-    private void checkHostForEmit(Team team, Member host, Long emitterId) {
-        if (team.getHost().getId() != host.getId()) {
-            throw new BaseException(INVALID_HOST);
-        }
-        if (host.getId() == emitterId) {
-            throw new BaseException(INVALID_EMITTER);
-        }
-    }
 
     private void checkHostForResign(Team team, Long loginMemberId) {
         if (team.getHost().getId() == loginMemberId) {
@@ -455,24 +464,10 @@ public class TeamService {
         return planList;
     }
 
-    private List<TeamCompactResponse> getTeamMemberStatus(Team team) {
-        List<TeamCompactResponse> list = new ArrayList<>();
-        List<Member> members = team.getMembers().stream().map(MemberTeam::getMember).collect(Collectors.toList());
-
-        List<MemberTeam> all = memberTeamRepository.findAllByTeamId(team.getId());
-        for (MemberTeam mt : all) {
-            list.add(TeamCompactResponse.builder().memberId(mt.getMember().getId()).status(mt.getStatus()).build());
+    private void isHost(Long loginMemberId, Team team) {
+        if (loginMemberId != team.getHost().getId()) {
+            throw new BaseException(INVALID_HOST);
         }
-
-
-        //for (Member m : members) {
-        //    MemberTeam m1 = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), m.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-        //    list.add(TeamCompactResponse.builder()
-        //            .memberId(m.getId())
-        //            .status(m1.getStatus())
-        //            .build());
-        //}
-        return list;
     }
 }
 
