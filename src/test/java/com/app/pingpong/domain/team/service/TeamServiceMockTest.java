@@ -581,7 +581,68 @@ public class TeamServiceMockTest {
     }
 
     @Test
-    public void resignExceptionBy
+    public void resignExceptionByMemberNotFoundInTeam() {
+        // given
+        Member host = createMember();
+        Team team = createTeam(host);
+
+        given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.resign(1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
+    }
+
+    @Test
+    public void resignExceptionByHostCannotResign() {
+        // given
+        Member host = createMember();
+        Team team = createTeam(host);
+        MemberTeam memberTeam = createMemberTeam(host, team);
+
+        given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.of(memberTeam));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(host));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.resign(1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(INVALID_RESIGN);
+    }
+
+    @Test
+    public void resignExceptionByWaitResignStatus() {
+        // given
+        Member host = createMember();
+        Member currentLoginMember = createMember();
+        Team team = createTeam(host);
+        MemberTeam memberTeam = createWaitMemberTeam(host, team);
+
+        given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.of(memberTeam));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(currentLoginMember));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.resign(1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(INVALID_RESIGN_STATUS);
+    }
+
+    @Test
+    public void resignExceptionByDeleteResignStatus() {
+        // given
+        Member host = createMember();
+        Member currentLoginMember = createMember();
+        Team team = createTeam(host);
+        MemberTeam memberTeam = createDeleteMemberTeam(host, team);
+
+        given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.of(memberTeam));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(currentLoginMember));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.resign(1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(INVALID_RESIGN_STATUS);
+    }
 
     @Test
     public void createPlan() {

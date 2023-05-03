@@ -367,9 +367,9 @@ public class TeamService {
         return memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
     }
 
-
     private void checkHostForResign(Team team, Long loginMemberId) {
-        if (team.getHost().getId() == loginMemberId) {
+        Member loginMember = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        if (team.getHost().equals(loginMember)) {
             throw new BaseException(INVALID_RESIGN);
         }
     }
@@ -378,12 +378,6 @@ public class TeamService {
         if (memberTeam.getStatus().equals(WAIT) || memberTeam.getStatus().equals(DELETE)) {
             throw new BaseException(INVALID_RESIGN_STATUS);
         }
-    }
-
-    private Member checkMandatorInTeam(Long teamId, TeamPlanPassRequest request) {
-        Member mandator = memberRepository.findByIdAndStatus(request.getMandatorId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, mandator.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-        return mandator;
     }
 
     private Member checkManagerExistsAndMembership(Long teamId, TeamPlanRequest request) {
@@ -405,6 +399,12 @@ public class TeamService {
         plan.setStatus(ACTIVE);
         plan.setAchievement(INCOMPLETE);
         return plan;
+    }
+
+    private Member checkMandatorInTeam(Long teamId, TeamPlanPassRequest request) {
+        Member mandator = memberRepository.findByIdAndStatus(request.getMandatorId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, mandator.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        return mandator;
     }
 
     private Plan passPlan(TeamPlanPassRequest request, Member mandator) {
