@@ -21,5 +21,4 @@ public class TeamPlanDetailResponse {
     public static TeamPlanDetailResponse of(Team team, List<MemberResponse> memberList, List<TeamPlanResponse> planList) {
         return new TeamPlanDetailResponse(team.getId(), team.getName(), team.getHost().getId(), memberList, planList);
     }
-
 }

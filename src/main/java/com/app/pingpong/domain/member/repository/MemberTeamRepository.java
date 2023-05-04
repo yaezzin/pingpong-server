@@ -12,8 +12,6 @@ import java.util.Optional;
 public interface MemberTeamRepository extends JpaRepository<MemberTeam, Long> {
     List<MemberTeam> findAllByTeamId(Long teamId);
 
-    List<MemberTeam> findALLByTeamIdAndStatus(Long teamId, Status status);
-
     List<MemberTeam> findAllByTeamIdAndStatus(Long teamId, Status status);
 
     List<MemberTeam> findAllByMemberIdAndStatusOrderByParticipatedAtDesc(Long memberId, Status status);

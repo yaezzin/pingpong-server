@@ -437,7 +437,7 @@ public class TeamService {
     }
 
     private List<MemberResponse> getMembersByTeamId(Long teamId) {
-        List<MemberResponse> memberList = memberTeamRepository.findALLByTeamIdAndStatus(teamId, ACTIVE).stream()
+        List<MemberResponse> memberList = memberTeamRepository.findAllByTeamIdAndStatus(teamId, ACTIVE).stream()
                 .map(MemberTeam::getMember)
                 .map(member -> MemberResponse.builder()
                         .memberId(member.getId())

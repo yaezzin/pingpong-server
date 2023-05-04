@@ -8,10 +8,7 @@ import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
-import com.app.pingpong.domain.team.dto.response.TeamHostResponse;
-import com.app.pingpong.domain.team.dto.response.TeamMemberResponse;
-import com.app.pingpong.domain.team.dto.response.TeamPlanResponse;
-import com.app.pingpong.domain.team.dto.response.TeamResponse;
+import com.app.pingpong.domain.team.dto.response.*;
 import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.PlanRepository;
@@ -1020,5 +1017,39 @@ public class TeamServiceMockTest {
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.getTeamCalendarByDate(1L, LocalDate.now(), 1L));
         assertThat(exception.getStatus()).isEqualTo(TEAM_NOT_FOUND);
+    }
+
+    @Test
+    public void getTeamCalendarByDateExceptionByMemberNotFoundInTeam() {
+        // given
+        Member loginMember = createMember();
+        Team team = createTeam(loginMember);
+
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.getTeamCalendarByDate(1L, LocalDate.now(), 1L));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
+    }
+
+    @Test
+    public void getTeamCalendarByDateExceptionBy() {
+        // given
+        Member loginMember = createMember();
+        Team team = createTeam(loginMember);
+        MemberTeam memberTeam = createMemberTeam(loginMember, team);
+        LocalDate date = LocalDate.of(2023, 5, 4);
+        List<Plan> plans = createPlanList(loginMember, team, date);
+
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findAllByTeamIdAndDateAndStatus(any(), any(), any())).willReturn(plans);
+
+        // when
+        TeamPlanDetailResponse response = teamService.getTeamCalendarByDate(1L, date, 1L);
+
+        // then
+        assertThat(response.getPlanList().size()).isEqualTo(plans.size());
     }
 }
