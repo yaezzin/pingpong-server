@@ -66,4 +66,33 @@ public class PlanFactory {
         }
         return planList;
     }
+
+    public static List<Plan> createCompletedPlansByCount(Member manager, Team team, LocalDate date, int count) {
+        List<Plan> planList = new ArrayList<>();
+        for (int i = 1; i <= count; i++) {
+            Plan plan = new Plan("title", date);
+            plan.setManager(manager);
+            plan.setTeam(team);
+            plan.setStatus(ACTIVE);
+            plan.setAchievement(COMPLETE);
+            plan.setDate(date);
+            planList.add(plan);
+        }
+        return planList;
+    }
+
+    public static List<Plan> createInCompletedPlansByCount(Member manager, Team team, LocalDate date, int count) {
+        List<Plan> planList = new ArrayList<>();
+        for (int i = 1; i <= count; i++) {
+            Plan plan = new Plan("title", date);
+            plan.setManager(manager);
+            plan.setTeam(team);
+            plan.setStatus(ACTIVE);
+            plan.setAchievement(INCOMPLETE);
+            plan.setDate(date);
+            planList.add(plan);
+        }
+        return planList;
+    }
+
 }

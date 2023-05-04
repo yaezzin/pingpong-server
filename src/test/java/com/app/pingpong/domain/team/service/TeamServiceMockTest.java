@@ -5,6 +5,7 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
+import com.app.pingpong.domain.team.dto.request.TeamAchieveRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
@@ -887,7 +888,6 @@ public class TeamServiceMockTest {
         MemberTeam memberTeamForManager = createMemberTeam(mandator, team);
         MemberTeam memberTeamForMandator = createMemberTeam(mandator, team);
 
-
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForManager)).willReturn(Optional.of(memberTeamForMandator));
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(mandator));
         given(planRepository.findById(any())).willReturn(Optional.empty());
@@ -930,7 +930,6 @@ public class TeamServiceMockTest {
         TeamPlanPassRequest request = new TeamPlanPassRequest(1L, 2L);
         MemberTeam memberTeamForManager = createMemberTeam(mandator, team);
         MemberTeam memberTeamForMandator = createMemberTeam(mandator, team);
-
 
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForManager)).willReturn(Optional.of(memberTeamForMandator));
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(mandator));
@@ -1114,7 +1113,30 @@ public class TeamServiceMockTest {
 
     @Test
     public void getTeamAchievementRate() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
 
+        LocalDate startDate = LocalDate.of(2023, 4, 1);
+        LocalDate endDate = LocalDate.of(2023, 4, 30);
+        TeamAchieveRequest request = new TeamAchieveRequest(startDate, endDate);
+
+        List<Plan> completedPlans = createCompletedPlansByCount(member, team, startDate, 10);
+        List<Plan> incompletedPlans = createInCompletedPlansByCount(member, team, startDate, 10);
+
+        List<Plan> allPlans = new ArrayList<>();
+        allPlans.addAll(completedPlans);
+        allPlans.addAll(incompletedPlans);
+
+        given(planRepository.findAllByTeamIdAndStatusAndDateBetween(any(), any(), any(), any())).willReturn(allPlans);
+        given(planRepository.findAllByTeamIdAndStatusAndDate(any(), any(), any())).willReturn(allPlans);
+
+        // when
+        List<TeamAchieveResponse> response = teamService.getTeamAchievementRate(1L, request);
+
+        // then
+        double rate = (double) completedPlans.size() / (completedPlans.size() + incompletedPlans.size()) * 100;
+        assertThat(response.get(0).getAchievement()).isEqualTo(rate);
     }
 
     @Test

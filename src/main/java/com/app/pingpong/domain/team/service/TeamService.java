@@ -163,22 +163,28 @@ public class TeamService {
 
     @Transactional
     public List<TeamAchieveResponse> getTeamAchievementRate(Long teamId, TeamAchieveRequest request) {
+        List<LocalDate> dateList = getPlanDateList(teamId, request);
+        List<TeamAchieveResponse> achieveRate = getTeamPlanAchieve(teamId, dateList);
+        return achieveRate;
+    }
+
+    private List<LocalDate> getPlanDateList(Long teamId, TeamAchieveRequest request) {
         List<LocalDate> dateList = planRepository.findAllByTeamIdAndStatusAndDateBetween(teamId, ACTIVE, request.getStartDate(), request.getEndDate())
                 .stream()
                 .map(Plan::getDate)
                 .distinct()
                 .collect(Collectors.toList());
+        return dateList;
+    }
 
-        List<TeamAchieveResponse> response = dateList.stream().map(date -> {
+    private List<TeamAchieveResponse> getTeamPlanAchieve(Long teamId, List<LocalDate> dateList) {
+        return dateList.stream().map(date -> {
             List<Plan> plans = planRepository.findAllByTeamIdAndStatusAndDate(teamId, ACTIVE, date);
             long complete = plans.stream().filter(plan -> plan.getAchievement() == COMPLETE).count();
-            System.out.println("===== complete " + complete);
             long incomplete = plans.size() - complete;
             double achievement = (complete + incomplete) == 0 ? 0 : ((double) complete / (double) (complete + incomplete) * 100.0);
             return new TeamAchieveResponse(date, achievement);
         }).collect(Collectors.toList());
-
-        return response;
     }
 
     @Transactional(readOnly = true)
