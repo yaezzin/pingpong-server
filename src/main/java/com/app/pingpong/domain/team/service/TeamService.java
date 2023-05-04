@@ -203,12 +203,9 @@ public class TeamService {
 
     @Transactional
     public StatusCode recoverTrash(Long teamId, Long planId, Long loginMemberId) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-
-        Plan plan = planRepository.findByIdAndStatus(planId, DELETE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
-        plan.setStatus(ACTIVE);
-
+        checkTeamExists(teamId);
+        checkMemberInTeam(teamId, loginMemberId);
+        recover(planId);
         return SUCCESS_RECOVER_TRASH;
     }
 
@@ -480,6 +477,11 @@ public class TeamService {
     private void deleteTrashPermanent(Long planId) {
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
         plan.setStatus(PERMANENT);
+    }
+
+    private void recover(Long planId) {
+        Plan plan = planRepository.findByIdAndStatus(planId, DELETE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        plan.setStatus(ACTIVE);
     }
 }
 

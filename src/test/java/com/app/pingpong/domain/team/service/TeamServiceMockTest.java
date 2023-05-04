@@ -1294,4 +1294,65 @@ public class TeamServiceMockTest {
         BaseException exception = assertThrows(BaseException.class, () -> teamService.deleteTrash(1L, 1L, 1L));
         assertThat(exception.getStatus()).isEqualTo(INVALID_HOST);
     }
+
+    @Test
+    public void recoverTrash() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+        MemberTeam memberTeam = createMemberTeam(member, team);
+        Plan plan = createDeletedPlan(member, team, LocalDate.now());
+
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(plan));
+
+        // when
+        StatusCode code = teamService.recoverTrash(1L, 1L, 1L);
+
+        // then
+        assertThat(code).isEqualTo(SUCCESS_RECOVER_TRASH);
+        assertThat(plan.getStatus()).isEqualTo(ACTIVE);
+    }
+
+    @Test
+    public void recoverTrashExceptionByTeamNotFound() {
+        // given
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.recoverTrash(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(TEAM_NOT_FOUND);
+    }
+
+    @Test
+    public void recoverTrashExceptionByMemberNotFoundInTeam() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.empty());
+
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.recoverTrash(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
+    }
+
+    @Test
+    public void recoverTrashExceptionByPlanNotFound() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+        MemberTeam memberTeam = createMemberTeam(member, team);
+
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.recoverTrash(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(PLAN_NOT_FOUND);
+    }
 }
