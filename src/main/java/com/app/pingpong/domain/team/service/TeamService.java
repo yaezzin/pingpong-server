@@ -409,7 +409,8 @@ public class TeamService {
 
     private Plan passPlan(TeamPlanPassRequest request, Member mandator) {
         Plan plan = planRepository.findById(request.getPlanId()).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
-        if (plan.getManager().getId() != memberFacade.getCurrentMember().getId()) {
+
+        if (!plan.getManager().equals(memberFacade.getCurrentMember())) {
             throw new BaseException(INVALID_MANAGER);
         }
         if (plan.getStatus() != ACTIVE) {

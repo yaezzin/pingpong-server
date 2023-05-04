@@ -32,8 +32,7 @@ import java.util.Optional;
 
 import static com.app.pingpong.factory.MemberFactory.createMember;
 import static com.app.pingpong.factory.MemberTeamFactory.*;
-import static com.app.pingpong.factory.PlanFactory.createCompletedPlan;
-import static com.app.pingpong.factory.PlanFactory.createInCompletedPlan;
+import static com.app.pingpong.factory.PlanFactory.*;
 import static com.app.pingpong.factory.TeamFactory.createTeam;
 import static com.app.pingpong.factory.TeamFactory.createTeamList;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
@@ -536,12 +535,15 @@ public class TeamServiceMockTest {
     @Test
     public void resign() {
         // given
+        Member host = createMember();
         Member member = createMember();
         Team team = createTeam(member);
-        MemberTeam memberTeam = createMemberTeam(member, team);
+        MemberTeam memberTeamForHost = createMemberTeam(host, team);
+        MemberTeam memberTeamForMember = createMemberTeam(member, team);
 
         given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
-        given(memberTeamRepository.findByTeamIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.of(memberTeam));
+        given(memberTeamRepository.findByTeamIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.of(memberTeamForMember));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
 
         // when
         StatusCode code = teamService.resign(1L, 1L);
@@ -679,26 +681,6 @@ public class TeamServiceMockTest {
     }
 
     @Test
-    public void passPlan() {
-        // given
-        Member manager = createMember();
-        Member mandator = createMember();
-        Team team = createTeam(manager);
-        TeamPlanPassRequest request = new TeamPlanPassRequest(1L, 2L);
-
-        given(planRepository.findById(anyLong())).willReturn(Optional.of(createInCompletedPlan(manager, team, LocalDate.now())));
-        given(memberRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(mandator));
-        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(createMemberTeam(mandator, team)));
-        given(memberFacade.getCurrentMember()).willReturn(manager);
-
-        // when
-        TeamPlanResponse response = teamService.passPlan(1L, 1L, request);
-
-        // then
-        verify(planRepository).findById(anyLong());
-    }
-
-    @Test
     public void deletePlan() {
         // given
         Member manager = createMember();
@@ -757,6 +739,166 @@ public class TeamServiceMockTest {
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.empty());
 
         BaseException exception = assertThrows(BaseException.class, () -> teamService.deletePlan(1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
+    }
+
+    @Test
+    public void passPlan() {
+        // given
+        Member manager = createMember();
+        Member mandator = createMember();
+        Team team = createTeam(manager);
+        TeamPlanPassRequest request = new TeamPlanPassRequest(1L, 2L);
+
+        given(planRepository.findById(anyLong())).willReturn(Optional.of(createInCompletedPlan(manager, team, LocalDate.now())));
+        given(memberRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(mandator));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(createMemberTeam(mandator, team)));
+        given(memberFacade.getCurrentMember()).willReturn(manager);
+
+        // when
+        TeamPlanResponse response = teamService.passPlan(1L, 1L, request);
+
+        // then
+        verify(planRepository).findById(anyLong());
+    }
+
+    @Test
+    public void passPlanExceptionByMemberNotFoundInTeam() {
+        // given
+        Member manager = createMember();
+        Team team = createTeam(manager);
+        TeamPlanPassRequest request = new TeamPlanPassRequest(1L, 2L);
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.passPlan(1L, 1L, request));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
+    }
+
+    @Test
+    public void passPlanExceptionByMandatorNotFound() {
+        // given
+        Member manager = createMember();
+        Member mandator = createMember();
+        Team team = createTeam(manager);
+
+        TeamPlanPassRequest request = new TeamPlanPassRequest(1L, 2L);
+        MemberTeam memberTeamForMandator = createMemberTeam(mandator, team);
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForMandator));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.passPlan(1L, 1L, request));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND);
+    }
+
+    @Test
+    public void passPlanExceptionByMandatorNotFoundInTeam() {
+        // given
+        Member manager = createMember();
+        Member mandator = createMember();
+        Team team = createTeam(manager);
+
+        TeamPlanPassRequest request = new TeamPlanPassRequest(1L, 2L);
+        MemberTeam memberTeamForMandator = createMemberTeam(mandator, team);
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForMandator)).willReturn(Optional.empty());
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(mandator));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.passPlan(1L, 1L, request));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
+    }
+
+    @Test
+    public void passPlanExceptionPlanNotFound() {
+        // given
+        Member manager = createMember();
+        Member mandator = createMember();
+        Team team = createTeam(manager);
+
+        TeamPlanPassRequest request = new TeamPlanPassRequest(1L, 2L);
+        MemberTeam memberTeamForManager = createMemberTeam(mandator, team);
+        MemberTeam memberTeamForMandator = createMemberTeam(mandator, team);
+
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForManager)).willReturn(Optional.of(memberTeamForMandator));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(mandator));
+        given(planRepository.findById(any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.passPlan(1L, 1L, request));
+        assertThat(exception.getStatus()).isEqualTo(PLAN_NOT_FOUND);
+    }
+
+    @Test
+    public void passPlanExceptionByInvalidManager() {
+        // given
+        Member manager = createMember();
+        Member mandator = createMember();
+        Team team = createTeam(manager);
+        Plan plan = createInCompletedPlan(manager, team, LocalDate.now());
+
+        TeamPlanPassRequest request = new TeamPlanPassRequest(1L, 2L);
+        MemberTeam memberTeamForManager = createMemberTeam(mandator, team);
+        MemberTeam memberTeamForMandator = createMemberTeam(mandator, team);
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForManager)).willReturn(Optional.of(memberTeamForMandator));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(mandator));
+        given(planRepository.findById(any())).willReturn(Optional.of(plan));
+        given(memberFacade.getCurrentMember()).willReturn(mandator);
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.passPlan(1L, 1L, request));
+        assertThat(exception.getStatus()).isEqualTo(INVALID_MANAGER);
+    }
+
+    @Test
+    public void passPlanExceptionByDeletedPlan() {
+        // given
+        Member manager = createMember();
+        Member mandator = createMember();
+        Team team = createTeam(manager);
+        Plan plan = createDeletedPlan(manager, team, LocalDate.now());
+
+        TeamPlanPassRequest request = new TeamPlanPassRequest(1L, 2L);
+        MemberTeam memberTeamForManager = createMemberTeam(mandator, team);
+        MemberTeam memberTeamForMandator = createMemberTeam(mandator, team);
+
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForManager)).willReturn(Optional.of(memberTeamForMandator));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(mandator));
+        given(planRepository.findById(any())).willReturn(Optional.of(plan));
+        given(memberFacade.getCurrentMember()).willReturn(manager);
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.passPlan(1L, 1L, request));
+        assertThat(exception.getStatus()).isEqualTo(INVALID_PLAN);
+    }
+
+    @Test
+    public void completePlan() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+        MemberTeam memberTeam = createMemberTeam(member, team);
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+    }
+
+    @Test
+    public void completePlanExceptionByMemberNotFoundInTeam() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+        MemberTeam memberTeam = createMemberTeam(member, team);
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.completePlan(1L, 1L, 1L));
         assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
     }
 }

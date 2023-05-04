@@ -27,4 +27,13 @@ public class PlanFactory {
         plan.setAchievement(INCOMPLETE);
         return plan;
     }
+
+    public static Plan createDeletedPlan(Member manager, Team team, LocalDate date) {
+        Plan plan = new Plan("title", date);
+        plan.setManager(manager);
+        plan.setTeam(team);
+        plan.setStatus(DELETE);
+        plan.setAchievement(INCOMPLETE);
+        return plan;
+    }
 }
