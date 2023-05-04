@@ -881,11 +881,20 @@ public class TeamServiceMockTest {
     @Test
     public void completePlan() {
         // given
-        Member member = createMember();
-        Team team = createTeam(member);
-        MemberTeam memberTeam = createMemberTeam(member, team);
+        Member manager = createMember();
+        Team team = createTeam(manager);
+        MemberTeam memberTeam = createMemberTeam(manager, team);
+        Plan plan = createInCompletedPlan(manager, team, LocalDate.now());
 
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findByIdAndTeamIdAndStatus(any(), any(), any())).willReturn(Optional.of(plan));
+        given(memberFacade.getCurrentMember()).willReturn(manager);
+
+        // when
+        StatusCode code = teamService.completePlan(1L, 1L, 1L);
+
+        // then
+        assertThat(code).isEqualTo(SUCCESS_COMPLETE_PLAN);
     }
 
     @Test
@@ -900,5 +909,38 @@ public class TeamServiceMockTest {
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.completePlan(1L, 1L, 1L));
         assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
+    }
+
+    @Test
+    public void completePlanExceptionByPlanNotFound() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+        MemberTeam memberTeam = createMemberTeam(member, team);
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findByIdAndTeamIdAndStatus(any(), any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.completePlan(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(PLAN_NOT_FOUND);
+    }
+
+    @Test
+    public void completePlanExceptionByInvalidComplete() {
+        // given
+        Member manager = createMember();
+        Member noManager = createMember();
+        Team team = createTeam(manager);
+        MemberTeam memberTeam = createMemberTeam(manager, team);
+        Plan plan = createInCompletedPlan(manager, team, LocalDate.now());
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findByIdAndTeamIdAndStatus(any(), any(), any())).willReturn(Optional.of(plan));
+        given(memberFacade.getCurrentMember()).willReturn(noManager);
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.completePlan(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(INVALID_COMPLETE_PLAN);
     }
 }

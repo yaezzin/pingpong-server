@@ -422,7 +422,7 @@ public class TeamService {
 
     private void complete(Long teamId, Long planId) {
         Plan plan = planRepository.findByIdAndTeamIdAndStatus(planId, teamId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
-        if (plan.getManager().getId() != memberFacade.getCurrentMember().getId()) {
+        if (!plan.getManager().equals(memberFacade.getCurrentMember())) {
             throw new BaseException(INVALID_COMPLETE_PLAN);
         }
         plan.setAchievement(COMPLETE);
