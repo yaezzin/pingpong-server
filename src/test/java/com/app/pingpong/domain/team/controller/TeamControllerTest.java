@@ -16,6 +16,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
+import static com.app.pingpong.global.common.exception.StatusCode.SUCCESS_DELETE_TEAM;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,7 +42,7 @@ public class TeamControllerTest {
     }
 
     @Test
-    public void create() throws Exception {
+    public void createTeam() throws Exception {
         // given
         TeamRequest request = new TeamRequest("teamName", List.of(1L, 2L));
 
@@ -50,7 +54,14 @@ public class TeamControllerTest {
     }
 
     @Test
-    public void delete() {
-        
+    public void deleteTeam() throws Exception {
+        // given
+        Long id = 1L;
+        doReturn(SUCCESS_DELETE_TEAM).when(teamService).deleteTeam(id);
+
+        // when, then
+        mockMvc.perform(delete("/api/teams/{id}", id))
+                .andExpect(status().isOk());
+        verify(teamService).deleteTeam(id);
     }
 }

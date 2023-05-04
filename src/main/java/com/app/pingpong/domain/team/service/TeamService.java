@@ -59,7 +59,7 @@ public class TeamService {
     }
 
     @Transactional
-    public StatusCode delete(Long id) {
+    public StatusCode deleteTeam(Long id) {
         Team team = teamRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         checkHost(team.getHost());
         deleteTeamAndMembers(team);

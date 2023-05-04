@@ -8,9 +8,9 @@ import com.app.pingpong.domain.team.dto.response.*;
 import com.app.pingpong.domain.team.service.TeamService;
 import com.app.pingpong.global.aop.CheckLoginStatus;
 import com.app.pingpong.global.aop.CurrentLoginMemberId;
-import com.app.pingpong.global.common.status.Authority;
-import com.app.pingpong.global.common.response.BaseResponse;
 import com.app.pingpong.global.common.exception.StatusCode;
+import com.app.pingpong.global.common.response.BaseResponse;
+import com.app.pingpong.global.common.status.Authority;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -33,8 +33,8 @@ public class TeamController {
 
     @ResponseBody
     @DeleteMapping("/{id}")
-    public BaseResponse<StatusCode> delete(@PathVariable Long id) {
-        return new BaseResponse<>(teamService.delete(id));
+    public BaseResponse<StatusCode> deleteTeam(@PathVariable Long id) {
+        return new BaseResponse<>(teamService.deleteTeam(id));
     }
 
     @ResponseBody
@@ -130,7 +130,7 @@ public class TeamController {
     @ResponseBody
     @GetMapping("/{id}/calendars/achievement")
     public BaseResponse<List<TeamAchieveResponse>> getTeamAchievementRate(@PathVariable Long id,
-                                                                       @RequestBody TeamAchieveRequest request) {
+                                                                          @RequestBody TeamAchieveRequest request) {
         return new BaseResponse<>(teamService.getTeamAchievementRate(id, request));
     }
 

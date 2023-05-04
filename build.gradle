@@ -114,7 +114,7 @@ jacocoTestReport {
                             "**/domain/team/entity/**/*",
                             "**/domain/friend/entity/**/*",
                             "**/domain/member/entity/**/*",
-                            "**/domain/notification/entity/**/*"
+                            "**/domain/notification/**/*"
                     ])
                 })
         )
