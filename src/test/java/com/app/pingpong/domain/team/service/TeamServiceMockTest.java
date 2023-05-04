@@ -16,6 +16,7 @@ import com.app.pingpong.domain.team.repository.TeamRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
 import com.app.pingpong.global.common.util.MemberFacade;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -1006,7 +1008,22 @@ public class TeamServiceMockTest {
 
     @Test
     public void getTeamCalendarByDate() {
+        // given
+        Member loginMember = createMember();
+        Team team = createTeam(loginMember);
+        MemberTeam memberTeam = createMemberTeam(loginMember, team);
+        LocalDate date = LocalDate.of(2023, 5, 4);
+        List<Plan> plans = createPlanList(loginMember, team, date);
 
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findAllByTeamIdAndDateAndStatus(any(), any(), any())).willReturn(plans);
+
+        // when
+        TeamPlanDetailResponse response = teamService.getTeamCalendarByDate(1L, date, 1L);
+
+        // then
+        assertThat(response.getPlanList().size()).isEqualTo(plans.size());
     }
 
     @Test
@@ -1034,22 +1051,95 @@ public class TeamServiceMockTest {
     }
 
     @Test
-    public void getTeamCalendarByDateExceptionBy() {
+    public void getTeamAchievementRate() {
+
+    }
+
+    @Test
+    @DisplayName("Host가 조회 시 휴지통의 모든 삭제된 일정이 조회")
+    public void getTrashByHost() {
         // given
-        Member loginMember = createMember();
-        Team team = createTeam(loginMember);
-        MemberTeam memberTeam = createMemberTeam(loginMember, team);
-        LocalDate date = LocalDate.of(2023, 5, 4);
-        List<Plan> plans = createPlanList(loginMember, team, date);
+        Member host = createMember();
+        Team team = createTeam(host);
+        MemberTeam memberTeam = createMemberTeam(host, team);
+        List<Plan> plans = createDeletedPlanList(host, team, LocalDate.now());
 
         given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(host));
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
-        given(planRepository.findAllByTeamIdAndDateAndStatus(any(), any(), any())).willReturn(plans);
+        given(planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(any(), any())).willReturn(plans);
 
         // when
-        TeamPlanDetailResponse response = teamService.getTeamCalendarByDate(1L, date, 1L);
+        List<TeamPlanResponse> trash = teamService.getTrash(1L, 1L);
 
         // then
-        assertThat(response.getPlanList().size()).isEqualTo(plans.size());
+        assertThat(trash.size()).isEqualTo(plans.size());
+    }
+
+    @Test
+    @DisplayName("Host가 아닌 '일정 담당자'의 조회 시 자신의 삭제된 일정만 조회")
+    public void getTrashByManager() {
+        // given
+        Member host = createMember();
+        Member manager = createMember();
+        Team team = createTeam(host);
+        MemberTeam memberTeam = createMemberTeam(host, team);
+
+        List<Plan> plansForHost = createDeletedPlanList(host, team, LocalDate.now());
+        List<Plan> plansForManager = createDeletedPlanList(manager, team, LocalDate.now());
+        List<Plan> allPlans = new ArrayList<>();
+        allPlans.addAll(plansForHost);
+        allPlans.addAll(plansForManager);
+
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(manager));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findAllByManagerIdAndTeamIdAndStatusOrderByWastedTimeDesc(any(), any(), any())).willReturn(plansForManager);
+
+        // when
+        List<TeamPlanResponse> trash = teamService.getTrash(1L, 1L);
+
+        // then
+        assertThat(trash.size()).isEqualTo(plansForManager.size());
+        assertThat(trash.size()).isEqualTo(allPlans.size() - plansForHost.size());
+    }
+
+    @Test
+    public void getTrashExceptionByTeamNotFound() {
+        // given
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.getTrash(1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(TEAM_NOT_FOUND);
+    }
+
+    @Test
+    public void getTrashExceptionByMemberNotFound() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.getTrash(1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(TEAM_NOT_FOUND);
+    }
+
+    @Test
+    public void getTrashExceptionByMemberNotInTeam() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.getTrash(1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
     }
 }

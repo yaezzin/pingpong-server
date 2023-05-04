@@ -52,4 +52,18 @@ public class PlanFactory {
         }
         return planList;
     }
+
+    public static List<Plan> createDeletedPlanList(Member manager, Team team, LocalDate date) {
+        List<Plan> planList = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            Plan plan = new Plan("title", date);
+            plan.setManager(manager);
+            plan.setTeam(team);
+            plan.setStatus(DELETE);
+            plan.setAchievement(INCOMPLETE);
+            plan.setDate(date);
+            planList.add(plan);
+        }
+        return planList;
+    }
 }

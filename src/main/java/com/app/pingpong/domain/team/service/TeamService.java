@@ -183,15 +183,7 @@ public class TeamService {
 
     @Transactional(readOnly = true)
     public List<TeamPlanResponse> getTrash(Long teamId, Long loginMemberId) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-
-        List<Plan> plansInTrash;
-        if (loginMemberId == team.getHost().getId()) {
-            plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(teamId, DELETE);
-        } else {
-            plansInTrash = planRepository.findAllByManagerIdAndTeamIdAndStatusOrderByWastedTimeDesc(loginMemberId, teamId, DELETE);
-        }
+        List<Plan> plansInTrash = getTrashByAuth(teamId, loginMemberId);
         return TeamPlanResponse.of(plansInTrash);
     }
 
@@ -463,6 +455,20 @@ public class TeamService {
                 )
                 .collect(Collectors.toList());
         return planList;
+    }
+
+    private List<Plan> getTrashByAuth(Long teamId, Long loginMemberId) {
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        Member loginMember = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(team.getId(), loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+
+        List<Plan> plansInTrash;
+        if (loginMember.equals(team.getHost())) {
+            plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(team.getId(), DELETE);
+        } else {
+            plansInTrash = planRepository.findAllByManagerIdAndTeamIdAndStatusOrderByWastedTimeDesc(loginMemberId, team.getId(), DELETE);
+        }
+        return plansInTrash;
     }
 
     private void isHost(Long loginMemberId, Team team) {
