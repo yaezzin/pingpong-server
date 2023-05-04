@@ -554,12 +554,14 @@ public class TeamServiceMockTest {
     @Test
     public void resignExceptionByNotAcceptTeamInvitation() {
         // given
+        Member host = createMember();
         Member member = createMember();
-        Team team = createTeam(member);
+        Team team = createTeam(host);
         MemberTeam memberTeam = createWaitMemberTeam(member, team);
 
         given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
         given(memberTeamRepository.findByTeamIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.of(memberTeam));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.resign(1L, 1L));
@@ -943,5 +945,80 @@ public class TeamServiceMockTest {
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.completePlan(1L, 1L, 1L));
         assertThat(exception.getStatus()).isEqualTo(INVALID_COMPLETE_PLAN);
+    }
+
+    @Test
+    public void incompletePlan() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+        MemberTeam memberTeam = createMemberTeam(member, team);
+        Plan plan = createCompletedPlan(member, team, LocalDate.now());
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findByIdAndTeamIdAndStatus(any(), any(), any())).willReturn(Optional.of(plan));
+
+        // when
+        StatusCode code = teamService.incompletePlan(1L, 1L, 1L);
+
+        // then
+        assertThat(code).isEqualTo(SUCCESS_INCOMPLETE_PLAN);
+
+    }
+
+    @Test
+    public void incompletePlanExceptionByMemberNotFoundInTeam() {
+        // given
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.incompletePlan(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
+    }
+
+    @Test
+    public void incompletePlanExceptionByPlanNotFound() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+        MemberTeam memberTeam = createMemberTeam(member, team);
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findByIdAndTeamIdAndStatus(any(), any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.completePlan(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(PLAN_NOT_FOUND);
+    }
+
+    @Test
+    public void incompletePlanExceptionByAlreadyIncomplete() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+        MemberTeam memberTeam = createMemberTeam(member, team);
+        Plan plan = createInCompletedPlan(member, team, LocalDate.now());
+
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findByIdAndTeamIdAndStatus(any(), any(), any())).willReturn(Optional.of(plan));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.incompletePlan(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(ALREADY_INCOMPLETE_PLAN);
+    }
+
+    @Test
+    public void getTeamCalendarByDate() {
+
+    }
+
+    @Test
+    public void getTeamCalendarByDateExceptionByTeamNotFound() {
+        // given
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.getTeamCalendarByDate(1L, LocalDate.now(), 1L));
+        assertThat(exception.getStatus()).isEqualTo(TEAM_NOT_FOUND);
     }
 }

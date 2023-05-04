@@ -430,7 +430,7 @@ public class TeamService {
 
     private void incomplete(Long teamId, Long planId) {
         Plan plan = planRepository.findByIdAndTeamIdAndStatus(planId, teamId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
-        if (plan.getAchievement() == INCOMPLETE) {
+        if (plan.getAchievement().equals(INCOMPLETE)) {
             throw new BaseException(ALREADY_INCOMPLETE_PLAN);
         }
         plan.setAchievement(INCOMPLETE);
