@@ -1219,4 +1219,79 @@ public class TeamServiceMockTest {
         BaseException exception = assertThrows(BaseException.class, () -> teamService.deleteAllTrash(1L, 1L));
         assertThat(exception.getStatus()).isEqualTo(INVALID_HOST);
     }
+
+    @Test
+    public void deleteTrash() {
+        // given
+        Member host = createMember();
+        Team team = createTeam(host);
+        MemberTeam memberTeam = createMemberTeam(host, team);
+        Plan plan = createDeletedPlan(host, team, LocalDate.now());
+
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(host));
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(planRepository.findById(any())).willReturn(Optional.of(plan));
+
+        // when
+        StatusCode code = teamService.deleteTrash(1L, 1L, 1L);
+
+        // then
+        assertThat(code).isEqualTo(SUCCESS_DELETE_TRASH);
+        assertThat(plan.getStatus()).isEqualTo(PERMANENT);
+    }
+
+    @Test
+    public void deleteTrashExceptionByMemberNotFound() {
+        // given
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.deleteTrash(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND);
+    }
+
+    @Test
+    public void deleteTrashExceptionByTeamNotFound() {
+        // given
+        Member member = createMember();
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.deleteTrash(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(TEAM_NOT_FOUND);
+    }
+
+    @Test
+    public void deleteTrashExceptionByMemberNotFoundInTeam() {
+        // given
+        Member member = createMember();
+        Team team = createTeam(member);
+
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.deleteTrash(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
+    }
+
+    @Test
+    public void deleteTrashExceptionByInvalidHost() {
+        // given
+        Member host = createMember();
+        Member noHost = createMember();
+        Team team = createTeam(host);
+        MemberTeam memberTeamForNoHost = createMemberTeam(noHost, team);
+
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(noHost));
+        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForNoHost));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.deleteTrash(1L, 1L, 1L));
+        assertThat(exception.getStatus()).isEqualTo(INVALID_HOST);
+    }
 }
