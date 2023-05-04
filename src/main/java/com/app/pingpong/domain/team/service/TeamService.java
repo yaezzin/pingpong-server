@@ -179,7 +179,7 @@ public class TeamService {
 
     private List<TeamAchieveResponse> getTeamPlanAchieve(Long teamId, List<LocalDate> dateList) {
         return dateList.stream().map(date -> {
-            List<Plan> plans = planRepository.findAllByTeamIdAndStatusAndDate(teamId, ACTIVE, date);
+            List<Plan> plans = planRepository.findAllByTeamIdAndDateAndStatus(teamId, date, ACTIVE);
             long complete = plans.stream().filter(plan -> plan.getAchievement() == COMPLETE).count();
             long incomplete = plans.size() - complete;
             double achievement = (complete + incomplete) == 0 ? 0 : ((double) complete / (double) (complete + incomplete) * 100.0);

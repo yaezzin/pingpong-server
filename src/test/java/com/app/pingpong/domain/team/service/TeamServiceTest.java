@@ -1129,7 +1129,7 @@ public class TeamServiceTest {
         allPlans.addAll(incompletedPlans);
 
         given(planRepository.findAllByTeamIdAndStatusAndDateBetween(any(), any(), any(), any())).willReturn(allPlans);
-        given(planRepository.findAllByTeamIdAndStatusAndDate(any(), any(), any())).willReturn(allPlans);
+        given(planRepository.findAllByTeamIdAndDateAndStatus(any(), any(), any())).willReturn(allPlans);
 
         // when
         List<TeamAchieveResponse> response = teamService.getTeamAchievementRate(1L, request);
