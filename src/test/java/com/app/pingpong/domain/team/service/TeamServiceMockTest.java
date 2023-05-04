@@ -457,7 +457,6 @@ public class TeamServiceMockTest {
         Team team = createTeam(member);
         MemberTeam memberTeam = createWaitMemberTeam(member, team);
 
-        given(memberFacade.getCurrentMember()).willReturn(member);
         given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.empty());
 
         // when, then
