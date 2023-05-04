@@ -189,25 +189,15 @@ public class TeamService {
 
     @Transactional
     public StatusCode deleteAllTrash(Long teamId, Long loginMemberId) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-        isHost(loginMemberId, team);
-
-        List<Plan> plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(teamId, DELETE);
-        for (Plan p : plansInTrash) {
-            p.setStatus(PERMANENT);
-        }
+        checkAuthForDelete(teamId, loginMemberId);
+        deleteAllTrashPermanent(teamId);
         return SUCCESS_DELETE_ALL_TRASH;
     }
 
     @Transactional
     public StatusCode deleteTrash(Long teamId, Long planId, Long loginMemberId) {
-        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-        isHost(loginMemberId, team);
-
-        Plan plan = planRepository.findById(planId).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
-        plan.setStatus(PERMANENT);
+        checkAuthForDelete(teamId, loginMemberId);
+        deleteTrashPermanent(planId);
         return SUCCESS_DELETE_TRASH;
     }
 
@@ -471,10 +461,25 @@ public class TeamService {
         return plansInTrash;
     }
 
-    private void isHost(Long loginMemberId, Team team) {
-        if (loginMemberId != team.getHost().getId()) {
+    private void checkAuthForDelete(Long teamId, Long loginMemberId) {
+        Member loginMember = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberId(teamId, loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        if (!loginMember.equals(team.getHost())) {
             throw new BaseException(INVALID_HOST);
         }
+    }
+
+    private void deleteAllTrashPermanent(Long teamId) {
+        List<Plan> plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(teamId, DELETE);
+        for (Plan p : plansInTrash) {
+            p.setStatus(PERMANENT);
+        }
+    }
+
+    private void deleteTrashPermanent(Long planId) {
+        Plan plan = planRepository.findById(planId).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        plan.setStatus(PERMANENT);
     }
 }
 
