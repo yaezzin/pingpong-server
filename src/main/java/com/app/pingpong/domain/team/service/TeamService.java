@@ -216,7 +216,7 @@ public class TeamService {
     }
 
     private void checkTeam(Member loginMember, TeamRequest request) {
-        if (teamRepository.findByHostId(loginMember.getId()).size() > 6) {
+        if (teamRepository.findAllByHostId(loginMember.getId()).size() > 6) {
             throw new BaseException(EXCEED_HOST_TEAM_SIZE);
         }
         if (request.getMemberId().size() > 10 || request.getMemberId().size() < 1) {

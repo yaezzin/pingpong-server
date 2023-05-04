@@ -45,7 +45,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class TeamServiceMockTest {
+public class TeamServiceTest {
 
     @InjectMocks
     TeamService teamService;
@@ -105,7 +105,7 @@ public class TeamServiceMockTest {
         List<Team> exceedTeamList = createTeamList(member, exceedHostSize);
 
         given(memberFacade.getCurrentMember()).willReturn(member);
-        given(teamRepository.findByHostId(any())).willReturn(exceedTeamList);
+        given(teamRepository.findAllByHostId(any())).willReturn(exceedTeamList);
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.create(request));

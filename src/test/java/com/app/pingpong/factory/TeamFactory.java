@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.app.pingpong.global.common.status.Status.ACTIVE;
+import static com.app.pingpong.global.common.status.Status.DELETE;
 
 public class TeamFactory {
 
@@ -14,6 +15,13 @@ public class TeamFactory {
         Team team = new Team("team");
         team.setHost(host);
         team.setStatus(ACTIVE);
+        return team;
+    }
+
+    public static Team createDeleteTeam(Member host) {
+        Team team = new Team("team");
+        team.setHost(host);
+        team.setStatus(DELETE);
         return team;
     }
 
