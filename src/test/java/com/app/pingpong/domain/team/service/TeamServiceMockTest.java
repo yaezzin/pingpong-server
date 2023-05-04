@@ -535,10 +535,10 @@ public class TeamServiceMockTest {
     @Test
     public void resign() {
         // given
-        Member host = createMember();
-        Member member = createMember();
-        Team team = createTeam(member);
-        MemberTeam memberTeamForHost = createMemberTeam(host, team);
+        Member host = createMember(); // 호스트
+        Member member = createMember(); // 현재 로그인 유저?
+
+        Team team = createTeam(host);
         MemberTeam memberTeamForMember = createMemberTeam(member, team);
 
         given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
