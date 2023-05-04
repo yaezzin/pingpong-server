@@ -570,12 +570,14 @@ public class TeamServiceMockTest {
     @Test
     public void resignExceptionByAlreadyResign() {
         // given
+        Member host = createMember();
         Member member = createMember();
-        Team team = createTeam(member);
+        Team team = createTeam(host);
         MemberTeam memberTeam = createDeleteMemberTeam(member, team);
 
         given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
         given(memberTeamRepository.findByTeamIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.of(memberTeam));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.resign(1L, 1L));
