@@ -7,7 +7,6 @@ import com.app.pingpong.domain.team.dto.request.TeamRequest;
 import com.app.pingpong.domain.team.dto.response.TeamPlanResponse;
 import com.app.pingpong.domain.team.service.TeamService;
 import com.app.pingpong.global.common.status.Status;
-import com.app.pingpong.global.common.util.MemberFacade;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,9 +38,6 @@ public class TeamControllerTest {
 
     @Mock
     TeamService teamService;
-
-    @Mock
-    MemberFacade memberFacade;
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
