@@ -5,10 +5,11 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NotificationRepository extends MongoRepository<Notification, Long> {
-    Notification findByMemberIdAndOpponentId(Long memberId, Long opponentId);
+    Optional<Notification> findByMemberIdAndOpponentId(Long memberId, Long opponentId);
 
     List<Notification> findAllByOpponentIdOrderByCreatedAtAsc(Long opponentId);
 

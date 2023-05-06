@@ -7,7 +7,10 @@ import com.app.pingpong.domain.friend.repository.FriendFactory;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
+import com.app.pingpong.domain.notification.entity.Notification;
+import com.app.pingpong.domain.notification.repository.NotificationRepository;
 import com.app.pingpong.global.common.exception.BaseException;
+import com.app.pingpong.global.common.exception.StatusCode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,7 +22,7 @@ import java.util.Optional;
 import static com.app.pingpong.factory.FriendFactory.createFriend;
 import static com.app.pingpong.factory.MemberFactory.createMember;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
-import static com.app.pingpong.global.common.status.Status.WAIT;
+import static com.app.pingpong.global.common.status.Status.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +46,8 @@ public class FriendServiceTest {
     @Mock
     MemberRepository memberRepository;
 
+    @Mock
+    NotificationRepository notificationRepository;
 
     @Test
     public void apply() {
@@ -136,4 +141,70 @@ public class FriendServiceTest {
         BaseException exception = assertThrows(BaseException.class, () -> friendService.apply(request));
         assertThat(exception.getStatus()).isEqualTo(ALREADY_ON_FRIEND);
     }
+
+    @Test
+    public void accept() {
+        // given
+        Friend friend = createFriend(1L, 2L);
+        Notification notification = Notification.builder()
+                .memberId(friend.getApplicant())
+                .opponentId(friend.getRespondent())
+                .type(FRIEND)
+                .message("message")
+                .build();
+
+        given(friendFactory.isFriend(any(), any())).willReturn(false);
+        given(friendFactory.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
+        given(notificationRepository.findByMemberIdAndOpponentId(any(), any())).willReturn(Optional.of(notification));
+
+        // when
+        StatusCode code = friendService.accept(friend.getRespondent(), friend.getApplicant());
+
+        // then
+        assertThat(code).isEqualTo(SUCCESS_ACCEPT_FRIEND);
+        assertThat(friend.getStatus()).isEqualTo(ACTIVE);
+    }
+
+    @Test
+    public void acceptExceptionByAlreadyFriend() {
+        // given
+        given(friendFactory.isFriend(any(), any())).willReturn(true);
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> friendService.accept(1L, 2L));
+        assertThat(exception.getStatus()).isEqualTo(ALREADY_ON_FRIEND);
+    }
+
+    @Test
+    public void acceptExceptionByFriendNotFound() {
+        // given
+        Friend friend = createFriend(1L, 2L);
+        given(friendFactory.isFriend(any(), any())).willReturn(false);
+        given(friendFactory.findWaitRequestBy(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> friendService.accept(1L, 2L));
+        assertThat(exception.getStatus()).isEqualTo(FRIEND_NOT_FOUND);
+    }
+
+    @Test
+    public void acceptExceptionBy() {
+        // given
+        Friend friend = createFriend(1L, 2L);
+
+        given(friendFactory.isFriend(any(), any())).willReturn(false);
+        given(friendFactory.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
+        given(notificationRepository.findByMemberIdAndOpponentId(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> friendService.accept(1L, 2L));
+        assertThat(exception.getStatus()).isEqualTo(NOTIFICATION_NOT_FOUND);
+    }
+
+    @Test
+    public void refuse() {
+
+    }
+
+
 }
