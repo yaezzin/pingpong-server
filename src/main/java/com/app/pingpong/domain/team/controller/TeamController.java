@@ -33,8 +33,8 @@ public class TeamController {
 
     @ResponseBody
     @DeleteMapping("/{id}")
-    public BaseResponse<StatusCode> deleteTeam(@PathVariable Long id) {
-        return new BaseResponse<>(teamService.deleteTeam(id));
+    public BaseResponse<StatusCode> delete(@PathVariable Long id) {
+        return new BaseResponse<>(teamService.delete(id));
     }
 
     @ResponseBody

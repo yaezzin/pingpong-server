@@ -152,7 +152,7 @@ public class TeamServiceTest {
     }
 
     @Test
-    public void deleteTeam() {
+    public void delete() {
         // given
         Member host = createMember();
         Team team = createTeam(host);
@@ -163,7 +163,7 @@ public class TeamServiceTest {
         given(memberTeamRepository.findAllByTeamId(any())).willReturn(List.of(memberTeam));
 
         // when
-        StatusCode code = teamService.deleteTeam(1L);
+        StatusCode code = teamService.delete(1L);
 
         // then
         assertThat(code).isEqualTo(SUCCESS_DELETE_TEAM);
@@ -177,7 +177,7 @@ public class TeamServiceTest {
         given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
 
         // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> teamService.deleteTeam(1L));
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.delete(1L));
         assertThat(exception.getStatus()).isEqualTo(TEAM_NOT_FOUND);
     }
 
@@ -192,7 +192,7 @@ public class TeamServiceTest {
         given(memberFacade.getCurrentMember()).willReturn(member);
 
         // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> teamService.deleteTeam(1L));
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.delete(1L));
         assertThat(exception.getStatus()).isEqualTo(INVALID_HOST);
     }
 

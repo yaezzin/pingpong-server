@@ -2,11 +2,13 @@ package com.app.pingpong.domain.team.dto.response;
 
 import com.app.pingpong.domain.team.entity.Team;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
