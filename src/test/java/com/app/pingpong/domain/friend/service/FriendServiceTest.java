@@ -5,6 +5,7 @@ import com.app.pingpong.domain.friend.dto.response.FriendResponse;
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendFactory;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
+import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.notification.entity.Notification;
@@ -248,15 +249,18 @@ public class FriendServiceTest {
 
     @Test
     public void getMyFriends() {
-
-    }
-
-    @Test
-    public void getMyFriendsExceptionBy() {
         // given
-        List<Friend> friends = new ArrayList<>();
+        List<Member> friendMemberList = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            friendMemberList.add(createMember());
+        }
 
+        given(friendRepository.findAllFriendsByMemberId(any())).willReturn(friendMemberList);
 
-        given(friendRepository.findAllFriendsByMemberId(any())).willReturn();
+        // when
+        List<MemberResponse> response = friendService.getMyFriends(1L);
+
+        //then
+        assertThat(response.size()).isEqualTo(friendMemberList.size());
     }
 }
