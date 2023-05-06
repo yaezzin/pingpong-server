@@ -111,6 +111,7 @@ jacocoTestReport {
                             "**/*Interceptor*",
                             "**/*Exception*",
                             "**/*OAuth*",
+                            "**/domain/image/**/*",
                             "**/domain/team/entity/**/*",
                             "**/domain/friend/entity/**/*",
                             "**/domain/member/entity/**/*",

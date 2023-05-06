@@ -49,7 +49,7 @@ public class FriendFactory {
 
         return queryFactory.selectFrom(QFriend.friend)
                 .where(isActiveFriend, isLoginUser, isSearchedUser)
-                .fetchCount() > 0;
+                .fetchFirst() != null;
     }
 
     public int findFriendCount(Long id) {
