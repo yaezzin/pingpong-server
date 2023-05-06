@@ -66,11 +66,11 @@ public class FriendService {
     private void checkFriendRequest(Member applicant, Member respondent) {
         /* 내가 상대방에게 보낸 친구 신청이 있는지 확인 -> WAIT */
         if (friendFactory.existsRequestToRespondent(applicant.getId(), respondent.getId(), WAIT)) {
-            throw new BaseException(USER_ALREADY_FRIEND_REQUEST);
+            throw new BaseException(MEMBER_ALREADY_FRIEND_REQUEST);
         }
         /* 상대방이 나한테 보낸 친구신청이 있는지 확인 */
         if (friendFactory.existsRequestToRespondent(respondent.getId(), applicant.getId(), WAIT)) {
-            throw new BaseException(USER_ALREADY_GET_FRIEND_REQUEST);
+            throw new BaseException(MEMBER_ALREADY_GET_FRIEND_REQUEST);
         }
         /* 이미 친구를 수락하였는지 확인 -> */
         if (friendFactory.existsRequestToRespondent(applicant.getId(), respondent.getId(), ACTIVE)) {

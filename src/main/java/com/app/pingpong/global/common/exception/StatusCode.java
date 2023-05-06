@@ -49,8 +49,8 @@ public enum StatusCode {
     EXCEED_HOST_TEAM_SIZE(false, 400, "그룹을 더이상 생성할 수 없습니다. 그룹 개수는 최대 6개로 제한됩니다."),
     USER_NICKNAME_ALREADY_EXISTS(false, 400, "이미 사용중인 닉네임입니다."),
 
-    USER_ALREADY_FRIEND_REQUEST(false, 400, "해당 유저에게 이미 친구 신청을 하였습니다."),
-    USER_ALREADY_GET_FRIEND_REQUEST(false, 400, "나에게 이미 친구 신청을 보낸 유저입니다."),
+    MEMBER_ALREADY_FRIEND_REQUEST(false, 400, "해당 유저에게 이미 친구 신청을 하였습니다."),
+    MEMBER_ALREADY_GET_FRIEND_REQUEST(false, 400, "나에게 이미 친구 신청을 보낸 유저입니다."),
     MEMBER_ALREADY_EMIT(false, 400, "이미 방출된 유저입니다"),
     ALREADY_ON_FRIEND(false, 400, "이미 친구인 유저입니다."),
     ALREADY_TEAM_HOST(false, 400, "이미 해당 그룹의 호스트입니다."),
