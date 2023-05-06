@@ -70,28 +70,28 @@ public class MemberRepositoryTest {
 
     @Test
     public void existsByEmail() {
-        // given, when
+        // given
         Member member = memberRepository.save(createMember());
 
-        // then
+        // when, then
         assertThat(memberRepository.existsByEmail(member.getEmail())).isTrue();
     }
 
     @Test
     public void existsMemberByNickname() {
-        // given, when
+        // given
         Member member = memberRepository.save(createMember());
 
-        // then
+        // when, then
         assertThat(memberRepository.existsMemberByNickname(member.getNickname())).isTrue();
     }
 
     @Test
     public void existsMemberByNicknameAndStatus() {
-        // given, when
+        // given
         Member member = memberRepository.save(createMember());
 
-        // then
-        memberRepository.existsMemberByNicknameAndStatus("nickname");
+        // when, then
+        assertThat(memberRepository.existsMemberByNicknameAndStatus("nickname")).isTrue();
     }
 }

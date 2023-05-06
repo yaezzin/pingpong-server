@@ -191,8 +191,7 @@ public class MemberControllerTest {
         // when, then
         mockMvc.perform(get("/api/members/calendars/achievement")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                        .header("Authorization", "Bearer access-token"))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
         verify(memberService).getMemberAchievementRate(any(), any());
     }
@@ -207,8 +206,7 @@ public class MemberControllerTest {
         // when, then
         mockMvc.perform(get("/api/members/calendars")
                         .param("date", date.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer access-token"))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         verify(memberService).getMemberCalendarByDate(any(), any());
     }
