@@ -17,6 +17,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.app.pingpong.factory.FriendFactory.createFriend;
@@ -117,14 +119,12 @@ public class FriendServiceTest {
         Member respondent = createMember();
         FriendRequest request = new FriendRequest(1L, 2L);
 
-        given(memberRepository.findByIdAndStatus(any(), any()))
-                .willReturn(Optional.of(applicant))
-                .willReturn(Optional.of(respondent));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(applicant)).willReturn(Optional.of(respondent));
         given(friendFactory.existsRequestToRespondent(any(), any(), eq(WAIT))).willReturn(false).willReturn(true);
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> friendService.apply(request));
-        assertThat(exception.getStatus()).isEqualTo(MEMBER_ALREADY_FRIEND_REQUEST);
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_ALREADY_GET_FRIEND_REQUEST);
     }
 
     @Test
@@ -163,6 +163,7 @@ public class FriendServiceTest {
         // then
         assertThat(code).isEqualTo(SUCCESS_ACCEPT_FRIEND);
         assertThat(friend.getStatus()).isEqualTo(ACTIVE);
+        assertThat(notification.getIsAccepted()).isEqualTo(true);
     }
 
     @Test
@@ -178,7 +179,6 @@ public class FriendServiceTest {
     @Test
     public void acceptExceptionByFriendNotFound() {
         // given
-        Friend friend = createFriend(1L, 2L);
         given(friendFactory.isFriend(any(), any())).willReturn(false);
         given(friendFactory.findWaitRequestBy(any(), any())).willReturn(Optional.empty());
 
@@ -188,7 +188,7 @@ public class FriendServiceTest {
     }
 
     @Test
-    public void acceptExceptionBy() {
+    public void acceptExceptionByNotificationNotFound() {
         // given
         Friend friend = createFriend(1L, 2L);
 
@@ -203,8 +203,60 @@ public class FriendServiceTest {
 
     @Test
     public void refuse() {
+        // given
+        Friend friend = createFriend(1L, 2L);
+        Notification notification = Notification.builder()
+                .memberId(friend.getApplicant())
+                .opponentId(friend.getRespondent())
+                .type(FRIEND)
+                .message("message")
+                .build();
+
+        given(friendFactory.isFriend(any(), any())).willReturn(false);
+        given(friendFactory.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
+        given(notificationRepository.findByMemberIdAndOpponentId(any(), any())).willReturn(Optional.of(notification));
+
+        // when
+        StatusCode code = friendService.refuse(friend.getRespondent(), friend.getApplicant());
+
+        // then
+        assertThat(code).isEqualTo(SUCCESS_REFUSE_FRIEND);
+        assertThat(friend.getStatus()).isEqualTo(DELETE);
+        assertThat(notification.getIsAccepted()).isEqualTo(true);
+    }
+
+    @Test
+    public void refuseExceptionByAlreadyFriend() {
+        // given
+        given(friendFactory.isFriend(any(), any())).willReturn(true);
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> friendService.refuse(1L, 2L));
+        assertThat(exception.getStatus()).isEqualTo(ALREADY_ON_FRIEND);
+    }
+
+    @Test
+    public void refuseExceptionByFriendNotFound() {
+        // given
+        given(friendFactory.isFriend(any(), any())).willReturn(false);
+        given(friendFactory.findWaitRequestBy(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> friendService.refuse(1L, 2L));
+        assertThat(exception.getStatus()).isEqualTo(FRIEND_NOT_FOUND);
+    }
+
+    @Test
+    public void getMyFriends() {
 
     }
 
+    @Test
+    public void getMyFriendsExceptionBy() {
+        // given
+        List<Friend> friends = new ArrayList<>();
 
+
+        given(friendRepository.findAllFriendsByMemberId(any())).willReturn();
+    }
 }

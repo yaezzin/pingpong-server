@@ -1,6 +1,5 @@
 package com.app.pingpong.domain.friend.controller;
 
-import com.app.pingpong.domain.friend.dto.request.FriendRefuseRequest;
 import com.app.pingpong.domain.friend.dto.request.FriendRequest;
 import com.app.pingpong.domain.friend.service.FriendService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -72,13 +71,11 @@ public class FriendControllerTest {
     public void refuseTest() throws Exception {
         // given
         Long opponentId = 1L;
-        FriendRefuseRequest request = new FriendRefuseRequest(opponentId);
         given(friendService.refuse(any(), any())).willReturn(SUCCESS_REFUSE_FRIEND);
 
         // when, then
         mockMvc.perform(post("/api/friends/refuse")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .param("opponentId", String.valueOf(opponentId)))
                 .andExpect(status().isOk());
         verify(friendService).refuse(any(), any());
     }

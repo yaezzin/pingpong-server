@@ -17,6 +17,5 @@ public class MemberFactory {
 
     public static Member createMember(String nickname) {
         return new Member("123", "email", nickname, "profileImage", ACTIVE, Authority.ROLE_USER);
-
     }
 }
