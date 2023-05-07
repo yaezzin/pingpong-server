@@ -1,6 +1,6 @@
 package com.app.pingpong.domain.member.service;
 
-import com.app.pingpong.domain.friend.repository.FriendFactory;
+import com.app.pingpong.domain.friend.repository.FriendQueryRepository;
 import com.app.pingpong.domain.image.S3Uploader;
 import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
@@ -42,7 +42,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final MemberSearchRepository memberSearchRepository;
-    private final FriendFactory friendFactory;
+    private final FriendQueryRepository friendQueryRepository;
     private final MemberTeamRepository memberTeamRepository;
     private final PlanRepository planRepository;
 
@@ -95,14 +95,14 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberDetailResponse getMyPage(Long id) {
         Member member = findMemberByIdAndStatus(id, ACTIVE);
-        int friendCount = friendFactory.findFriendCount(id);
+        int friendCount = friendQueryRepository.findFriendCount(id);
         return MemberDetailResponse.of(member, friendCount);
     }
 
     @Transactional(readOnly = true)
     public MemberDetailResponse getOppPage(Long id) {
         Member member = findMemberByIdAndStatus(id, ACTIVE);
-        int friendCount = friendFactory.findFriendCount(id);
+        int friendCount = friendQueryRepository.findFriendCount(id);
         return MemberDetailResponse.of(member, friendCount);
     }
 
@@ -118,7 +118,7 @@ public class MemberService {
 
         List<MemberSearchResponse> friendshipList = new ArrayList<>();
         for (Member findMember : findMembers) {
-            boolean isFriend = friendFactory.isFriend(memberFacade.getCurrentMember().getId(), findMember.getId());
+            boolean isFriend = friendQueryRepository.isFriend(memberFacade.getCurrentMember().getId(), findMember.getId());
             friendshipList.add(MemberSearchResponse.of(findMember, isFriend));
         }
         return friendshipList;

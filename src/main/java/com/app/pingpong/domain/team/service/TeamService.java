@@ -1,6 +1,6 @@
 package com.app.pingpong.domain.team.service;
 
-import com.app.pingpong.domain.friend.repository.FriendFactory;
+import com.app.pingpong.domain.friend.repository.FriendQueryRepository;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
@@ -38,7 +38,7 @@ import static com.app.pingpong.global.common.status.Status.*;
 public class TeamService {
 
     private final MemberRepository memberRepository;
-    private final FriendFactory friendFactory;
+    private final FriendQueryRepository friendQueryRepository;
     private final TeamRepository teamRepository;
     private final PlanRepository planRepository;
     private final MemberTeamRepository memberTeamRepository;
@@ -318,7 +318,7 @@ public class TeamService {
     private List<TeamMemberResponse> buildTeamMemberResponseList(List<Member> members, Team team) {
         List<TeamMemberResponse> list = new ArrayList<>();
         for (Member findMember : members) {
-            boolean isFriend = friendFactory.isFriend(team.getHost().getId(), findMember.getId());
+            boolean isFriend = friendQueryRepository.isFriend(team.getHost().getId(), findMember.getId());
             MemberTeam status = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), findMember.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
             list.add(TeamMemberResponse.of(findMember, team, isFriend, status));
         }

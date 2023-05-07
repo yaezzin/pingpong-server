@@ -1,11 +1,15 @@
 package com.app.pingpong.domain.member.service;
 
+import com.app.pingpong.domain.friend.entity.Friend;
+import com.app.pingpong.domain.friend.repository.FriendQueryRepository;
 import com.app.pingpong.domain.image.S3Uploader;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
+import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
+import com.app.pingpong.domain.member.repository.MemberSearchRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
 import org.junit.jupiter.api.Test;
@@ -13,9 +17,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
 import java.util.Optional;
 
+import static com.app.pingpong.factory.FriendFactory.createMultipleFriendsByCount;
 import static com.app.pingpong.factory.MemberFactory.createMember;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static com.app.pingpong.global.common.status.Status.DELETE;
@@ -36,8 +43,16 @@ public class MemberServiceTest {
     MemberRepository memberRepository;
 
     @Mock
-    S3Uploader s3Uploader;
+    MemberSearchRepository memberSearchRepository;
 
+    @Mock
+    FriendQueryRepository friendQueryRepository;
+
+    @Mock
+    PasswordEncoder passwordEncoder;
+
+    @Mock
+    S3Uploader s3Uploader;
 
     @Test
     public void signup() {
@@ -168,6 +183,66 @@ public class MemberServiceTest {
 
     @Test
     public void getMyPage() {
+        // given
+        Member member = createMember();
+        List<Friend> friends = createMultipleFriendsByCount(member.getId(), 10);
+
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
+        given(friendQueryRepository.findFriendCount(any())).willReturn(friends.size());
+
+        // when
+        MemberDetailResponse response = memberService.getMyPage(member.getId());
+
+        // then
+        assertThat(member.getId()).isEqualTo(response.getMemberId());
+        assertThat(friends.size()).isEqualTo(response.getFriendCount());
+    }
+
+    @Test
+    public void getMyPageExceptionByMemberNotFound() {
+        // given
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> memberService.getMyPage(1L));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND);
+    }
+
+    @Test
+    public void getOppPage() {
+        // given
+        Member opponent = createMember();
+        List<Friend> friends = createMultipleFriendsByCount(opponent.getId(), 10);
+
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(opponent));
+        given(friendQueryRepository.findFriendCount(any())).willReturn(friends.size());
+
+        // when
+        MemberDetailResponse response = memberService.getOppPage(opponent.getId());
+
+        // then
+        assertThat(opponent.getId()).isEqualTo(response.getMemberId());
+        assertThat(friends.size()).isEqualTo(response.getFriendCount());
+    }
+
+    @Test
+    public void getOppPageExceptionByMemberNotFound() {
+        // given
+        Member opponent = createMember();
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> memberService.getOppPage(opponent.getId()));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND);
+    }
+
+    @Test
+    public void findByNickname() {
+
+    }
+
+    @Test
+    public void findByNicknameExceptionBy() {
 
     }
 }

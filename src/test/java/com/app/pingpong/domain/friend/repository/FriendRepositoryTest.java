@@ -24,7 +24,7 @@ public class FriendRepositoryTest {
     MemberRepository memberRepository;
 
     @Autowired
-    FriendFactory friendFactory;
+    FriendQueryRepository friendQueryRepository;
 
     @Autowired
     FriendRepository friendRepository;
@@ -52,7 +52,7 @@ public class FriendRepositoryTest {
         Friend friend = friendRepository.save(createFriend(applicant.getId(), respondent.getId()));
 
         // when
-        boolean result = friendFactory.existsRequestToRespondent(applicant.getId(), respondent.getId(), WAIT);
+        boolean result = friendQueryRepository.existsRequestToRespondent(applicant.getId(), respondent.getId(), WAIT);
 
         // then
         assertThat(result).isNotNull();
@@ -67,7 +67,7 @@ public class FriendRepositoryTest {
         Friend friend = friendRepository.save(createFriend(applicant.getId(), respondent.getId()));
 
         // when
-        Optional<Friend> result = friendFactory.findWaitRequestBy(applicant.getId(), respondent.getId());
+        Optional<Friend> result = friendQueryRepository.findWaitRequestBy(applicant.getId(), respondent.getId());
 
         // then
         assertThat(result.get().getStatus()).isEqualTo(WAIT);

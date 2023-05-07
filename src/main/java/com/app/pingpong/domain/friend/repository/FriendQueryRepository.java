@@ -15,7 +15,7 @@ import static com.app.pingpong.global.common.status.Status.WAIT;
 
 @RequiredArgsConstructor
 @Repository
-public class FriendFactory {
+public class FriendQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 

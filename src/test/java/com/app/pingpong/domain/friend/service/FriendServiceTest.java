@@ -3,7 +3,7 @@ package com.app.pingpong.domain.friend.service;
 import com.app.pingpong.domain.friend.dto.request.FriendRequest;
 import com.app.pingpong.domain.friend.dto.response.FriendResponse;
 import com.app.pingpong.domain.friend.entity.Friend;
-import com.app.pingpong.domain.friend.repository.FriendFactory;
+import com.app.pingpong.domain.friend.repository.FriendQueryRepository;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
@@ -41,7 +41,7 @@ public class FriendServiceTest {
     FriendService friendService;
 
     @Mock
-    FriendFactory friendFactory;
+    FriendQueryRepository friendQueryRepository;
 
     @Mock
     FriendRepository friendRepository;
@@ -61,7 +61,7 @@ public class FriendServiceTest {
         Friend friend = createFriend(request.getApplicantId(), request.getRespondentId());
 
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(applicant)).willReturn(Optional.of(respondent));
-        given(friendFactory.existsRequestToRespondent(any(), any(), any())).willReturn(false).willReturn(false).willReturn(false);
+        given(friendQueryRepository.existsRequestToRespondent(any(), any(), any())).willReturn(false).willReturn(false).willReturn(false);
         given(friendRepository.save(any())).willReturn(friend);
 
         // when
@@ -106,7 +106,7 @@ public class FriendServiceTest {
         given(memberRepository.findByIdAndStatus(any(), any()))
                 .willReturn(Optional.of(applicant))
                 .willReturn(Optional.of(respondent));
-        given(friendFactory.existsRequestToRespondent(any(), any(), eq(WAIT))).willReturn(true);
+        given(friendQueryRepository.existsRequestToRespondent(any(), any(), eq(WAIT))).willReturn(true);
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> friendService.apply(request));
@@ -121,7 +121,7 @@ public class FriendServiceTest {
         FriendRequest request = new FriendRequest(1L, 2L);
 
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(applicant)).willReturn(Optional.of(respondent));
-        given(friendFactory.existsRequestToRespondent(any(), any(), eq(WAIT))).willReturn(false).willReturn(true);
+        given(friendQueryRepository.existsRequestToRespondent(any(), any(), eq(WAIT))).willReturn(false).willReturn(true);
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> friendService.apply(request));
@@ -136,7 +136,7 @@ public class FriendServiceTest {
         FriendRequest request = new FriendRequest(1L, 2L);
 
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(applicant)).willReturn(Optional.of(respondent));
-        given(friendFactory.existsRequestToRespondent(any(), any(), any())).willReturn(false).willReturn(false).willReturn(true);
+        given(friendQueryRepository.existsRequestToRespondent(any(), any(), any())).willReturn(false).willReturn(false).willReturn(true);
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> friendService.apply(request));
@@ -154,8 +154,8 @@ public class FriendServiceTest {
                 .message("message")
                 .build();
 
-        given(friendFactory.isFriend(any(), any())).willReturn(false);
-        given(friendFactory.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
+        given(friendQueryRepository.isFriend(any(), any())).willReturn(false);
+        given(friendQueryRepository.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
         given(notificationRepository.findByMemberIdAndOpponentId(any(), any())).willReturn(Optional.of(notification));
 
         // when
@@ -170,7 +170,7 @@ public class FriendServiceTest {
     @Test
     public void acceptExceptionByAlreadyFriend() {
         // given
-        given(friendFactory.isFriend(any(), any())).willReturn(true);
+        given(friendQueryRepository.isFriend(any(), any())).willReturn(true);
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> friendService.accept(1L, 2L));
@@ -180,8 +180,8 @@ public class FriendServiceTest {
     @Test
     public void acceptExceptionByFriendNotFound() {
         // given
-        given(friendFactory.isFriend(any(), any())).willReturn(false);
-        given(friendFactory.findWaitRequestBy(any(), any())).willReturn(Optional.empty());
+        given(friendQueryRepository.isFriend(any(), any())).willReturn(false);
+        given(friendQueryRepository.findWaitRequestBy(any(), any())).willReturn(Optional.empty());
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> friendService.accept(1L, 2L));
@@ -193,8 +193,8 @@ public class FriendServiceTest {
         // given
         Friend friend = createFriend(1L, 2L);
 
-        given(friendFactory.isFriend(any(), any())).willReturn(false);
-        given(friendFactory.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
+        given(friendQueryRepository.isFriend(any(), any())).willReturn(false);
+        given(friendQueryRepository.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
         given(notificationRepository.findByMemberIdAndOpponentId(any(), any())).willReturn(Optional.empty());
 
         // when, then
@@ -213,8 +213,8 @@ public class FriendServiceTest {
                 .message("message")
                 .build();
 
-        given(friendFactory.isFriend(any(), any())).willReturn(false);
-        given(friendFactory.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
+        given(friendQueryRepository.isFriend(any(), any())).willReturn(false);
+        given(friendQueryRepository.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
         given(notificationRepository.findByMemberIdAndOpponentId(any(), any())).willReturn(Optional.of(notification));
 
         // when
@@ -229,7 +229,7 @@ public class FriendServiceTest {
     @Test
     public void refuseExceptionByAlreadyFriend() {
         // given
-        given(friendFactory.isFriend(any(), any())).willReturn(true);
+        given(friendQueryRepository.isFriend(any(), any())).willReturn(true);
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> friendService.refuse(1L, 2L));
@@ -239,8 +239,8 @@ public class FriendServiceTest {
     @Test
     public void refuseExceptionByFriendNotFound() {
         // given
-        given(friendFactory.isFriend(any(), any())).willReturn(false);
-        given(friendFactory.findWaitRequestBy(any(), any())).willReturn(Optional.empty());
+        given(friendQueryRepository.isFriend(any(), any())).willReturn(false);
+        given(friendQueryRepository.findWaitRequestBy(any(), any())).willReturn(Optional.empty());
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> friendService.refuse(1L, 2L));

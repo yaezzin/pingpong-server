@@ -1,6 +1,6 @@
 package com.app.pingpong.domain.team.service;
 
-import com.app.pingpong.domain.friend.repository.FriendFactory;
+import com.app.pingpong.domain.friend.repository.FriendQueryRepository;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
@@ -63,7 +63,7 @@ public class TeamServiceTest {
     PlanRepository planRepository;
 
     @Mock
-    FriendFactory friendFactory;
+    FriendQueryRepository friendQueryRepository;
 
     @Mock
     MemberFacade memberFacade;
@@ -409,7 +409,7 @@ public class TeamServiceTest {
 
         given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
         given(memberTeamRepository.findAllByTeamId(any())).willReturn(List.of(memberTeamForHost, memberTeamForMember));
-        given(friendFactory.isFriend(any(), any())).willReturn(false);
+        given(friendQueryRepository.isFriend(any(), any())).willReturn(false);
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForHost));
 
         // when
