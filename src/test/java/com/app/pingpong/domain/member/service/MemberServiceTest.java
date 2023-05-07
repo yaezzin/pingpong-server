@@ -13,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 import static com.app.pingpong.factory.MemberFactory.createMember;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,7 +77,7 @@ public class MemberServiceTest {
     }
 
     @Test
-    public void validateException() {
+    public void validateNicknameExceptionByInvalidNickname() {
         // given
         Member member = createMember("nicknameIsInvalid");
 
@@ -84,5 +86,32 @@ public class MemberServiceTest {
         assertThat(exception.getStatus()).isEqualTo(INVALID_NICKNAME);
     }
 
+    @Test
+    public void findById() {
+        // given
+        Member member = createMember();
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
 
+        // when
+        MemberResponse response = memberService.findById(member.getId());
+
+        // then
+        assertThat(response.getMemberId()).isEqualTo(member.getId());
+    }
+
+    @Test
+    public void findByIdExceptionByMemberNotFound() {
+        // given
+        Long memberId = 1L;
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> memberService.findById(memberId));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND);
+    }
+
+    @Test
+    public void update() {
+
+    }
 }
