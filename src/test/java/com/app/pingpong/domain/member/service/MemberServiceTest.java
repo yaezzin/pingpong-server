@@ -14,8 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static com.app.pingpong.factory.MemberFactory.createMember;
-import static com.app.pingpong.global.common.exception.StatusCode.MEMBER_NICKNAME_ALREADY_EXISTS;
-import static com.app.pingpong.global.common.exception.StatusCode.SUCCESS_VALIDATE_NICKNAME;
+import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,6 +72,16 @@ public class MemberServiceTest {
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> memberService.validateNickname(member.getNickname()));
         assertThat(exception.getStatus()).isEqualTo(MEMBER_NICKNAME_ALREADY_EXISTS);
+    }
+
+    @Test
+    public void validateException() {
+        // given
+        Member member = createMember("nicknameIsInvalid");
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> memberService.validateNickname(member.getNickname()));
+        assertThat(exception.getStatus()).isEqualTo(INVALID_NICKNAME);
     }
 
 
