@@ -18,7 +18,6 @@ import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
-import com.app.pingpong.global.common.response.BaseResponse;
 import com.app.pingpong.global.common.status.Status;
 import com.app.pingpong.global.common.util.MemberFacade;
 import lombok.RequiredArgsConstructor;
@@ -87,10 +86,10 @@ public class MemberService {
     }
 
     @Transactional
-    public BaseResponse<String> delete(Long id) {
+    public StatusCode delete(Long id) {
         Member member = findMemberByIdAndStatus(id, ACTIVE);
         member.setStatus(DELETE);
-        return new BaseResponse<>(SUCCESS_DELETE_MEMBER);
+        return SUCCESS_DELETE_MEMBER;
     }
 
     @Transactional(readOnly = true)

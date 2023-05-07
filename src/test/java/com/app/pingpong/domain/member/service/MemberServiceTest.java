@@ -1,6 +1,8 @@
 package com.app.pingpong.domain.member.service;
 
+import com.app.pingpong.domain.image.S3Uploader;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
+import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
@@ -11,12 +13,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
 import static com.app.pingpong.factory.MemberFactory.createMember;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
+import static com.app.pingpong.global.common.status.Status.DELETE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +36,8 @@ public class MemberServiceTest {
     MemberRepository memberRepository;
 
     @Mock
-    PasswordEncoder passwordEncoder;
+    S3Uploader s3Uploader;
+
 
     @Test
     public void signup() {
@@ -112,6 +115,59 @@ public class MemberServiceTest {
 
     @Test
     public void update() {
+        // given
+        Member member = createMember();
+        UpdateRequest request = new UpdateRequest("update", "update");
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
+
+        // when
+        MemberResponse response = memberService.update(member.getId(), request);
+
+        // then
+        verify(s3Uploader, times(1)).deleteFile(any());
+        assertThat(response.getMemberId()).isEqualTo(member.getId());
+        assertThat(response.getNickname()).isEqualTo(member.getNickname());
+        assertThat(response.getProfileImage()).isEqualTo(member.getProfileImage());
+    }
+
+    @Test
+    public void updateExceptionByInvalidNickname() {
+        // given
+        Member member = createMember();
+        UpdateRequest request = new UpdateRequest("update123Nickname!!!", "updateProfile");
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> memberService.update(member.getId(), request));
+        assertThat(exception.getStatus()).isEqualTo(INVALID_NICKNAME);
+    }
+
+    @Test
+    public void delete() {
+        // given
+        Member member = createMember();
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
+
+        // when
+        StatusCode code = memberService.delete(member.getId());
+
+        // then
+        assertThat(code).isEqualTo(SUCCESS_DELETE_MEMBER);
+        assertThat(member.getStatus()).isEqualTo(DELETE);
+    }
+
+    @Test
+    public void deleteExceptionMemberNotFound() {
+        // given
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> memberService.delete(1L));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND);
+    }
+
+    @Test
+    public void getMyPage() {
 
     }
 }

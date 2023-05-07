@@ -51,8 +51,8 @@ public class MemberController {
 
     @ResponseBody
     @DeleteMapping("/{id}")
-    public BaseResponse<String> delete(@PathVariable Long id) {
-        return memberService.delete(id);
+    public BaseResponse<StatusCode> delete(@PathVariable Long id) {
+        return new BaseResponse<>(memberService.delete(id));
     }
 
     @ResponseBody
