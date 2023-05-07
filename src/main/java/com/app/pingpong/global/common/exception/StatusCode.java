@@ -47,7 +47,7 @@ public enum StatusCode {
     INVALID_SAVE_SEARCH_LOG(false, 400, "본인은 검색기록에 저장할 수 없습니다."),
 
     EXCEED_HOST_TEAM_SIZE(false, 400, "그룹을 더이상 생성할 수 없습니다. 그룹 개수는 최대 6개로 제한됩니다."),
-    USER_NICKNAME_ALREADY_EXISTS(false, 400, "이미 사용중인 닉네임입니다."),
+    MEMBER_NICKNAME_ALREADY_EXISTS(false, 400, "이미 사용중인 닉네임입니다."),
 
     MEMBER_ALREADY_FRIEND_REQUEST(false, 400, "해당 유저에게 이미 친구 신청을 하였습니다."),
     MEMBER_ALREADY_GET_FRIEND_REQUEST(false, 400, "나에게 이미 친구 신청을 보낸 유저입니다."),

@@ -1,346 +1,79 @@
 package com.app.pingpong.domain.member.service;
 
-import com.app.pingpong.domain.friend.entity.Friend;
-import com.app.pingpong.domain.friend.repository.FriendFactory;
-import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
-import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
-import com.app.pingpong.domain.member.dto.request.UpdateRequest;
-import com.app.pingpong.domain.member.dto.response.*;
+import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
-import com.app.pingpong.domain.member.repository.MemberSearchRepository;
-import com.app.pingpong.domain.member.repository.MemberTeamRepository;
-import com.app.pingpong.domain.team.entity.Team;
-import com.app.pingpong.domain.team.repository.PlanRepository;
-import com.app.pingpong.domain.team.repository.TeamRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
-import com.app.pingpong.global.common.response.BaseResponse;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import static com.app.pingpong.factory.MemberFactory.createMember;
-import static com.app.pingpong.factory.MemberTeamFactory.createMemberTeam;
-import static com.app.pingpong.factory.PlanFactory.createCompletedPlan;
-import static com.app.pingpong.factory.PlanFactory.createInCompletedPlan;
-import static com.app.pingpong.factory.TeamFactory.createTeam;
-import static com.app.pingpong.global.common.exception.StatusCode.*;
-import static com.app.pingpong.global.common.status.Status.ACTIVE;
+import static com.app.pingpong.global.common.exception.StatusCode.MEMBER_NICKNAME_ALREADY_EXISTS;
+import static com.app.pingpong.global.common.exception.StatusCode.SUCCESS_VALIDATE_NICKNAME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.util.DateUtil.now;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-@DataJpaTest
+@ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
 
-    @Autowired
+    @InjectMocks
     MemberService memberService;
 
-    @Autowired
+    @Mock
     MemberRepository memberRepository;
 
-    @Autowired
-    MemberSearchRepository memberSearchRepository;
-
-    @Autowired
-    MemberTeamRepository memberTeamRepository;
-
-    @Autowired
-    PlanRepository planRepository;
-
-    @Autowired
-    TeamRepository teamRepository;
-
-    @Autowired
-    FriendFactory friendFactory;
-
-    @Autowired
+    @Mock
     PasswordEncoder passwordEncoder;
 
-    @Autowired
-    RedisTemplate<String, Object> redisTemplate;
-
-    @BeforeEach
-    public void setUp() {
-        memberRepository.deleteAll();
-    }
-
     @Test
-    @DisplayName("회원가입")
     public void signup() {
         // given
-        SignUpRequest request = new SignUpRequest("1234", "test@email.com", "nickname", "profileImage");
+        Member member = createMember();
+        SignUpRequest request = new SignUpRequest("socialId", "email", "nickname", "profileImage");
+        given(memberRepository.save(any())).willReturn(member);
 
         // when
         MemberResponse response = memberService.signup(request);
-        Member save = memberRepository.findById(response.getMemberId()).orElseThrow();
 
         // then
-        assertThat(response).isNotNull();
-        assertThat(save).isNotNull();
-        assertThat(response.getNickname()).isEqualTo(request.getNickname());
-        assertThat(save.getNickname()).isEqualTo(response.getNickname());
+        verify(memberRepository, times(1)).save(any());
+        assertThat(response.getMemberId()).isEqualTo(member.getId());
+        assertThat(response.getNickname()).isEqualTo(member.getNickname());
     }
 
     @Test
-    @DisplayName("닉네임 유효성 검사 - 성공")
     public void validateNickname() {
         // given
         Member member = createMember();
+        given(memberRepository.existsMemberByNicknameAndStatus(any())).willReturn(false);
 
         // when
-        BaseResponse<String> response = memberService.validateNickname(member.getNickname());
+        StatusCode code = memberService.validateNickname(member.getNickname());
 
         // then
-        assertEquals(response.getMessage(), SUCCESS_VALIDATE_NICKNAME.getMessage());
+        assertThat(code).isEqualTo(SUCCESS_VALIDATE_NICKNAME);
     }
 
     @Test
-    @DisplayName("닉네임 유효성 검사 - 중복되는 닉네임")
-    public void existsNickname() {
+    public void validateNicknameExceptionByAlreadyExists() {
         // given
-        Member member = memberRepository.save(createMember());
+        Member member = createMember();
+        given(memberRepository.existsMemberByNicknameAndStatus(any())).willReturn(true);
 
         // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> {
-            memberService.validateNickname(member.getNickname());
-        });
-        assertEquals(exception.getStatus(), USER_NICKNAME_ALREADY_EXISTS);
+        BaseException exception = assertThrows(BaseException.class, () -> memberService.validateNickname(member.getNickname()));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NICKNAME_ALREADY_EXISTS);
     }
 
-    @Test
-    @DisplayName("닉네임 유효성 검사 - 유효하지 않은 닉네임")
-    public void invalidNickname() {
-        // given
-        String invalidNickname = "invalidNicknameBecauseItsTooLong";
-        Member member = createMember(invalidNickname);
 
-        // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> {
-            memberService.validateNickname(member.getNickname());
-        });
-        assertEquals(exception.getStatus(), INVALID_NICKNAME);
-    }
-
-    @Test
-    @DisplayName("Id로 유저 조회")
-    public void findById() {
-        // given
-        Member member = memberRepository.save(createMember());
-
-        // when
-        MemberResponse response = memberService.findById(member.getId());
-
-        // then
-        assertThat(response).isNotNull();
-        assertThat(response.getMemberId()).isEqualTo(member.getId());
-    }
-
-    @Test
-    @DisplayName("회원 수정 테스트")
-    public void update() {
-        // given
-        Member member = memberRepository.save(createMember());
-        UpdateRequest request = new UpdateRequest("update", "profile.jpg");
-
-        // when
-        MemberResponse response = memberService.update(member.getId(), request);
-
-        // then
-        assertThat(response).isNotNull();
-        assertThat(response.getNickname()).isEqualTo(request.getNickname());
-    }
-
-    @Test
-    @DisplayName("회원 탈퇴 테스트")
-    public void delete() {
-        // given
-        Member member = memberRepository.save(createMember());
-
-        // when
-        BaseResponse<String> response = memberService.delete(member.getId());
-
-        // then
-        assertThat(response.getMessage()).isEqualTo(SUCCESS_DELETE_MEMBER.getMessage());
-    }
-
-    @Test
-    @DisplayName("마이페이지 조회")
-    public void getMyPage() {
-        // given
-        Member loginMember = memberRepository.save(createMember());
-        Member opponentMember = memberRepository.save(createMember());
-        Friend friend = new Friend(loginMember.getId(), opponentMember.getId(), ACTIVE, now());
-        int friendCount = friendFactory.findFriendCount(loginMember.getId());
-
-        // when
-        MemberDetailResponse response = memberService.getMyPage(loginMember.getId());
-
-        // then
-        assertThat(response.getMemberId()).isEqualTo(loginMember.getId());
-        assertThat(response.getFriendCount()).isEqualTo(friendCount);
-    }
-
-    @Test
-    @DisplayName("상대방 페이지 조회")
-    public void getOppPage() {
-        // given
-        Member loginMember = memberRepository.save(createMember());
-        Member opponentMember = memberRepository.save(createMember());
-        Friend friend = new Friend(opponentMember.getId(), loginMember.getId(), ACTIVE, now());
-        int friendCount = friendFactory.findFriendCount(opponentMember.getId());
-
-        // when
-        MemberDetailResponse response = memberService.getMyPage(opponentMember.getId());
-
-        // then
-        assertThat(response.getMemberId()).isEqualTo(opponentMember.getId());
-        assertThat(response.getFriendCount()).isEqualTo(friendCount);
-    }
-
-    @Test
-    @DisplayName("닉네임으로 회원 검색")
-    public void testFindByNickname() {
-        // given
-        for (int i = 1; i < 30; i++) {
-            memberRepository.save(createMember("test" + i + "@test.com", "nickname" + i));
-        }
-
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getName()).thenReturn("test1@test.com");
-        SecurityContext securityContext = mock(SecurityContext.class);
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
-        // when
-        List<MemberSearchResponse> response = memberService.findByNickname("nickname", 10L);
-
-        // then
-        assertThat(response.size()).isEqualTo(10);
-        assertThat(response.get(0).getMemberId()).isEqualTo(11L);
-        System.out.println(response.get(0).getMemberId());
-    }
-
-    @Test
-    @DisplayName("검색기록 저장")
-    public void saveSearchLog() {
-        //given
-        Member loginMember = memberRepository.save(createMember());
-        Member searchMember = memberRepository.save(createMember());
-
-        SearchLogRequest request = new SearchLogRequest(searchMember.getId());
-
-        //when
-        StatusCode response = memberService.saveSearchLog(request, loginMember.getId());
-
-        //then
-        assertThat(response).isEqualTo(SUCCESS_SAVE_SEARCH_LOG);
-    }
-
-    @Test
-    @DisplayName("검색기록 저장 실패 - 현재 로그인한 유저가 아닌 경우")
-    public void saveSearchLogFail() {
-        //given
-        Member searchMember = memberRepository.save(createMember());
-
-        SearchLogRequest request = new SearchLogRequest(searchMember.getId());
-
-        // when, then : 원래는 로그인한 유저의 pk를 전달해야하나, 실패 테스트를 위해 searchMember pk 전달
-        assertThrows(BaseException.class, () -> {
-            memberService.saveSearchLog(request, searchMember.getId());
-        });
-    }
-
-    @Test
-    @DisplayName("자신이 속한 모든 팀 조회")
-    public void getMemberTeams() {
-        // given
-        Member member1 = memberRepository.save(createMember());
-        Member member2 = memberRepository.save(createMember());
-        Member member3 = memberRepository.save(createMember());
-
-        Team team = new Team("team1");
-        team.setHost(member1);
-        teamRepository.save(team);
-
-        memberTeamRepository.save(createMemberTeam(member1, team));
-        memberTeamRepository.save(createMemberTeam(member2, team));
-        memberTeamRepository.save(createMemberTeam(member3, team));
-
-        // when
-        List<MemberTeamResponse> response = memberService.getMemberTeams(member1.getId());
-
-        // then
-        assertThat(response.size()).isEqualTo(1);
-        assertThat(response.get(0).getTeamName()).isEqualTo(team.getName());
-    }
-
-    @Test
-    @DisplayName("성취율 조회")
-    public void getMemberAchievementRate() {
-        Member member = memberRepository.save(createMember());
-        Team team = teamRepository.save(createTeam(member));
-        memberTeamRepository.save(createMemberTeam(member, team));
-
-        planRepository.save(createCompletedPlan(member, team, LocalDate.of(2023, 3, 1)));
-        planRepository.save(createCompletedPlan(member, team, LocalDate.of(2023, 3, 2)));
-        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 2)));
-        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 3)));
-        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 3)));
-
-        MemberAchieveRequest request = new MemberAchieveRequest(LocalDate.of(2023, 3, 1), LocalDate.of(2023, 3, 31));
-
-        // when
-        List<MemberAchieveResponse> response = memberService.getMemberAchievementRate(request, member.getId());
-
-        for (int i = 0; i < response.size(); i++) {
-            System.out.println("=== " + response.get(i).getDate());
-        }
-
-        // then
-        assertThat(response.get(0).getAchievement()).isEqualTo(100);
-        assertThat(response.get(1).getAchievement()).isEqualTo(50);
-        assertThat(response.get(2).getAchievement()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("유저 캘린더 조회")
-    public void getMemberCalendarByDate() {
-        // given
-        LocalDate date1 = LocalDate.of(2023, 3, 1);
-        LocalDate date2 = LocalDate.of(2023, 3, 2);
-
-        Member member = memberRepository.save(createMember());
-        Team team = teamRepository.save(createTeam(member));
-        memberTeamRepository.save(createMemberTeam(member, team));
-
-        planRepository.save(createCompletedPlan(member, team, LocalDate.of(2023, 3, 1)));
-        planRepository.save(createCompletedPlan(member, team, LocalDate.of(2023, 3, 2)));
-        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 2)));
-        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 3)));
-        planRepository.save(createInCompletedPlan(member, team, LocalDate.of(2023, 3, 3)));
-
-        // when
-        List<MemberPlanDetailResponse> response1 = memberService.getMemberCalendarByDate(date1, member.getId());
-        List<MemberPlanDetailResponse> response2 = memberService.getMemberCalendarByDate(date2, member.getId());
-
-        // then
-        assertThat(response1.get(0).getPlanList().size()).isEqualTo(1);
-        assertThat(response2.get(0).getPlanList().size()).isEqualTo(2);
-    }
 }

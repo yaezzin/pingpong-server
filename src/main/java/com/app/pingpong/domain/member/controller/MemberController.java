@@ -33,8 +33,8 @@ public class MemberController {
 
     @ResponseBody
     @PostMapping("/validate")
-    public BaseResponse<String> validate(@RequestParam String nickname) {
-        return memberService.validateNickname(nickname);
+    public BaseResponse<StatusCode> validate(@RequestParam String nickname) {
+        return new BaseResponse<>(memberService.validateNickname(nickname));
     }
 
     @ResponseBody

@@ -59,14 +59,14 @@ public class MemberService {
     }
 
     @Transactional
-    public BaseResponse<String> validateNickname(String nickname) {
+    public StatusCode validateNickname(String nickname) {
         if (!isRegexNickname(nickname)) {
             throw new BaseException(INVALID_NICKNAME);
         }
         if (memberRepository.existsMemberByNicknameAndStatus(nickname)) {
-            throw new BaseException(USER_NICKNAME_ALREADY_EXISTS);
+            throw new BaseException(MEMBER_NICKNAME_ALREADY_EXISTS);
         }
-        return new BaseResponse(SUCCESS_VALIDATE_NICKNAME);
+        return SUCCESS_VALIDATE_NICKNAME;
     }
 
     @Transactional(readOnly = true)
