@@ -3,35 +3,43 @@ package com.app.pingpong.domain.member.service;
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendQueryRepository;
 import com.app.pingpong.domain.image.S3Uploader;
+import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
+import com.app.pingpong.domain.member.dto.response.MemberKeywordResponse;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
+import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberSearchRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
+import com.app.pingpong.global.common.util.MemberFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static com.app.pingpong.factory.FriendFactory.createMultipleFriendsByCount;
 import static com.app.pingpong.factory.MemberFactory.createMember;
+import static com.app.pingpong.factory.MemberFactory.createMultipleMemberByCount;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static com.app.pingpong.global.common.status.Status.DELETE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
@@ -49,10 +57,16 @@ public class MemberServiceTest {
     FriendQueryRepository friendQueryRepository;
 
     @Mock
+    MemberFacade memberFacade;
+
+    @Mock
     PasswordEncoder passwordEncoder;
 
     @Mock
     S3Uploader s3Uploader;
+
+    @Mock
+    RedisTemplate<String, Object> redisTemplate;
 
     @Test
     public void signup() {
@@ -238,11 +252,83 @@ public class MemberServiceTest {
 
     @Test
     public void findByNickname() {
+        // given
+        Member member = createMember();
+        List<Member> members = createMultipleMemberByCount(100);
+        List<Member> offsetMembers = members.subList(10, 20); // 10
+        ListOperations<String, Object> listOps = mock(ListOperations.class);
 
+        given(memberSearchRepository.findByNicknameContainsWithNoOffset(any(), any(), any(), anyInt()))
+                .willReturn(offsetMembers);
+        given(memberFacade.getCurrentMember()).willReturn(member);
+        given(friendQueryRepository.isFriend(any(), any())).willReturn(true);
+        given(redisTemplate.opsForList()).willReturn(listOps);
+        given(listOps.leftPush(any(), any())).willReturn(1L);
+
+        // when
+        List<MemberSearchResponse> response = memberService.findByNickname("nickname", member.getId());
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.size()).isEqualTo(offsetMembers.size());
+        for (int i = 0; i < offsetMembers.size(); i++) {
+            assertThat(response.get(i).getMemberId()).isEqualTo(offsetMembers.get(i).getId());
+        }
     }
 
     @Test
-    public void findByNicknameExceptionBy() {
+    public void saveSearchLog() {
+        // given
+        Member member = createMember();
+        Member opponent = createMember();
+        SearchLogRequest request = new SearchLogRequest(opponent.getId());
 
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(opponent));
+        ListOperations<String, Object> listOps = mock(ListOperations.class);
+        given(redisTemplate.opsForList()).willReturn(listOps);
+        given(listOps.leftPush(any(), any())).willReturn(1L);
+
+        // when
+        StatusCode code = memberService.saveSearchLog(request, member.getId());
+
+        // then
+        assertThat(code).isEqualTo(SUCCESS_SAVE_SEARCH_LOG);
     }
+
+    @Test
+    public void saveSearchLogExceptionByMemberNotFound() {
+        // given
+        Member opponent = createMember();
+        SearchLogRequest request = new SearchLogRequest(opponent.getId());
+
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
+
+        // when, then
+        BaseException exception = assertThrows(BaseException.class, () -> memberService.saveSearchLog(request, opponent.getId()));
+        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND);
+    }
+
+    @Test
+    public void getSearchLog() {
+        // given
+        Member member = createMember();
+        List<Object> redisValues = new ArrayList<>();
+        redisValues.add(new MemberResponse(1L, "nickname", "profileImage"));
+        redisValues.add(new MemberKeywordResponse("keyword"));
+
+        ListOperations<String, Object> listOps = mock(ListOperations.class);
+        given(redisTemplate.opsForList()).willReturn(listOps);
+        given(listOps.range(any(), anyLong(), anyLong())).willReturn(redisValues);
+
+        // when
+        List<Object> response = memberService.getSearchLog(member.getId());
+
+        // then
+        verify(redisTemplate).opsForList();
+        assertThat(response.size()).isEqualTo(redisValues.size());
+    }
+
+    @Test
+    public void
+
 }
