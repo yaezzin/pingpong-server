@@ -6,13 +6,13 @@ import com.app.pingpong.domain.image.S3Uploader;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
-import com.app.pingpong.domain.member.dto.response.MemberDetailResponse;
-import com.app.pingpong.domain.member.dto.response.MemberKeywordResponse;
-import com.app.pingpong.domain.member.dto.response.MemberResponse;
-import com.app.pingpong.domain.member.dto.response.MemberSearchResponse;
+import com.app.pingpong.domain.member.dto.response.*;
 import com.app.pingpong.domain.member.entity.Member;
+import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberSearchRepository;
+import com.app.pingpong.domain.member.repository.MemberTeamRepository;
+import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
 import com.app.pingpong.global.common.util.MemberFacade;
@@ -32,6 +32,8 @@ import java.util.Optional;
 import static com.app.pingpong.factory.FriendFactory.createMultipleFriendsByCount;
 import static com.app.pingpong.factory.MemberFactory.createMember;
 import static com.app.pingpong.factory.MemberFactory.createMultipleMemberByCount;
+import static com.app.pingpong.factory.MemberTeamFactory.createMemberTeam;
+import static com.app.pingpong.factory.TeamFactory.createTeam;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static com.app.pingpong.global.common.status.Status.DELETE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,6 +57,9 @@ public class MemberServiceTest {
 
     @Mock
     FriendQueryRepository friendQueryRepository;
+
+    @Mock
+    MemberTeamRepository memberTeamRepository;
 
     @Mock
     MemberFacade memberFacade;
@@ -329,6 +334,40 @@ public class MemberServiceTest {
     }
 
     @Test
-    public void
+    public void getMemberTeams() {
+        // given
+        Member member = createMember();
+
+        Team team1 = createTeam(member);
+        Team team2 = createTeam(member);
+        Team team3 = createTeam(member);
+
+        List<MemberTeam> memberTeams = new ArrayList<>();
+        memberTeams.add(createMemberTeam(member, team1));
+        memberTeams.add(createMemberTeam(member, team2));
+        memberTeams.add(createMemberTeam(member, team3));
+
+        given(memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(any(), any())).willReturn(memberTeams);
+        given(memberTeamRepository.findAllByTeamIdAndStatus(any(), any())).willReturn(memberTeams);
+
+
+        // when
+        List<MemberTeamResponse> response = memberService.getMemberTeams(member.getId());
+
+        // then
+        assertThat(response.get(0).getTeamId()).isEqualTo(team3.getId());
+        assertThat(response.get(1).getTeamId()).isEqualTo(team2.getId());
+        assertThat(response.get(2).getTeamId()).isEqualTo(team1.getId());
+
+    }
+
+    @Test
+    public void getMemberAchievementRate() {
+        // given
+
+        // when
+
+        // then
+    }
 
 }
