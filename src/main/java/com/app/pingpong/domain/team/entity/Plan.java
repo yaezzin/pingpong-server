@@ -23,20 +23,22 @@ public class Plan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 18)
+    @Column(nullable = false, length = 18)
     private String title;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @Column(nullable = false)
     private LocalDate date;
 
     @LastModifiedDate
     private LocalDateTime wastedTime;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Status status;
 
-    @Column(length = 10, columnDefinition = "varchar(10) default 'INCOMPLETE'")
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10, columnDefinition = "varchar(10) default 'INCOMPLETE'")
     private Status achievement;
 
     @ManyToOne

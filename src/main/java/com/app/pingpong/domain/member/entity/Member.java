@@ -3,7 +3,10 @@ package com.app.pingpong.domain.member.entity;
 import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.global.common.status.Authority;
 import com.app.pingpong.global.common.status.Status;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -19,19 +22,23 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String socialId;
 
+    @Column(nullable = false)
     private String email;
 
-    @Column(length = 10)
+    @Column(nullable = false, length = 10)
     private String nickname;
 
     private String profileImage;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Status status;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Authority authority;
 
     @OneToMany(mappedBy = "member")

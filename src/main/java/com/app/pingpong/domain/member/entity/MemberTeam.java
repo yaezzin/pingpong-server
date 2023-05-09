@@ -22,6 +22,7 @@ public class MemberTeam {
     private Long id;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Status status;
 
     @CreatedDate

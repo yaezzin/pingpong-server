@@ -19,13 +19,17 @@ public class Friend {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private Long applicant;
 
+    @Column(nullable = false)
     private Long respondent;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(nullable = false)
     private Date createdAt;
 
     @Builder

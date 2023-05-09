@@ -3,6 +3,7 @@ package com.app.pingpong.domain.member.service;
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendQueryRepository;
 import com.app.pingpong.domain.image.S3Uploader;
+import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
@@ -12,7 +13,9 @@ import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberSearchRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
+import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
+import com.app.pingpong.domain.team.repository.PlanRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
 import com.app.pingpong.global.common.util.MemberFacade;
@@ -25,14 +28,17 @@ import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.app.pingpong.factory.FriendFactory.createMultipleFriendsByCount;
 import static com.app.pingpong.factory.MemberFactory.createMember;
 import static com.app.pingpong.factory.MemberFactory.createMultipleMemberByCount;
 import static com.app.pingpong.factory.MemberTeamFactory.createMemberTeam;
+import static com.app.pingpong.factory.PlanFactory.createCompletedPlansByCount;
+import static com.app.pingpong.factory.PlanFactory.createInCompletedPlansByCount;
 import static com.app.pingpong.factory.TeamFactory.createTeam;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static com.app.pingpong.global.common.status.Status.DELETE;
@@ -60,6 +66,9 @@ public class MemberServiceTest {
 
     @Mock
     MemberTeamRepository memberTeamRepository;
+
+    @Mock
+    PlanRepository planRepository;
 
     @Mock
     MemberFacade memberFacade;
@@ -364,10 +373,47 @@ public class MemberServiceTest {
     @Test
     public void getMemberAchievementRate() {
         // given
+        Member manager = createMember();
+        Team team = createTeam(manager);
+        List<Plan> completedPlan = createCompletedPlansByCount(manager, team, LocalDate.now(), 10);
+        List<Plan> incompletedPlan = createInCompletedPlansByCount(manager, team, LocalDate.now(), 10);
+        List<Plan> allPlans = Stream.concat(completedPlan.stream(), incompletedPlan.stream()).collect(Collectors.toList());
+
+        MemberAchieveRequest request = new MemberAchieveRequest(LocalDate.now().minusDays(1), LocalDate.now().plusDays(1));
+
+        given(planRepository.findAllByManagerIdAndStatusAndDateBetweenOrderByDateAsc(any(), any(), any(), any())).willReturn(allPlans);
+        Collections.sort(allPlans, Comparator.comparing(Plan::getDate));
+        given(planRepository.findAllByManagerIdAndStatusAndDateOrderByDateAsc(any(), any(), any())).willReturn(allPlans);
 
         // when
+        List<MemberAchieveResponse> response = memberService.getMemberAchievementRate(request, manager.getId());
 
         // then
+        assertThat(response.get(0).getAchievement()).isEqualTo(50.0);
     }
 
+    @Test
+    public void getMemberCalendarByDate() {
+        // given
+        Member member = createMember();
+
+        Team team1 = createTeam(member);
+        MemberTeam memberTeam1 = createMemberTeam(member, team1);
+        List<Plan> plan1 = createCompletedPlansByCount(member, team1, LocalDate.now(), 10);
+
+        Team team2 = createTeam(member);
+        MemberTeam memberTeam2 = createMemberTeam(member, team2);
+        List<Plan> plan2 = createCompletedPlansByCount(member, team2, LocalDate.now(), 10);
+
+        LocalDate date = LocalDate.of(2023, 5, 9);
+
+        given(memberTeamRepository.findAllByMemberIdAndStatusOrderByParticipatedAtDesc(any(), any())).willReturn(List.of(memberTeam1, memberTeam2));
+        given(planRepository.findAllByTeamIdAndManagerIdAndStatusAndDate(any(), any(), any(), any())).willReturn(plan1);
+
+        // when
+        List<MemberPlanDetailResponse> response = memberService.getMemberCalendarByDate(date, member.getId());
+
+        // then
+        assertThat(response.get(0).getPlanList().size()).isEqualTo(plan1.size());
+    }
 }
