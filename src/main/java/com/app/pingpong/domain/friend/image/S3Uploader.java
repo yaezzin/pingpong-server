@@ -1,4 +1,4 @@
-package com.app.pingpong.domain.image;
+package com.app.pingpong.domain.friend.image;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;

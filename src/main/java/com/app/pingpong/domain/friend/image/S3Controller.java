@@ -1,4 +1,4 @@
-package com.app.pingpong.domain.image;
+package com.app.pingpong.domain.friend.image;
 
 import com.app.pingpong.global.common.response.BaseResponse;
 import lombok.RequiredArgsConstructor;

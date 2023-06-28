@@ -8,8 +8,8 @@ import com.app.pingpong.domain.social.dto.response.MemberInfoResponse;
 import com.app.pingpong.domain.social.dto.response.MemberLoginResponse;
 import com.app.pingpong.domain.social.dto.response.TokenResponse;
 import com.app.pingpong.domain.social.service.SocialService;
-import com.app.pingpong.global.common.response.BaseResponse;
 import com.app.pingpong.global.common.exception.StatusCode;
+import com.app.pingpong.global.common.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +21,7 @@ public class SocialController {
     private final SocialService socialService;
 
     @ResponseBody
-    @GetMapping("/info")
+    @PostMapping("/info")
     public BaseResponse<MemberInfoResponse> getUserInfo(@RequestBody MemberInfoRequest request) {
         return new BaseResponse<>(socialService.getUserInfo(request));
     }
