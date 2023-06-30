@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.app.pingpong.global.common.exception.StatusCode.*;
+import static com.app.pingpong.global.common.status.Status.ACTIVE;
 
 @RequiredArgsConstructor
 @Service
@@ -55,7 +56,7 @@ public class SocialService {
     }
 
     public MemberLoginResponse login(MemberLoginRequest request) {
-        Member member = memberRepository.findByEmail(request.getEmail()).orElseThrow(() -> new BaseException(EMAIL_NOT_FOUND));
+        Member member = memberRepository.findByEmailAndStatus(request.getEmail(), ACTIVE).orElseThrow(() -> new BaseException(EMAIL_NOT_FOUND));
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getSocialId());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
