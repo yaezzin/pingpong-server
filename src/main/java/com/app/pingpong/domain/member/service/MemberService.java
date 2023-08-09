@@ -2,7 +2,6 @@ package com.app.pingpong.domain.member.service;
 
 import com.app.pingpong.domain.friend.image.S3Uploader;
 import com.app.pingpong.domain.friend.repository.FriendQueryRepository;
-import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
@@ -165,8 +164,8 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public List<MemberAchieveResponse> getMemberAchievementRate(MemberAchieveRequest request, Long loginMemberId) {
-        List<Plan> plans = planRepository.findAllByManagerIdAndStatusAndDateBetweenOrderByDateAsc(loginMemberId, ACTIVE, request.getStartDate(), request.getEndDate());
+    public List<MemberAchieveResponse> getMemberAchievementRate(LocalDate startDate, LocalDate endDate, Long loginMemberId) {
+        List<Plan> plans = planRepository.findAllByManagerIdAndStatusAndDateBetweenOrderByDateAsc(loginMemberId, ACTIVE, startDate, endDate);
 
         return plans.stream().map(Plan::getDate).distinct().map(date -> {
             List<Plan> plansOnDate = planRepository.findAllByManagerIdAndStatusAndDateOrderByDateAsc(loginMemberId, ACTIVE, date);

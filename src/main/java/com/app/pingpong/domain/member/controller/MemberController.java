@@ -1,6 +1,5 @@
 package com.app.pingpong.domain.member.controller;
 
-import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
@@ -98,9 +97,10 @@ public class MemberController {
     @ResponseBody
     @GetMapping("/calendars/achievement")
     @CheckLoginStatus(auth = Authority.ROLE_USER)
-    public BaseResponse<List<MemberAchieveResponse>> getMemberAchievement(@RequestBody MemberAchieveRequest request,
+    public BaseResponse<List<MemberAchieveResponse>> getMemberAchievement(@RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+                                                                          @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
                                                                           @CurrentLoginMemberId Long id) {
-        return new BaseResponse<>(memberService.getMemberAchievementRate(request, id));
+        return new BaseResponse<>(memberService.getMemberAchievementRate(startDate, endDate, id));
     }
 
     @ResponseBody
