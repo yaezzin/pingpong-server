@@ -13,12 +13,13 @@ import static com.app.pingpong.global.common.exception.StatusCode.SUCCESS;
 @Getter
 @Builder
 @AllArgsConstructor
-@JsonPropertyOrder({"isSuccess", "code", "message", "result"})
+@JsonPropertyOrder({"isSuccess", "code", "type", "message", "result"})
 public class BaseResponse<T> {
     @JsonProperty("isSuccess")
     private final Boolean isSuccess;
     private final int code;
     private final String message;
+    private final String type;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T result;
 
@@ -26,6 +27,7 @@ public class BaseResponse<T> {
         this.isSuccess = true;
         this.message = SUCCESS.getMessage();
         this.code = SUCCESS.getCode();
+        this.type = SUCCESS.getType();
         this.result = result;
     }
 
@@ -33,12 +35,14 @@ public class BaseResponse<T> {
         this.isSuccess = status.isSuccess();
         this.message = status.getMessage();
         this.code = status.getCode();
+        this.type = status.getType();
     }
 
     public BaseResponse(StatusCode status, T result) {
         this.isSuccess = status.isSuccess();
         this.message = status.getMessage();
         this.code = status.getCode();
+        this.type = status.getType();
         this.result = result;
     }
 }
