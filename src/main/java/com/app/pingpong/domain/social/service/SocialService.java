@@ -82,8 +82,8 @@ public class SocialService {
             throw new BaseException(INVALID_REFRESH_TOKEN);
         }
 
-        // 2. 액세스 토큰을 통해 유저 인증 정보를 가져옴 -> Redis에서 리프레시 토큰 가져옴
-        Authentication authentication = jwtTokenProvider.getAuthentication(tokenRequest.getAccessToken());
+        // 2. Refresh 토큰으로 인증정보 조회
+        Authentication authentication = jwtTokenProvider.getAuthentication(tokenRequest.getRefreshToken());
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         String refreshToken = valueOperations.get(authentication.getName());
 
