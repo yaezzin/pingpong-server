@@ -14,6 +14,7 @@ import com.app.pingpong.domain.social.entity.KakaoOAuth;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
 import com.app.pingpong.global.security.JwtTokenProvider;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -82,8 +83,16 @@ public class SocialService {
             throw new BaseException(INVALID_REFRESH_TOKEN);
         }
 
-        // 2. Refresh 토큰으로 인증정보 조회
-        Authentication authentication = jwtTokenProvider.getAuthentication(tokenRequest.getRefreshToken());
+        // 2. 인증정보 조회
+
+        Authentication authentication = null;
+        try {
+            authentication = jwtTokenProvider.getAuthentication(tokenRequest.getAccessToken());
+        } catch (ExpiredJwtException e) {
+            // 액세스 토큰이 만료된 경우, 리프레시 토큰으로 새로운 액세스 토큰 발급
+            authentication = jwtTokenProvider.getAuthenticationFromRefreshToken(tokenRequest.getRefreshToken());
+        }
+
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         String refreshToken = valueOperations.get(authentication.getName());
 

@@ -2,7 +2,10 @@ package com.app.pingpong.global.security;
 
 import com.app.pingpong.domain.social.dto.response.TokenResponse;
 import com.app.pingpong.global.common.exception.BaseException;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +24,7 @@ import java.util.Date;
 import java.util.stream.Collectors;
 
 import static com.app.pingpong.global.common.exception.StatusCode.DATABASE_ERROR;
+import static com.app.pingpong.global.common.exception.StatusCode.INVALID_REFRESH_TOKEN;
 
 @Component
 public class JwtTokenProvider {
@@ -52,6 +56,8 @@ public class JwtTokenProvider {
                 .compact();
 
         String refreshToken = Jwts.builder()
+                .setSubject(authentication.getName())
+                .claim(AUTHORITIES_KEY, authorities)
                 .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -62,6 +68,36 @@ public class JwtTokenProvider {
                 .accessTokenExpiresIn(accessTokenExpiresIn.getTime())
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+
+    public Authentication getAuthenticationFromRefreshToken(String refreshToken) {
+        // 1. 리프레시 토큰 검증
+        if (!validateToken(refreshToken)) {
+            throw new BaseException(INVALID_REFRESH_TOKEN);
+        }
+
+        // 2. 리프레시 토큰에서 유저 정보 추출
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(refreshToken)
+                .getBody();
+
+
+        // 3. 유저 정보로 UserDetails 객체 생성
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
+
+        UserDetails userDetails = new User(claims.getSubject(), "", authorities);
+
+        // 4. 인증 객체 생성
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+
+        return authenticationToken;
     }
 
     public Authentication getAuthentication(String accessToken) {
