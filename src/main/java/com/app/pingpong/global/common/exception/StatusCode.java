@@ -60,7 +60,7 @@ public enum StatusCode {
 
     /* 404 : NOT FOUND */
     MEMBER_NOT_FOUND(false, 404, "해당 유저를 찾을 수 없습니다.", "MEMBER_NOT_FOUND"),
-    MEMBER_NOT_FOUND_IN_TEAM(false, 404, "해당 유저", "MEMBER_NOT_FOUND_IN_TEAM"),
+    MEMBER_NOT_FOUND_IN_TEAM(false, 404, "해당 그룹에서 해당 유저를 찾을 수 없습니다.", "MEMBER_NOT_FOUND_IN_TEAM"),
     EMAIL_NOT_FOUND(false, 404, "해당 이메일을 찾을 수 없습니다.", "EMAIL_NOT_FOUND"),
     FRIEND_NOT_FOUND(false, 404, "해당 유저와는 친구 상태가 아니거나, 친구 신청이 존재하지 않습니다.", "FRIEND_NOT_FOUND"),
     TEAM_NOT_FOUND(false, 404, "존재하지 않는 그룹입니다.", "TEAM_NOT_FOUND"),
