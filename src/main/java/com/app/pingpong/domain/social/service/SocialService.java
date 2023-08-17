@@ -84,7 +84,6 @@ public class SocialService {
         }
 
         // 2. 인증정보 조회
-
         Authentication authentication = null;
         try {
             authentication = jwtTokenProvider.getAuthentication(tokenRequest.getAccessToken());

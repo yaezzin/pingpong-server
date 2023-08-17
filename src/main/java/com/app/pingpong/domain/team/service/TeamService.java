@@ -312,6 +312,7 @@ public class TeamService {
     private List<Member> getMembersFromMemberTeams(List<MemberTeam> memberTeams) {
         return memberTeams.stream()
                 .map(MemberTeam::getMember)
+                .filter(member -> member.getStatus().equals(ACTIVE))
                 .collect(Collectors.toList());
     }
 
