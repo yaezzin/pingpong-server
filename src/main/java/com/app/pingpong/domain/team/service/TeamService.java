@@ -222,6 +222,9 @@ public class TeamService {
         if (request.getMemberId().size() > 10 || request.getMemberId().size() < 1) {
             throw new BaseException(INVALID_TEAM_MEMBER_SIZE);
         }
+        if (request.getMemberId().contains(loginMember.getId())) {
+            throw new BaseException(INVALID_TEAM_HOST_MEMBER);
+        }
         for (Long id : request.getMemberId()) {
             memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(INVALID_INVITER));
         }
