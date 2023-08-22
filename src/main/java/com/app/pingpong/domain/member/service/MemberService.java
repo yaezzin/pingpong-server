@@ -107,7 +107,8 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public List<MemberSearchResponse> findByNickname(String nickname, Long id) {
-        List<Member> findMembers = memberSearchRepository.findByNicknameContainsWithNoOffset(ACTIVE, nickname, id, 10);
+        List<Member> findMembers = memberSearchRepository.findByNicknameContainsWithNoOffset(ACTIVE, nickname, id, 10)
+                .orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
 
         /* save log into Redis */
         ListOperations<String, Object> listOps = redisTemplate.opsForList();
