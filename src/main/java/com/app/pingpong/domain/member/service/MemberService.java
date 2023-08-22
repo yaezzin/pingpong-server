@@ -126,9 +126,9 @@ public class MemberService {
 
     @Transactional
     public StatusCode saveSearchLog(SearchLogRequest request, Long loginMemberId) {
-        //if (request.getId() == loginMemberId) {
-        //    throw new BaseException(INVALID_SAVE_SEARCH_LOG);
-        //}
+        if (request.getId() == loginMemberId) {
+            throw new BaseException(INVALID_SAVE_SEARCH_LOG);
+        }
 
         /* save search log into Redis */
         Member member = findMemberByIdAndStatus(request.getId(), ACTIVE);
