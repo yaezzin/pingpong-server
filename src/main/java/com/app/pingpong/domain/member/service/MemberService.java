@@ -213,8 +213,8 @@ public class MemberService {
         List<String> list = new ArrayList<>();
         for (Object o : listOps.range(loginMemberId, 0, -1)) {
             String str = o.toString().substring(0, 2);
-            System.out.println("==== is it str? : " + str);
-            if (!str.equals("id")) {
+
+            if (list.size() <= 10 && !str.equals("id")) {
                 list.add(str);
             } else {
                 String memberId = o.toString().substring(2);

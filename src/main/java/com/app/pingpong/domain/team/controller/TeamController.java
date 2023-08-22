@@ -69,7 +69,7 @@ public class TeamController {
     }
 
     @ResponseBody
-    @PostMapping("/{id}/refuse")
+    @DeleteMapping("/{id}/refuse")
     public BaseResponse<StatusCode> refuse(@PathVariable("id") Long teamId) {
         return new BaseResponse<>(teamService.refuse(teamId));
     }
