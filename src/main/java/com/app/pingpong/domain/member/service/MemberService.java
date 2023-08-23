@@ -214,11 +214,11 @@ public class MemberService {
         for (Object o : listOps.range(loginMemberId, 0, 20)) {
             String str = o.toString().substring(0, 2);
 
-            if (list.size() <= 10 && !str.equals("id")) { // keyword
+            if (list.size() < 10 && !str.equals("id")) { // keyword
                 list.add(str);
             } else {
                 String memberId = o.toString().substring(2);
-                if (!list.contains(memberId) && list.size() <= 10) {
+                if (!list.contains(memberId) && list.size() < 10) {
                     list.add(memberId);
                 }
             }
