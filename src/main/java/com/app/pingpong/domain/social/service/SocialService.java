@@ -72,7 +72,12 @@ public class SocialService {
     @Transactional
     public StatusCode logout(MemberLogoutRequest request) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-        valueOperations.getAndDelete(request.getEmail());
+        //valueOperations.getAndDelete(request.getEmail());
+        //String key = valueOperations.get(request.getEmail());
+        boolean deleted = valueOperations.getOperations().delete(request.getEmail());
+        if (!deleted) {
+            throw new BaseException(INVALID_LOGOUT_EMAIL);
+        }
         return SUCCESS_LOGOUT;
     }
 

@@ -47,6 +47,8 @@ public enum StatusCode {
     INVALID_PLAN(false, 400, "해당 할 일은 삭제되었습니다", "INVALID_PLAN"),
     INVALID_SAVE_SEARCH_LOG(false, 400, "본인은 검색기록에 저장할 수 없습니다.", "INVALID_SAVE_SEARCH_LOG"),
 
+    INVALID_LOGOUT_EMAIL(false, 400, "로그아웃 할 수 없는 이메일 입니다.", "INVALID_LOGOUT_EMAIL"),
+
     EXCEED_HOST_TEAM_SIZE(false, 400, "그룹을 더이상 생성할 수 없습니다. 그룹 개수는 최대 6개로 제한됩니다.", "EXCEED_HOST_TEAM_SIZE"),
     MEMBER_NICKNAME_ALREADY_EXISTS(false, 400, "이미 사용중인 닉네임입니다.", "MEMBER_NICKNAME_ALREADY_EXISTS"),
 
