@@ -126,7 +126,7 @@ public class MemberService {
 
     @Transactional
     public StatusCode saveSearchLog(SearchLogRequest request, Long loginMemberId) {
-        if (request.getId() == loginMemberId) {
+        if (request.getId().equals(loginMemberId)) {
             throw new BaseException(INVALID_SAVE_SEARCH_LOG);
         }
 
@@ -211,10 +211,10 @@ public class MemberService {
         ListOperations<String, Object> listOps = redisTemplate.opsForList();
 
         List<String> list = new ArrayList<>();
-        for (Object o : listOps.range(loginMemberId, 0, -1)) {
+        for (Object o : listOps.range(loginMemberId, 0, 20)) {
             String str = o.toString().substring(0, 2);
 
-            if (list.size() <= 10 && !str.equals("id")) {
+            if (list.size() <= 10 && !str.equals("id")) { // keyword
                 list.add(str);
             } else {
                 String memberId = o.toString().substring(2);
@@ -232,7 +232,6 @@ public class MemberService {
         for (String num : numList) {
             if (isLong(num)) {
                 Long memberId = Long.parseLong(num);
-                System.out.println("========= memberId " + memberId);
                 Member member = findMemberByIdAndStatus(memberId, ACTIVE);
                 memberList.add(MemberResponse.of(member));
             } else {
