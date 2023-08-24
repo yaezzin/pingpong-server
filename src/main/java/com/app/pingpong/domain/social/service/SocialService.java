@@ -24,6 +24,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static com.app.pingpong.global.common.status.Status.ACTIVE;
 
@@ -71,13 +73,26 @@ public class SocialService {
 
     @Transactional
     public StatusCode logout(MemberLogoutRequest request) {
+        // accessToken 검증
+        if (!jwtTokenProvider.validateToken(request.getAccessToken())) {
+            throw new BaseException(INVALID_LOGOUT_EMAIL);
+        }
+
+        // auth 추출
+        Authentication authentication = jwtTokenProvider.getAuthentication(request.getAccessToken());
+
+
+        // 리프레시 토큰 제거
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-        //valueOperations.getAndDelete(request.getEmail());
-        //String key = valueOperations.get(request.getEmail());
-        boolean deleted = valueOperations.getOperations().delete(request.getEmail());
+        boolean deleted = valueOperations.getOperations().delete(authentication.getName());
         if (!deleted) {
             throw new BaseException(INVALID_LOGOUT_EMAIL);
         }
+
+        // 블랙 리스트에 액세스 토큰 추가
+        Long expiration = jwtTokenProvider.getExpiration(request.getAccessToken());
+        valueOperations.set(request.getAccessToken(), request.getAccessToken(), expiration, TimeUnit.MILLISECONDS);
+
         return SUCCESS_LOGOUT;
     }
 

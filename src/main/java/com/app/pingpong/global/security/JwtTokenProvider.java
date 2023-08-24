@@ -9,6 +9,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,11 +24,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-import static com.app.pingpong.global.common.exception.StatusCode.DATABASE_ERROR;
-import static com.app.pingpong.global.common.exception.StatusCode.INVALID_REFRESH_TOKEN;
+import static com.app.pingpong.global.common.exception.StatusCode.*;
 
 @Component
 public class JwtTokenProvider {
+
+    private final RedisTemplate<String, String> redisTemplate;
 
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "Bearer";
@@ -36,7 +38,8 @@ public class JwtTokenProvider {
 
     private final Key key;
 
-    public JwtTokenProvider(@Value("${jwt.token.secret-key}") String secretKey) {
+    public JwtTokenProvider(@Value("${jwt.token.secret-key}") String secretKey, RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -122,10 +125,21 @@ public class JwtTokenProvider {
     public boolean validateToken(String token) throws BaseException {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            if (Boolean.TRUE.equals(redisTemplate.hasKey(token))) {
+                throw new BaseException(INVALID_ACCESS_TOKEN);
+                //return false;
+            }
             return true;
         } catch (JwtException e) {
             throw new BaseException(DATABASE_ERROR);
         }
     }
+
+    public Long getExpiration(String accessToken) {
+        Date expiration = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody().getExpiration();
+        Long now = new Date().getTime();
+        return (expiration.getTime() - now);
+    }
+
 }
 

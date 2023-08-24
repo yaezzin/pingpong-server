@@ -1,7 +1,6 @@
 package com.app.pingpong.global.security;
 
 import com.app.pingpong.global.common.exception.BaseException;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
