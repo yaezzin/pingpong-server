@@ -194,11 +194,11 @@ public class MemberService {
     private TeamPlanResponse createTeamPlanResponse(Plan plan) {
         return TeamPlanResponse.builder()
                 .planId(plan.getId())
-                .managerId(plan.getManager().getId())
                 .title(plan.getTitle())
                 .date(plan.getDate())
                 .status(plan.getStatus())
                 .achievement(plan.getAchievement())
+                .manager(MemberResponse.of(plan.getManager()))
                 .build();
     }
 

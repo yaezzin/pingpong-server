@@ -443,11 +443,11 @@ public class TeamService {
                 .stream()
                 .map(plan -> TeamPlanResponse.builder()
                         .planId(plan.getId())
-                        .managerId(plan.getManager().getId())
                         .title(plan.getTitle())
                         .date(plan.getDate())
                         .status(plan.getStatus())
                         .achievement(plan.getAchievement())
+                        .manager(MemberResponse.of(plan.getManager()))
                         .build()
                 )
                 .collect(Collectors.toList());
@@ -460,9 +460,9 @@ public class TeamService {
         memberTeamRepository.findByTeamIdAndMemberId(team.getId(), loginMemberId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
 
         List<Plan> plansInTrash;
-        if (loginMember.equals(team.getHost())) {
+        if (loginMember.equals(team.getHost())) { // 방장이라면 팀에 대한 모든 삭제된 일정 가져옴
             plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(team.getId(), DELETE);
-        } else {
+        } else { // 방장이 아니면 내가 담당자인것만 가져옴옴
             plansInTrash = planRepository.findAllByManagerIdAndTeamIdAndStatusOrderByWastedTimeDesc(loginMemberId, team.getId(), DELETE);
         }
         return plansInTrash;
