@@ -227,6 +227,7 @@ public class TeamService {
         }
         for (Long id : request.getMemberId()) {
             memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(INVALID_INVITER));
+            friendQueryRepository.checkFriendship(loginMember.getId(), id);
         }
     }
 

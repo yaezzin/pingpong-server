@@ -2,6 +2,7 @@ package com.app.pingpong.domain.friend.repository;
 
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.entity.QFriend;
+import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.status.Status;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+import static com.app.pingpong.global.common.exception.StatusCode.FRIEND_NOT_FOUND;
 import static com.app.pingpong.global.common.status.Status.ACTIVE;
 import static com.app.pingpong.global.common.status.Status.WAIT;
 
@@ -50,6 +52,22 @@ public class FriendQueryRepository {
         return queryFactory.selectFrom(QFriend.friend)
                 .where(isActiveFriend, isLoginUser, isSearchedUser)
                 .fetchFirst() != null;
+    }
+
+    public boolean checkFriendship(Long loginUserId, Long searchedUserId) {
+        BooleanExpression isActiveFriend = QFriend.friend.status.eq(Status.ACTIVE);
+        BooleanExpression isLoginUser = QFriend.friend.applicant.eq(loginUserId).or(QFriend.friend.respondent.eq(loginUserId));
+        BooleanExpression isSearchedUser = QFriend.friend.applicant.eq(searchedUserId).or(QFriend.friend.respondent.eq(searchedUserId));
+
+        Friend friendship = queryFactory.selectFrom(QFriend.friend)
+                .where(isActiveFriend, isLoginUser, isSearchedUser)
+                .fetchFirst();
+
+        if (friendship == null) {
+            throw new BaseException(FRIEND_NOT_FOUND);
+        }
+
+        return true;
     }
 
     public int findFriendCount(Long id) {
