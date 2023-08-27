@@ -32,25 +32,9 @@ public class TeamPlanResponse {
                         plan.getTitle(),
                         plan.getDate(),
                         plan.getStatus(),
-                        plan.getAchievement(), MemberResponse.of(plan.getManager())
+                        plan.getAchievement(),
+                        MemberResponse.of(plan.getManager())
                 ))
                 .collect(Collectors.toList());
     }
-
-    /*
-    public static List<TeamPlanResponse> of(List<Plan> plans) {
-        List<TeamPlanResponse> list = new ArrayList<>();
-        for (Plan p : plans) {
-            list.add(TeamPlanResponse.builder()
-                    .planId(p.getId())
-                    .managerId(p.getManager().getId())
-                    .title(p.getTitle())
-                    .date(p.getDate())
-                    .status(p.getStatus())
-                    .achievement(p.getAchievement())
-                    .build()
-            );
-        } */
-    //return list;
-    //}
 }

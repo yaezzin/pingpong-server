@@ -371,13 +371,13 @@ public class TeamService {
 
     private Member checkManagerExistsAndMembership(Long teamId, TeamPlanRequest request) {
         Member manager = memberRepository.findByIdAndStatus(request.getManagerId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, manager.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, manager.getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
         return manager;
     }
 
     private void checkMakerExistsAndMemberShip(Long teamId) {
         Member maker = memberRepository.findByIdAndStatus(memberFacade.getCurrentMember().getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        memberTeamRepository.findByTeamIdAndMemberId(teamId, maker.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, maker.getId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
     }
 
     private Plan createPlan(Long teamId, Member manager, TeamPlanRequest request) {
