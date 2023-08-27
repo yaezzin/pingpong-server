@@ -39,8 +39,8 @@ public class TeamController {
 
     @ResponseBody
     @PatchMapping("/{id}")
-    public void update() {
-
+    public BaseResponse<TeamResponse> update(@PathVariable Long id, @RequestBody TeamRequest request) {
+        return new BaseResponse<>(teamService.update(id, request));
     }
 
     @ResponseBody

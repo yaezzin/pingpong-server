@@ -53,7 +53,20 @@ public class TeamService {
 
         setTeam(team, host);
         setTeamToHost(team, host);
-        setTeamToMembers(team, host, request);
+        setTeamToMembers(team, request);
+
+        return TeamResponse.of(memberTeamRepository.findAllByTeamId(team.getId()));
+    }
+
+    @Transactional
+    public TeamResponse update(Long id, TeamRequest request) {
+        Team team = teamRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+
+        checkHost(team.getHost());
+        team.setName(request.getName());
+        setTeamToMembers(team, request);
+
+        // 나랑 친구인지 여부 확인하는 예외처리 필요?
 
         return TeamResponse.of(memberTeamRepository.findAllByTeamId(team.getId()));
     }
@@ -244,18 +257,25 @@ public class TeamService {
         memberTeamRepository.save(memberTeam);
     }
 
-    private void setTeamToMembers(Team newTeam, Member host, TeamRequest request) {
+    private void setTeamToMembers(Team newTeam, TeamRequest request) {
         request.getMemberId().stream()
                 .map(memberRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .forEach(member -> {
+                    if (isMemberAlreadyInTeamWithStatus(newTeam, member, WAIT) || isMemberAlreadyInTeamWithStatus(newTeam, member, ACTIVE)) {
+                        throw new BaseException(ALREADY_INVITE_TEAM);
+                    }
                     MemberTeam memberTeam = new MemberTeam();
                     memberTeam.setTeam(newTeam);
                     memberTeam.setMember(member);
                     memberTeam.setStatus(WAIT);
                     memberTeamRepository.save(memberTeam);
                 });
+    }
+
+    private boolean isMemberAlreadyInTeamWithStatus(Team team, Member member, Status status) {
+        return memberTeamRepository.existsByTeamIdAndMemberIdAndStatus(team.getId(), member.getId(), status);
     }
 
     private void checkHost(Member host) {

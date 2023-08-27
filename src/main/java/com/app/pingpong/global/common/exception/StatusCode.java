@@ -60,7 +60,7 @@ public enum StatusCode {
     ALREADY_TEAM_HOST(false, 400, "이미 해당 그룹의 호스트입니다.", "ALREADY_TEAM_HOST"),
     ALREADY_ACCEPT_TEAM_INVITATION(false, 400, "이미 해당 그룹의 초대를 수락하였습니다.", "ALREADY_ACCEPT_TEAM_INVITATION"),
     ALREADY_INCOMPLETE_PLAN(false, 400, "해당 할 일의 완료 취소를 할 수 없습니다.", "ALREADY_INCOMPLETE_PLAN"),
-
+    ALREADY_INVITE_TEAM(false, 400, "이미 초대했거나, 이미 해당 그룹에 참가한 유저입니다.", "ALREADY_INVITE_TEAM"),
 
     /* 404 : NOT FOUND */
     MEMBER_NOT_FOUND(false, 404, "해당 유저를 찾을 수 없습니다.", "MEMBER_NOT_FOUND"),
