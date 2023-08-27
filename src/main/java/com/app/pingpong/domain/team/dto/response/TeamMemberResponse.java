@@ -16,7 +16,7 @@ public class TeamMemberResponse {
     private String nickname;
     private String profileImage;
     private Long hostId;
-    private boolean isFriend;
+    private boolean friendship;
     private Status status;
 
     public static TeamMemberResponse of(Member findMember, Team team, boolean isFriend, MemberTeam isStatus) {
@@ -25,12 +25,8 @@ public class TeamMemberResponse {
                 .nickname(findMember.getNickname())
                 .profileImage(findMember.getProfileImage())
                 .hostId(team.getHost().getId())
-                .isFriend(isFriend)
+                .friendship(isFriend)
                 .status(isStatus.getStatus())
                 .build();
-    }
-
-    public boolean getFriendStatus() {
-        return isFriend;
     }
 }
