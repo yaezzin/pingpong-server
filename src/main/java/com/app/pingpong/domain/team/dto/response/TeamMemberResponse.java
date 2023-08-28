@@ -16,10 +16,10 @@ public class TeamMemberResponse {
     private String nickname;
     private String profileImage;
     private Long hostId;
-    private boolean friendship;
+    private Status friendship;
     private Status status;
 
-    public static TeamMemberResponse of(Member findMember, Team team, boolean isFriend, MemberTeam isStatus) {
+    public static TeamMemberResponse of(Member findMember, Team team, Status isFriend, MemberTeam isStatus) {
         return TeamMemberResponse.builder()
                 .memberId(findMember.getId())
                 .nickname(findMember.getNickname())

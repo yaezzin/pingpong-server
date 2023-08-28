@@ -54,6 +54,21 @@ public class FriendQueryRepository {
                 .fetchFirst() != null;
     }
 
+    public Status findFriendStatus(Long loginMemberId, Long searchMemberId) {
+        BooleanExpression condition1 = QFriend.friend.applicant.eq(loginMemberId).and(QFriend.friend.respondent.eq(searchMemberId));
+        BooleanExpression condition2 = QFriend.friend.applicant.eq(searchMemberId).and(QFriend.friend.respondent.eq(loginMemberId));
+
+        Friend friend = queryFactory.selectFrom(QFriend.friend)
+                .where(condition1.or(condition2))
+                .fetchFirst();
+
+        if (friend != null) {
+            return friend.getStatus();
+        } else {
+            return Status.INACTIVE; // Set a default status when no friend relationship is found
+        }
+    }
+
     public boolean checkFriendship(Long loginUserId, Long searchedUserId) {
         BooleanExpression isActiveFriend = QFriend.friend.status.eq(Status.ACTIVE);
         BooleanExpression isLoginUser = QFriend.friend.applicant.eq(loginUserId).or(QFriend.friend.respondent.eq(loginUserId));
