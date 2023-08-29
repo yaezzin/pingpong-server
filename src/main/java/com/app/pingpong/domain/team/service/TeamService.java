@@ -296,13 +296,14 @@ public class TeamService {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member host = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Member delegator = memberRepository.findByIdAndStatus(delegatorId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, delegatorId, ACTIVE).orElseThrow(() -> new BaseException(DELEGATOR_NOT_FOUND_IN_TEAM));
 
         if (!team.getHost().equals(host)) {
             throw new BaseException(INVALID_HOST);
-        }
-        if (team.getHost().equals(delegator)) {
+        } else if (team.getHost().equals(delegator)) {
             throw new BaseException(ALREADY_TEAM_HOST);
         }
+
         team.setHost(delegator);
         return team;
     }
