@@ -331,8 +331,16 @@ public class TeamService {
     }
 
     private void emitMember(Long teamId, Long emitterId) {
-        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, emitterId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_ALREADY_EMIT));
-        memberTeam.setStatus(DELETE);
+        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberId(teamId, emitterId).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+
+        Status status = memberTeam.getStatus();
+        if (status.equals(ACTIVE)) {
+            memberTeam.setStatus(DELETE);
+        } else if (status.equals(WAIT)) {
+            throw new BaseException(INVALID_EMITTER);
+        } else if (status.equals(DELETE)) {
+            throw new BaseException(MEMBER_ALREADY_EMIT);
+        }
     }
 
     private List<Member> getMembersFromMemberTeams(List<MemberTeam> memberTeams) {
