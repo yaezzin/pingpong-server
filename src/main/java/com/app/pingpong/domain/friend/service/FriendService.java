@@ -62,6 +62,13 @@ public class FriendService {
         return friendList;
     }
 
+    @Transactional
+    public StatusCode unfollow(Long memberId, Long loginMemberId) {
+        Friend friend = friendQueryRepository.findFriendById(memberId, loginMemberId).orElseThrow(() -> new BaseException(FRIEND_NOT_FOUND));
+        setStatusDelete(friend);
+        return SUCCESS_UNFOLLOW_FRIEND;
+    }
+
     private void checkFriendRequest(Member applicant, Member respondent) {
         /* 내가 상대방에게 보낸 친구 신청이 있는지 확인 -> WAIT */
         if (friendQueryRepository.existsRequestToRespondent(applicant.getId(), respondent.getId(), WAIT)) {

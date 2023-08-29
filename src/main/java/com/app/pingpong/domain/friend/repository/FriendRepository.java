@@ -14,7 +14,5 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
             "JOIN Friend f ON (f.applicant = m.id OR f.respondent = m.id) " +
             "WHERE (f.applicant = :id OR f.respondent = :id) AND f.status = 'ACTIVE' AND m.id =:id")
     List<Member> findAllFriendsByMemberId(Long id);
-
-
 }
 

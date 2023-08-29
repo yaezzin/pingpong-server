@@ -96,5 +96,21 @@ public class FriendQueryRepository {
                 .fetchOne().intValue();
         return count_long;
     }
-}
 
+    public Optional<Friend> findFriendById(Long friendId, Long userId) {
+        QFriend friend = QFriend.friend;
+
+        Friend result = queryFactory
+                .selectFrom(friend)
+                .where(
+                        friend.status.eq(ACTIVE)
+                                .and(
+                                        friend.applicant.eq(userId).and(friend.respondent.eq(friendId))
+                                                .or(friend.applicant.eq(friendId).and(friend.respondent.eq(userId)))
+                                )
+                )
+                .fetchOne();
+
+        return Optional.ofNullable(result);
+    }
+}

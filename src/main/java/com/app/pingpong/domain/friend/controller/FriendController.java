@@ -47,4 +47,11 @@ public class FriendController {
     public BaseResponse<List<MemberResponse>> getMyFriends(@CurrentLoginMemberId Long id) {
         return new BaseResponse<>(friendService.getMyFriends(id));
     }
+
+    @ResponseBody
+    @DeleteMapping("/unfollow")
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> unfollow(@RequestParam("memberId") Long memberId, @CurrentLoginMemberId Long loginMemberId) {
+        return new BaseResponse<>(friendService.unfollow(memberId, loginMemberId));
+    }
 }
