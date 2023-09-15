@@ -1,16 +1,19 @@
 # PingPong
 
-## App Description
-
-* [API 명세서](https://docs.google.com/spreadsheets/d/1gironPuvcwKDzbzAOUrbPqZ8V65owz-T/edit?usp=sharing&ouid=107228890700982767967&rtpof=true&sd=true)
+> 서로의 계획을 주고받을 수 있는 팀플 관리 애플리케이션
 
 ## Skill
 
 * **Spring Boot**, **Spring Data JPA**
 * **MySQL**, **MongoDB**, **Redis**
-* **Aws Ec2**, **Aws RDS**, **Github Action**, **Docker**, **Jenkins**
-* **Terraform**
+* **Aws Ec2**, **Aws RDS**, **Github Action**
 * **JUnit5**, **Mocktio Framework**
+
+## ERD
+
+## 주요 기능
+
+* [API 명세서](https://docs.google.com/spreadsheets/d/1gironPuvcwKDzbzAOUrbPqZ8V65owz-T/edit?usp=sharing&ouid=107228890700982767967&rtpof=true&sd=true)
 
 ## Issues
 
@@ -21,7 +24,3 @@
 * [공통 응답객체 만들기]()
 * [No offset 방식으로 성능 개선하기]()
 * [알림 서비스 구현기 - Redis or MongoDB?]() 
-* [FCM을 사용하여 푸시알림 구현 - 비동기 처리]()
-* [Lambda를 이용한 이미지 리사이징]()
-* [Jenkins와 Docker를 이용한 CI/CD]()
-* [로그인/로그아웃]()
