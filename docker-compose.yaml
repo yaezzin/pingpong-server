@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  db:
+    container_name: pingpong-db
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: A1b2c347
+      MYSQL_DATABASE: pinpong
+    ports:
+      - "3307:3306"
+
+  app:
+    container_name: app
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/pinpong?autoReconnect=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: A1b2c347
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8888:8080"
+
