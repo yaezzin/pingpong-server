@@ -16,7 +16,7 @@ provider "ncloud" {
 }
 
 locals {
-  name = "k8s-pingpong"
+  name = "k8s-pp"
   env  = "local"
 }
 
