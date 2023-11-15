@@ -55,7 +55,6 @@ jobs:
           github_token: ${{ secrets.PING_PONG }}
           default_bump: false
           release_branches: release
-          # fix: - patch, feat: - minor, BREAKING CHANGE: - major
 
       - name: Check if new_tag exists
         id: check_tag
