@@ -87,7 +87,7 @@ jobs:
         if: ${{ env.NEW_TAG != '' }}
         uses: docker/build-push-action@v4
         with:
-          context: app
+          context: src
           push: true
           tags: ${{ env.IMAGE_TAG }},"${{ env.IMAGE }}:${{ env.TAG }}"
           platforms: linux/amd64,linux/arm64
