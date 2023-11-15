@@ -53,8 +53,8 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.1
         with:
           github_token: ${{ secrets.PING_PONG }}
-          default_bump: false
-          release_branches: release
+          default_bump: patch
+          release_branches: dev
 
       - name: Check if new_tag exists
         id: check_tag
