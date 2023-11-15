@@ -49,12 +49,11 @@ jobs:
           password: ${{ secrets.NCP_SECRET_KEY }}
 
       - name: Bump version and push tag
-      ###
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
         with:
           github_token: ${{ secrets.PING_PONG }}
-          default_bump: patch
+          default_bump: false
           release_branches: release
 
       - name: Check if new_tag exists
@@ -87,7 +86,7 @@ jobs:
         if: ${{ env.NEW_TAG != '' }}
         uses: docker/build-push-action@v4
         with:
-          context: src
+          context: .
           push: true
           tags: ${{ env.IMAGE_TAG }},"${{ env.IMAGE }}:${{ env.TAG }}"
           platforms: linux/amd64,linux/arm64
