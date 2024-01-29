@@ -6,11 +6,11 @@ import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
 import com.app.pingpong.domain.member.dto.response.*;
+import com.app.pingpong.domain.member.entity.Badge;
 import com.app.pingpong.domain.member.entity.Member;
+import com.app.pingpong.domain.member.entity.MemberBadge;
 import com.app.pingpong.domain.member.entity.MemberTeam;
-import com.app.pingpong.domain.member.repository.MemberRepository;
-import com.app.pingpong.domain.member.repository.MemberSearchRepository;
-import com.app.pingpong.domain.member.repository.MemberTeamRepository;
+import com.app.pingpong.domain.member.repository.*;
 import com.app.pingpong.domain.team.dto.response.TeamPlanResponse;
 import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
@@ -43,6 +43,8 @@ public class MemberService {
     private final MemberSearchRepository memberSearchRepository;
     private final FriendQueryRepository friendQueryRepository;
     private final MemberTeamRepository memberTeamRepository;
+    private final BadgeRepository badgeRepository;
+    private final MemberBadgeRepository memberBadgeRepository;
     private final PlanRepository planRepository;
 
     private final RedisTemplate<String, Object> redisTemplate;
@@ -191,6 +193,24 @@ public class MemberService {
         return response;
     }
 
+    @Transactional
+    public List<MemberBadgeResponse> getMemberBadges(Long id) {
+        // 조회하려고 하는 멤버가 있는지 확인하기
+        Member member = findMemberByIdAndStatus(id, ACTIVE);
+
+        // 뱃지 조회하기
+        List<MemberBadge> memberBadges = memberBadgeRepository.findByMemberId(member.getId());
+
+        List<MemberBadgeResponse> response = new ArrayList<>();
+        for (MemberBadge memberBadge : memberBadges) {
+            Long badgeId = memberBadge.getBadge().getId();
+            Badge badge = badgeRepository.findById(badgeId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+            response.add(MemberBadgeResponse.of(badge));
+        }
+        
+        return response;
+    }
+
     private TeamPlanResponse createTeamPlanResponse(Plan plan) {
         return TeamPlanResponse.builder()
                 .planId(plan.getId())
@@ -212,7 +232,6 @@ public class MemberService {
 
         List<String> list = new ArrayList<>();
         List<Object> redisData = listOps.range(loginMemberId, 0, 20);
-        System.out.println("=====================" + redisData.get(0));
 
         for (Object o : redisData) {
             String str = o.toString().substring(0, 2);

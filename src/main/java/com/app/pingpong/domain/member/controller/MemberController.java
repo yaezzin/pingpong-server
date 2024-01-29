@@ -109,4 +109,10 @@ public class MemberController {
                                                                                 @CurrentLoginMemberId Long id) {
         return new BaseResponse<>(memberService.getMemberCalendarByDate(date, id));
     }
+
+    @ResponseBody
+    @GetMapping("/{id}/badges")
+    public BaseResponse<List<MemberBadgeResponse>> getMemberBadges(@PathVariable Long id) {
+        return new BaseResponse<>(memberService.getMemberBadges(id));
+    }
 }

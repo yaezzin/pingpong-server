@@ -47,6 +47,9 @@ public class Member {
     @OneToMany(mappedBy = "manager")
     private List<Plan> plans = new ArrayList<>();
 
+    @OneToMany(mappedBy = "member")
+    private List<MemberBadge> badges = new ArrayList<>();
+
     @Builder
     public Member(String socialId, String email, String nickname, String profileImage, Status status, Authority authority) {
         this.socialId = socialId;
