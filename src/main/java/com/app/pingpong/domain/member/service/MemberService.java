@@ -101,10 +101,11 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public MemberDetailResponse getOppPage(Long id) {
-        Member member = findMemberByIdAndStatus(id, ACTIVE);
-        int friendCount = friendQueryRepository.findFriendCount(id);
-        return MemberDetailResponse.of(member, friendCount);
+    public MemberProfileResponse getOppPage(Long oppId, Long myId) {
+        Member member = findMemberByIdAndStatus(oppId, ACTIVE);
+        int friendCount = friendQueryRepository.findFriendCount(oppId);
+        boolean friendStatus = friendQueryRepository.isFriend(myId, oppId);
+        return MemberProfileResponse.of(member, friendCount, friendStatus);
     }
 
     @Transactional(readOnly = true)
@@ -116,7 +117,7 @@ public class MemberService {
         ListOperations<String, Object> listOps = redisTemplate.opsForList();
         String loginUserId = "id" + memberFacade.getCurrentMember().getId();
         String keyword = nickname;
-        
+
         listOps.remove(loginUserId, 0, keyword);
         listOps.leftPush(loginUserId, keyword);
 

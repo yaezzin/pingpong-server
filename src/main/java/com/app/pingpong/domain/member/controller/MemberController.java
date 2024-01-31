@@ -62,8 +62,8 @@ public class MemberController {
 
     @ResponseBody
     @GetMapping("/{id}/profile")
-    public BaseResponse<MemberDetailResponse> getOppPage(@PathVariable Long id) {
-        return new BaseResponse<>(memberService.getOppPage(id));
+    public BaseResponse<MemberProfileResponse> getOppPage(@PathVariable("id") Long oppId, @CurrentLoginMemberId Long myId) {
+        return new BaseResponse<>(memberService.getOppPage(oppId, myId));
     }
 
     @ResponseBody
