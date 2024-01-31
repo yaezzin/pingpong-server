@@ -116,6 +116,8 @@ public class MemberService {
         ListOperations<String, Object> listOps = redisTemplate.opsForList();
         String loginUserId = "id" + memberFacade.getCurrentMember().getId();
         String keyword = nickname;
+        
+        listOps.remove(loginUserId, 0, keyword);
         listOps.leftPush(loginUserId, keyword);
 
         List<MemberSearchResponse> friendshipList = new ArrayList<>();
