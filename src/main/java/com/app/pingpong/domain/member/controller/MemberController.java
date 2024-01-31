@@ -115,4 +115,10 @@ public class MemberController {
     public BaseResponse<List<MemberBadgeResponse>> getMemberBadges(@PathVariable Long id) {
         return new BaseResponse<>(memberService.getMemberBadges(id));
     }
+
+    @ResponseBody
+    @GetMapping("/{id}/pre-badges")
+    public BaseResponse<List<MemberBadgeResponse>> getMemberPreBadges(@PathVariable Long id) {
+        return new BaseResponse<>(memberService.getMemberPreBadges(id));
+    }
 }

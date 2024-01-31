@@ -73,6 +73,7 @@ public enum StatusCode {
     TEAM_INVITATION_NOT_FOUND(false, 404, "해당 그룹에 대한 초대가 존재하지 않습니다.", "TEAM_INVITATION_NOT_FOUND"),
     PLAN_NOT_FOUND(false, 404, "해당 할 일을 찾을 수 없습니다.", "PLAN_NOT_FOUND"),
     NOTIFICATION_NOT_FOUND(false, 404, "알림이 존재하지 않습니다.", "NOTIFICATION_NOT_FOUND"),
+    BADGE_NOT_FOUND(false, 404, "해당 뱃지는 존재하지 않습니다", "BADGE_NOT_FOUND"),
 
     /* 500 */
     DATABASE_ERROR(false, 500, "데이터베이스 오류입니다.", "DATABASE_ERROR");

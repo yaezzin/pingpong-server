@@ -195,19 +195,33 @@ public class MemberService {
 
     @Transactional
     public List<MemberBadgeResponse> getMemberBadges(Long id) {
-        // 조회하려고 하는 멤버가 있는지 확인하기
         Member member = findMemberByIdAndStatus(id, ACTIVE);
 
-        // 뱃지 조회하기
         List<MemberBadge> memberBadges = memberBadgeRepository.findByMemberId(member.getId());
 
         List<MemberBadgeResponse> response = new ArrayList<>();
         for (MemberBadge memberBadge : memberBadges) {
             Long badgeId = memberBadge.getBadge().getId();
-            Badge badge = badgeRepository.findById(badgeId).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+            Badge badge = badgeRepository.findById(badgeId).orElseThrow(() -> new BaseException(BADGE_NOT_FOUND));
             response.add(MemberBadgeResponse.of(badge));
         }
-        
+
+        return response;
+    }
+
+    @Transactional
+    public List<MemberBadgeResponse> getMemberPreBadges(Long id) {
+        Member member = findMemberByIdAndStatus(id, ACTIVE);
+
+        List<MemberBadge> memberBadges = memberBadgeRepository.findTop8ByMemberIdAndStatusOrderByBadgeIdAsc(id, ACTIVE);
+
+        List<MemberBadgeResponse> response = new ArrayList<>();
+        for (MemberBadge memberBadge : memberBadges) {
+            Long badgeId = memberBadge.getBadge().getId();
+            Badge badge = badgeRepository.findById(badgeId).orElseThrow(() -> new BaseException(BADGE_NOT_FOUND));
+            response.add(MemberBadgeResponse.of(badge));
+        }
+
         return response;
     }
 
