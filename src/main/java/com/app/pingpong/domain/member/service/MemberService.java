@@ -248,17 +248,24 @@ public class MemberService {
         List<Object> redisData = listOps.range(loginMemberId, 0, 20);
 
         for (Object o : redisData) {
-            String str = o.toString().substring(0, 2);
+            if (o != null) {
+                String str = o.toString();
 
-            if (!str.equals("id") && list.size() < 10) { // keyword
-                list.add(str);
-            } else {
-                String memberId = o.toString().substring(2);
-                if (!list.contains(memberId) && list.size() < 10) {
-                    list.add(memberId);
+                if (str.length() >= 2) {
+                    str = str.substring(0, 2);
+
+                    if (!str.equals("id") && list.size() < 10) { // keyword
+                        list.add(str);
+                    } else {
+                        String memberId = o.toString().substring(2);
+                        if (!list.contains(memberId) && list.size() < 10) {
+                            list.add(memberId);
+                        }
+                    }
                 }
             }
         }
+
         return list;
     }
 
