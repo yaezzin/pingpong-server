@@ -66,8 +66,6 @@ public class TeamService {
         team.setName(request.getName());
         setTeamToMembers(team, request);
 
-        // 나랑 친구인지 여부 확인하는 예외처리 필요?
-
         return TeamResponse.of(memberTeamRepository.findAllByTeamId(team.getId()));
     }
 
@@ -350,6 +348,7 @@ public class TeamService {
 
     private List<Member> getMembersFromMemberTeams(List<MemberTeam> memberTeams) {
         return memberTeams.stream()
+                .filter(memberTeam -> !memberTeam.getStatus().equals(DELETE))
                 .map(MemberTeam::getMember)
                 .filter(member -> member.getStatus().equals(ACTIVE))
                 .collect(Collectors.toList());
