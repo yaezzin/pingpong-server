@@ -457,7 +457,7 @@ public class TeamService {
         if (!plan.getManager().equals(memberFacade.getCurrentMember())) {
             throw new BaseException(INVALID_INCOMPLETE_PLAN);
         }
-        if (plan.getAchievement().equals(COMPLETE)) {
+        if (plan.getAchievement().equals(INCOMPLETE)) {
             throw new BaseException(ALREADY_INCOMPLETE_PLAN);
         }
         plan.setAchievement(INCOMPLETE);
