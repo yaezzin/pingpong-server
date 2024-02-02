@@ -313,8 +313,13 @@ public class TeamService {
     private List<TeamCompactResponse> getTeamMemberStatus(Team team) {
         List<TeamCompactResponse> list = new ArrayList<>();
         List<MemberTeam> all = memberTeamRepository.findAllByTeamId(team.getId());
+
         for (MemberTeam mt : all) {
-            list.add(TeamCompactResponse.builder().memberId(mt.getMember().getId()).status(mt.getStatus()).build());
+            if (!mt.getStatus().equals(DELETE)) {
+                list.add(TeamCompactResponse.builder()
+                        .memberId(mt.getMember().getId())
+                        .status(mt.getStatus()).build());
+            }
         }
         return list;
     }
