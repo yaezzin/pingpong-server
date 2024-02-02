@@ -60,7 +60,8 @@ public enum StatusCode {
     ALREADY_ON_FRIEND(false, 400, "이미 친구인 유저입니다.", "ALREADY_ON_FRIEND"),
     ALREADY_TEAM_HOST(false, 400, "이미 해당 그룹의 호스트입니다.", "ALREADY_TEAM_HOST"),
     ALREADY_ACCEPT_TEAM_INVITATION(false, 400, "이미 해당 그룹의 초대를 수락하였습니다.", "ALREADY_ACCEPT_TEAM_INVITATION"),
-    ALREADY_INCOMPLETE_PLAN(false, 400, "해당 할 일의 완료 취소를 할 수 없습니다.", "ALREADY_INCOMPLETE_PLAN"),
+    ALREADY_COMPLETE_PLAN(false, 400, "이미 완료된 일정입니다.", "ALREADY_COMPLETE_PLAN"),
+    ALREADY_INCOMPLETE_PLAN(false, 400, "완료된 일정이 아니기 떄문에, 해당 일정의 완료 취소를 할 수 없습니다.", "ALREADY_INCOMPLETE_PLAN"),
     ALREADY_INVITE_TEAM(false, 400, "이미 초대했거나, 이미 해당 그룹에 참가한 유저입니다.", "ALREADY_INVITE_TEAM"),
     ALREADY_DELETE_TRASH(false, 400, "이미 영구 삭제된 일정입니다.", "ALREADY_DELETE_TRASH"),
 
@@ -76,6 +77,7 @@ public enum StatusCode {
     NOTIFICATION_NOT_FOUND(false, 404, "알림이 존재하지 않습니다.", "NOTIFICATION_NOT_FOUND"),
     BADGE_NOT_FOUND(false, 404, "해당 뱃지는 존재하지 않습니다", "BADGE_NOT_FOUND"),
     PLANS_IN_TRASH_NOT_FOUND(false, 404, "휴지통에서 삭제할 일정이 존재하지 않습니다.", "PLANS_IN_TRASH_NOT_FOUND"),
+
     /* 500 */
     DATABASE_ERROR(false, 500, "데이터베이스 오류입니다.", "DATABASE_ERROR");
 
