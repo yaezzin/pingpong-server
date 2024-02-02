@@ -1,7 +1,6 @@
 package com.app.pingpong.domain.team.service;
 
 import com.app.pingpong.domain.friend.repository.FriendQueryRepository;
-import com.app.pingpong.domain.friend.repository.FriendRepository;
 import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
@@ -40,7 +39,6 @@ public class TeamService {
 
     private final MemberRepository memberRepository;
     private final FriendQueryRepository friendQueryRepository;
-    private final FriendRepository friendRepository;
     private final TeamRepository teamRepository;
     private final PlanRepository planRepository;
     private final MemberTeamRepository memberTeamRepository;
@@ -444,7 +442,7 @@ public class TeamService {
     }
 
     private void complete(Long teamId, Long planId) {
-        Plan plan = planRepository.findByIdAndTeamIdAndStatus(planId, teamId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        Plan plan = planRepository.findByIdAndTeamIdAndStatusAAndAchievement(planId, teamId, ACTIVE, INCOMPLETE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
         if (!plan.getManager().equals(memberFacade.getCurrentMember())) {
             throw new BaseException(INVALID_COMPLETE_PLAN);
         }
@@ -452,9 +450,9 @@ public class TeamService {
     }
 
     private void incomplete(Long teamId, Long planId) {
-        Plan plan = planRepository.findByIdAndTeamIdAndStatus(planId, teamId, ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
-        if (plan.getAchievement().equals(INCOMPLETE)) {
-            throw new BaseException(ALREADY_INCOMPLETE_PLAN);
+        Plan plan = planRepository.findByIdAndTeamIdAndStatusAAndAchievement(planId, teamId, ACTIVE, COMPLETE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        if (!plan.getManager().equals(memberFacade.getCurrentMember())) {
+            throw new BaseException(INVALID_COMPLETE_PLAN);
         }
         plan.setAchievement(INCOMPLETE);
     }
