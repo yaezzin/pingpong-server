@@ -442,7 +442,7 @@ public class TeamService {
     }
 
     private void complete(Long teamId, Long planId) {
-        Plan plan = planRepository.findByIdAndTeamIdAndStatusAAndAchievement(planId, teamId, ACTIVE, INCOMPLETE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        Plan plan = planRepository.findByIdAndTeamIdAndStatusAndAchievement(planId, teamId, ACTIVE, INCOMPLETE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
         if (!plan.getManager().equals(memberFacade.getCurrentMember())) {
             throw new BaseException(INVALID_COMPLETE_PLAN);
         }
@@ -450,7 +450,7 @@ public class TeamService {
     }
 
     private void incomplete(Long teamId, Long planId) {
-        Plan plan = planRepository.findByIdAndTeamIdAndStatusAAndAchievement(planId, teamId, ACTIVE, COMPLETE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        Plan plan = planRepository.findByIdAndTeamIdAndStatusAndAchievement(planId, teamId, ACTIVE, COMPLETE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
         if (!plan.getManager().equals(memberFacade.getCurrentMember())) {
             throw new BaseException(INVALID_COMPLETE_PLAN);
         }
