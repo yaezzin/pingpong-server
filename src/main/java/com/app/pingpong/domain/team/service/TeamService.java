@@ -265,12 +265,18 @@ public class TeamService {
                 .forEach(member -> {
                     if (isMemberAlreadyInTeamWithStatus(newTeam, member, WAIT) || isMemberAlreadyInTeamWithStatus(newTeam, member, ACTIVE)) {
                         throw new BaseException(ALREADY_INVITE_TEAM);
+                    } else if (isMemberAlreadyInTeamWithStatus(newTeam, member, DELETE)) {
+                        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(newTeam.getId(), member.getId(), DELETE)
+                                .orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+                        memberTeam.setStatus(WAIT);
+                        memberTeamRepository.save(memberTeam);
+                    } else {
+                        MemberTeam memberTeam = new MemberTeam();
+                        memberTeam.setTeam(newTeam);
+                        memberTeam.setMember(member);
+                        memberTeam.setStatus(WAIT);
+                        memberTeamRepository.save(memberTeam);
                     }
-                    MemberTeam memberTeam = new MemberTeam();
-                    memberTeam.setTeam(newTeam);
-                    memberTeam.setMember(member);
-                    memberTeam.setStatus(WAIT);
-                    memberTeamRepository.save(memberTeam);
                 });
     }
 
