@@ -495,7 +495,8 @@ public class TeamService {
 
         List<Plan> plansInTrash;
         if (loginMember.equals(team.getHost())) { // 방장이라면 팀에 대한 모든 삭제된 일정 가져옴
-            plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(team.getId(), DELETE);
+            plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(team.getId(), DELETE)
+                    .orElseThrow(() -> new BaseException(ALREADY_DELETE_TRASH));
         } else { // 방장이 아니면 내가 담당자인것만 가져옴옴
             plansInTrash = planRepository.findAllByManagerIdAndTeamIdAndStatusOrderByWastedTimeDesc(loginMemberId, team.getId(), DELETE);
         }
@@ -512,7 +513,8 @@ public class TeamService {
     }
 
     private void deleteAllTrashPermanent(Long teamId) {
-        List<Plan> plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(teamId, DELETE);
+        List<Plan> plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(teamId, DELETE)
+                .orElseThrow(() -> new BaseException(ALREADY_DELETE_TRASH));
         for (Plan p : plansInTrash) {
             p.setStatus(PERMANENT);
         }
