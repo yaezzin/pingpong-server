@@ -75,7 +75,7 @@ public enum StatusCode {
     PLAN_NOT_FOUND(false, 404, "해당 할 일을 찾을 수 없습니다.", "PLAN_NOT_FOUND"),
     NOTIFICATION_NOT_FOUND(false, 404, "알림이 존재하지 않습니다.", "NOTIFICATION_NOT_FOUND"),
     BADGE_NOT_FOUND(false, 404, "해당 뱃지는 존재하지 않습니다", "BADGE_NOT_FOUND"),
-
+    PLANS_IN_TRASH_NOT_FOUND(false, 404, "휴지통에서 삭제할 일정이 존재하지 않습니다.", "PLANS_IN_TRASH_NOT_FOUND"),
     /* 500 */
     DATABASE_ERROR(false, 500, "데이터베이스 오류입니다.", "DATABASE_ERROR");
 

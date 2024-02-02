@@ -515,13 +515,16 @@ public class TeamService {
     private void deleteAllTrashPermanent(Long teamId) {
         List<Plan> plansInTrash = planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(teamId, DELETE)
                 .orElseThrow(() -> new BaseException(ALREADY_DELETE_TRASH));
+        if (plansInTrash.isEmpty()) {
+            throw new BaseException(PLANS_IN_TRASH_NOT_FOUND);
+        }
         for (Plan p : plansInTrash) {
             p.setStatus(PERMANENT);
         }
     }
 
     private void deleteTrashPermanent(Long planId) {
-        Plan plan = planRepository.findById(planId).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
+        Plan plan = planRepository.findByIdAndStatus(planId, DELETE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
         plan.setStatus(PERMANENT);
     }
 
