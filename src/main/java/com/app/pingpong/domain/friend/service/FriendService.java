@@ -38,6 +38,7 @@ public class FriendService {
         return FriendResponse.of(friendRepository.save(request.toEntity(applicant.getId(), respondent.getId())));
     }
 
+    @Transactional
     public StatusCode accept(Long opponentId, Long loginMemberId) {
         Friend request = getWaitingFriendRequest(opponentId, loginMemberId);
         setStatusActive(request);
@@ -45,6 +46,7 @@ public class FriendService {
         return SUCCESS_ACCEPT_FRIEND;
     }
 
+    @Transactional
     public StatusCode refuse(Long opponentId, Long loginMemberId) {
         Friend friend = getWaitingFriendRequest(opponentId, loginMemberId);
         setStatusDelete(friend);
