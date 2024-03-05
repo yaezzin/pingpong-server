@@ -95,7 +95,7 @@ public class MemberController {
     }
 
     @ResponseBody
-    @GetMapping("/calendars/achievement")
+    @PostMapping("/calendars/achievement")
     @CheckLoginStatus(auth = Authority.ROLE_USER)
     public BaseResponse<List<MemberAchieveResponse>> getMemberAchievement(@RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                                                           @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,

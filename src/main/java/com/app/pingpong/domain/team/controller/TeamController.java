@@ -128,7 +128,7 @@ public class TeamController {
     }
 
     @ResponseBody
-    @GetMapping("/{id}/calendars/achievement")
+    @PostMapping("/{id}/calendars/achievement")
     public BaseResponse<List<TeamAchieveResponse>> getTeamAchievementRate(@PathVariable Long id,
                                                                           @RequestBody TeamAchieveRequest request) {
         return new BaseResponse<>(teamService.getTeamAchievementRate(id, request));
