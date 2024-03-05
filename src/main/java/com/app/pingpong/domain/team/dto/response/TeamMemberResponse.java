@@ -16,16 +16,16 @@ public class TeamMemberResponse {
     private String nickname;
     private String profileImage;
     private Long hostId;
-    private Status friendship;
+    private Status friendStatus;
     private Status status;
 
-    public static TeamMemberResponse of(Member findMember, Team team, Status isFriend, MemberTeam isStatus) {
+    public static TeamMemberResponse of(Member findMember, Team team, Status friendStatus, MemberTeam isStatus) {
         return TeamMemberResponse.builder()
                 .memberId(findMember.getId())
                 .nickname(findMember.getNickname())
                 .profileImage(findMember.getProfileImage())
                 .hostId(team.getHost().getId())
-                .friendship(isFriend)
+                .friendStatus(friendStatus)
                 .status(isStatus.getStatus())
                 .build();
     }
