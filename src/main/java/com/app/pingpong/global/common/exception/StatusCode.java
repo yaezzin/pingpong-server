@@ -25,8 +25,8 @@ public enum StatusCode {
     SUCCESS_DELETE_TEAM(true, 200, "팀 삭제에 성공하였습니다.", "SUCCESS_DELETE_TEAM"),
     SUCCESS_RESIGN_TEAM(true, 200, "팀 나가기에 성공하였습니다.", "SUCCESS_RESIGN_TEAM"),
     SUCCESS_SEND_NOTIFICATION(true, 200, "알림 전송을 성공하였습니다.", "SUCCESS_SEND_NOTIFICATION"),
-    SUCCESS_EXISTS_NOTIFY(true, 200, "모든 알림을 읽었습니다.", "SUCCESS_EXISTS_NOTIFY"),
-    SUCCESS_EXISTS_UNREAD_NOTIFY(true, 200, "읽지 않은 알림이 존재하지 합니다", "SUCCESS_EXISTS_UNREAD_NOTIFY"),
+    SUCCESS_EXISTS_NOTIFY(true, 200, "모든 알림을 읽었습니다.", "SUCCESS_NOT_EXISTS_UNREAD_NOTIFY"),
+    SUCCESS_EXISTS_UNREAD_NOTIFY(true, 200, "읽지 않은 알림이 존재합니다", "SUCCESS_EXISTS_UNREAD_NOTIFY"),
     SUCCESS_UNFOLLOW_FRIEND(true, 200, "친구 끊기에 성공하였습니다", "SUCCESS_UNFOLLOW_FRIEND"),
 
     /* 400 : Bad Request   */

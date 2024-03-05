@@ -43,20 +43,23 @@ public class MemberController {
     }
 
     @ResponseBody
-    @PatchMapping("/{id}")
-    public BaseResponse<MemberResponse> update(@PathVariable Long id, @RequestBody UpdateRequest request) {
+    @PatchMapping("")
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<MemberResponse> update(@CurrentLoginMemberId Long id, @RequestBody UpdateRequest request) {
         return new BaseResponse<>(memberService.update(id, request));
     }
 
     @ResponseBody
-    @DeleteMapping("/{id}")
-    public BaseResponse<StatusCode> delete(@PathVariable Long id) {
+    @DeleteMapping("")
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> delete(@CurrentLoginMemberId Long id) {
         return new BaseResponse<>(memberService.delete(id));
     }
 
     @ResponseBody
-    @GetMapping("/{id}/mypage")
-    public BaseResponse<MemberDetailResponse> getMyPage(@PathVariable Long id) {
+    @GetMapping("/mypage")
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<MemberDetailResponse> getMyPage(@CurrentLoginMemberId Long id) {
         return new BaseResponse<>(memberService.getMyPage(id));
     }
 
