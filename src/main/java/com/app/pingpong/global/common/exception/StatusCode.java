@@ -44,6 +44,7 @@ public enum StatusCode {
     INVALID_INCOMPLETE_PLAN(false, 400, "해당 할 일의 담당자가 아니므로 할 일의 완료 취소를 할 수 없습니다.", "INVALID_INCOMPLETE_PLAN"),
     INVALID_RESIGN(false, 400, "그룹의 호스트는 팀을 나갈 수 없습니다.", "INVALID_RESIGN"),
     INVALID_RESIGN_STATUS(false, 400, "참여하지 않은 그룹이거나, 이미 나간 그룹입니다.", "INVALID_RESIGN_STATUS"),
+    INVALID_S3_URL(false, 400, "올바르지 않은 S3 URL이므로 삭제가 불가능합니다.", "INVALID_S3_URL"),
 
     INVALID_PLAN(false, 400, "해당 할 일은 삭제되었습니다", "INVALID_PLAN"),
     INVALID_SAVE_SEARCH_LOG(false, 400, "본인은 검색기록에 저장할 수 없습니다.", "INVALID_SAVE_SEARCH_LOG"),
