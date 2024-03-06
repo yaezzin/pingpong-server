@@ -6,7 +6,6 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
-import com.app.pingpong.domain.team.dto.request.TeamAchieveRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
@@ -173,14 +172,14 @@ public class TeamService {
     }
 
     @Transactional
-    public List<TeamAchieveResponse> getTeamAchievementRate(Long teamId, TeamAchieveRequest request) {
-        List<LocalDate> dateList = getPlanDateList(teamId, request);
+    public List<TeamAchieveResponse> getTeamAchievementRate(Long teamId, LocalDate startDate, LocalDate endDate) {
+        List<LocalDate> dateList = getPlanDateList(teamId, startDate, endDate);
         List<TeamAchieveResponse> achieveRate = getTeamPlanAchieve(teamId, dateList);
         return achieveRate;
     }
 
-    private List<LocalDate> getPlanDateList(Long teamId, TeamAchieveRequest request) {
-        List<LocalDate> dateList = planRepository.findAllByTeamIdAndStatusAndDateBetween(teamId, ACTIVE, request.getStartDate(), request.getEndDate())
+    private List<LocalDate> getPlanDateList(Long teamId, LocalDate startDate, LocalDate endDate) {
+        List<LocalDate> dateList = planRepository.findAllByTeamIdAndStatusAndDateBetween(teamId, ACTIVE, startDate, endDate)
                 .stream()
                 .map(Plan::getDate)
                 .distinct()
