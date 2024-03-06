@@ -59,6 +59,7 @@ public class NotificationService {
                 .type(FRIEND)
                 .message(message)
                 .build();
+
         notificationRepository.save(notification);
 
         return SUCCESS_SEND_NOTIFICATION;
@@ -73,6 +74,7 @@ public class NotificationService {
             if (notification.getOpponentId() != null) {
                 Member member = memberRepository.findById(notification.getMemberId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
                 notification.setClicked();
+                notificationRepository.save(notification);
                 list.add(NotificationResponse.of(notification, member));
             }
         }
@@ -81,9 +83,13 @@ public class NotificationService {
 
     public StatusCode existUnReadNotification(Long id) {
         boolean exists = notificationRepository.existsAllByOpponentIdAndIsClicked(id, false);
+
         StatusCode statusCode;
-        if (!exists) statusCode = SUCCESS_EXISTS_NOTIFY;
-        else statusCode = SUCCESS_EXISTS_UNREAD_NOTIFY;
+        if (exists) {
+            statusCode = SUCCESS_EXISTS_UNREAD_NOTIFY;
+        } else {
+            statusCode = SUCCESS_EXISTS_NOTIFY;
+        }
         return statusCode;
     }
 }
