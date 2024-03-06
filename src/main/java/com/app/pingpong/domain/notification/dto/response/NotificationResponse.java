@@ -12,13 +12,14 @@ import lombok.NoArgsConstructor;
 @Getter
 public class NotificationResponse {
     private Status type;
+    private Long memberId;
     private String profileImage;
     private String message;
     private Boolean isClicked;
     private Boolean isAccepted;
 
     public static NotificationResponse of(Notification notification, Member member) {
-        return new NotificationResponse(notification.getType(), member.getProfileImage(), notification.getMessage(), notification.getIsClicked(), notification.getIsAccepted());
+        return new NotificationResponse(notification.getType(), member.getId(), member.getProfileImage(), notification.getMessage(), notification.getIsClicked(), notification.getIsAccepted());
     }
 
 }
