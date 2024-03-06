@@ -71,7 +71,7 @@ public class NotificationService {
         List<NotificationResponse> list = new ArrayList<>();
         for (Notification notification : notifications) {
             if (notification.getOpponentId() != null) {
-                Member member = memberRepository.findById(notification.getOpponentId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+                Member member = memberRepository.findById(notification.getMemberId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
                 notification.setClicked();
                 list.add(NotificationResponse.of(notification, member));
             }
