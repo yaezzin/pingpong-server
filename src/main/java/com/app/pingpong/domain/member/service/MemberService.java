@@ -104,7 +104,7 @@ public class MemberService {
     public MemberProfileResponse getOppPage(Long oppId, Long myId) {
         Member member = findMemberByIdAndStatus(oppId, ACTIVE);
         int friendCount = friendQueryRepository.findFriendCount(oppId);
-        boolean friendStatus = friendQueryRepository.isFriend(myId, oppId);
+        Status friendStatus = friendQueryRepository.findFriendStatus(myId, oppId);
         return MemberProfileResponse.of(member, friendCount, friendStatus);
     }
 
@@ -123,8 +123,9 @@ public class MemberService {
 
         List<MemberSearchResponse> friendshipList = new ArrayList<>();
         for (Member findMember : findMembers) {
-            boolean isFriend = friendQueryRepository.isFriend(memberFacade.getCurrentMember().getId(), findMember.getId());
-            friendshipList.add(MemberSearchResponse.of(findMember, isFriend));
+
+            Status friendStatus = friendQueryRepository.findFriendStatus(memberFacade.getCurrentMember().getId(), findMember.getId());
+            friendshipList.add(MemberSearchResponse.of(findMember, friendStatus));
         }
         return friendshipList;
     }

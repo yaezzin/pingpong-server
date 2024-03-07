@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.member.dto.response;
 
 import com.app.pingpong.domain.member.entity.Member;
+import com.app.pingpong.global.common.status.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,9 +14,9 @@ public class MemberProfileResponse {
     private String nickname;
     private String profileImage;
     private int friendCount;
-    private boolean friendStatus;
+    private Status friendStatus;
 
-    public static MemberProfileResponse of(Member member, int friendCount, boolean friendStatus) {
+    public static MemberProfileResponse of(Member member, int friendCount, Status friendStatus) {
         return new MemberProfileResponse(member.getId(), member.getNickname(), member.getProfileImage(), friendCount, friendStatus);
     }
 }

@@ -63,9 +63,17 @@ public class FriendQueryRepository {
                 .fetchFirst();
 
         if (friend != null) {
-            return friend.getStatus();
+            switch (friend.getStatus()) {
+                case ACTIVE:
+                    return ACTIVE;
+                case WAIT:
+                    return WAIT;
+                case DELETE:
+                default:
+                    return Status.INACTIVE; // Set a default status when no friend relationship is found
+            }
         } else {
-            return Status.INACTIVE; // Set a default status when no friend relationship is found
+            return Status.INACTIVE;
         }
     }
 

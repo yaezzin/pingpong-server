@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.member.dto.response;
 
 import com.app.pingpong.domain.member.entity.Member;
+import com.app.pingpong.global.common.status.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,15 +15,15 @@ public class MemberSearchResponse {
     private Long memberId;
     private String nickname;
     private String profileImage;
-    private boolean isFriend; // 친구 여부
+    private Status friendStatus;
 
 
-    public static MemberSearchResponse of(Member member, boolean isFriend) {
+    public static MemberSearchResponse of(Member member, Status friendStatus) {
         return MemberSearchResponse.builder()
                 .memberId(member.getId())
                 .nickname(member.getNickname())
                 .profileImage(member.getProfileImage())
-                .isFriend(isFriend)
+                .friendStatus(friendStatus)
                 .build();
     }
 }
