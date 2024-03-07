@@ -10,9 +10,14 @@ import java.util.List;
 
 @Repository
 public interface FriendRepository extends JpaRepository<Friend, Long> {
-    @Query("SELECT DISTINCT m FROM Member m " +
-            "JOIN Friend f ON (f.applicant = m.id OR f.respondent = m.id) " +
-            "WHERE (f.applicant = :id OR f.respondent = :id) AND f.status = 'ACTIVE' AND m.id =:id")
-    List<Member> findAllFriendsByMemberId(Long id);
+    @Query("SELECT m FROM Member m " +
+            "JOIN Friend f ON f.applicant = m.id " +
+            "WHERE f.respondent = :respondentId AND f.status = 'ACTIVE'")
+    List<Member> findAllFriendsByRespondent(Long respondentId);
+
+    @Query("SELECT m FROM Member m " +
+            "JOIN Friend f ON f.respondent = m.id " +
+            "WHERE f.applicant = :applicantId AND f.status = 'ACTIVE'")
+    List<Member> findAllFriendsByApplicant(Long applicantId);
 }
 

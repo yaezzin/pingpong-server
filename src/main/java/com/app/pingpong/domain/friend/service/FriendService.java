@@ -56,9 +56,15 @@ public class FriendService {
 
     @Transactional(readOnly = true)
     public List<MemberResponse> getMyFriends(Long id) {
-        List<Member> friends = friendRepository.findAllFriendsByMemberId(id);
+        List<Member> friends1 = friendRepository.findAllFriendsByApplicant(id);
+        List<Member> friends2 = friendRepository.findAllFriendsByRespondent(id);
+
         List<MemberResponse> friendList = new ArrayList<>();
-        for (Member m : friends) {
+        for (Member m : friends1) {
+            friendList.add(MemberResponse.of(m));
+        }
+
+        for (Member m : friends2) {
             friendList.add(MemberResponse.of(m));
         }
         return friendList;
