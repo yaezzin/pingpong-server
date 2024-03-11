@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface NotificationRepository extends MongoRepository<Notification, Long> {
-    Optional<Notification> findByMemberIdAndOpponentId(Long memberId, Long opponentId);
+    Optional<Notification> findByMemberIdAndOpponentIdAndIsAccepted(Long memberId, Long opponentId, Boolean isAccepted);
 
     List<Notification> findAllByOpponentIdOrderByCreatedAtAsc(Long opponentId);
 
