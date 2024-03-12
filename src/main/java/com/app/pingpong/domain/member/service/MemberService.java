@@ -77,11 +77,13 @@ public class MemberService {
     @Transactional
     public MemberResponse update(Long id, UpdateRequest request) {
         Member member = findMemberByIdAndStatus(id, ACTIVE);
-        s3Uploader.deleteFile(member.getProfileImage());
 
         validateNickname(request.getNickname());
         member.setNickname(request.getNickname());
         member.setProfileImage(request.getProfileImage());
+
+        String ImageUrl = s3Uploader.getFilePath(member.getProfileImage());
+        s3Uploader.deleteFile(ImageUrl);
 
         return MemberResponse.of(member);
     }
