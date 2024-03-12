@@ -54,8 +54,16 @@ public class MemberService {
 
     @Transactional
     public MemberResponse signup(SignUpRequest request) {
-        Member member = request.toEntity(passwordEncoder);
-        return MemberResponse.of(memberRepository.save(member));
+        Member member;
+
+        if (memberRepository.existsByEmailAndStatus(request.getEmail(), DELETE)) {
+            member = memberRepository.findByEmail(request.getEmail()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+            member.setStatus(ACTIVE);
+        } else {
+            member = request.toEntity(passwordEncoder);
+            memberRepository.save(member);
+        }
+        return MemberResponse.of(member);
     }
 
     @Transactional
