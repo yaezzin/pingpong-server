@@ -47,7 +47,7 @@ public class S3Uploader {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
             }
 
-            fileNameList.add(fileName);
+            fileNameList.add(amazonS3.getUrl(bucket, fileName).toString());
         });
         return fileNameList;
     }
@@ -60,11 +60,14 @@ public class S3Uploader {
     }
 
     public void deleteFile(String fileName) {
-        if (amazonS3.doesObjectExist(bucket, fileName)) {
-            amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
-        } else {
+        if (!fileName.isEmpty() || !fileName.equals("")) {
+            fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
 
-            throw new BaseException(INVALID_S3_URL);
+            if (amazonS3.doesObjectExist(bucket, fileName)) {
+                amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
+            } else {
+                throw new BaseException(INVALID_S3_URL);
+            }
         }
     }
 
