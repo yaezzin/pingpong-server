@@ -60,6 +60,7 @@ public class MemberService {
             member = memberRepository.findByEmail(request.getEmail()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
             member.setStatus(ACTIVE);
         } else {
+            validateNickname(request.getNickname());
             member = request.toEntity(passwordEncoder);
             memberRepository.save(member);
         }
