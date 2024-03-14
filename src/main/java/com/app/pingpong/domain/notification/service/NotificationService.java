@@ -4,11 +4,14 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.notification.dto.request.NotificationFriendRequest;
 import com.app.pingpong.domain.notification.dto.request.NotificationRequest;
+import com.app.pingpong.domain.notification.dto.request.NotificationTeamRequest;
 import com.app.pingpong.domain.notification.dto.response.NotificationResponse;
 import com.app.pingpong.domain.notification.entity.Notification;
 import com.app.pingpong.domain.notification.repository.NotificationRepository;
 import com.app.pingpong.domain.team.entity.Plan;
+import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.PlanRepository;
+import com.app.pingpong.domain.team.repository.TeamRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
+    private final TeamRepository teamRepository;
     private final PlanRepository planRepository;
 
     @Transactional
@@ -57,6 +61,24 @@ public class NotificationService {
                 .memberId(loginMemberId)
                 .opponentId(request.getMemberId())
                 .type(FRIEND)
+                .message(message)
+                .build();
+
+        notificationRepository.save(notification);
+
+        return SUCCESS_SEND_NOTIFICATION;
+    }
+
+    @Transactional
+    public StatusCode notifyTeam(NotificationTeamRequest request, Long loginMemberId) {
+        Member opponent = memberRepository.findByIdAndStatus(request.getMemberId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        Team team = teamRepository.findByIdAndStatus(request.getTeamId(), ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+
+        String message = team.getName() + "의 초대를 받았어요.";
+        Notification notification = Notification.builder()
+                .memberId(loginMemberId)
+                .opponentId(request.getMemberId())
+                .type(TEAM)
                 .message(message)
                 .build();
 

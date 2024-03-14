@@ -2,6 +2,7 @@ package com.app.pingpong.domain.notification.controller;
 
 import com.app.pingpong.domain.notification.dto.request.NotificationFriendRequest;
 import com.app.pingpong.domain.notification.dto.request.NotificationRequest;
+import com.app.pingpong.domain.notification.dto.request.NotificationTeamRequest;
 import com.app.pingpong.domain.notification.dto.response.NotificationResponse;
 import com.app.pingpong.domain.notification.service.NotificationService;
 import com.app.pingpong.global.aop.CheckLoginStatus;
@@ -31,6 +32,12 @@ public class NotificationController {
     @CheckLoginStatus(auth = Authority.ROLE_USER)
     public BaseResponse<StatusCode> notifyFriend(@RequestBody NotificationFriendRequest request, @CurrentLoginMemberId Long id) {
         return new BaseResponse<>(notificationService.notifyFriend(request, id));
+    }
+
+    @PostMapping("/teams")
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> notifyTeam(@RequestBody NotificationTeamRequest request, @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(notificationService.notifyTeam(request, id));
     }
 
     @GetMapping("")
