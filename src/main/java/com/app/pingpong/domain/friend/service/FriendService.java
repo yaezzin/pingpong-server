@@ -61,12 +61,17 @@ public class FriendService {
 
         List<MemberResponse> friendList = new ArrayList<>();
         for (Member m : friends1) {
-            friendList.add(MemberResponse.of(m));
+            if (!m.getStatus().equals(DELETE)) {
+                friendList.add(MemberResponse.of(m));
+            }
         }
 
         for (Member m : friends2) {
-            friendList.add(MemberResponse.of(m));
+            if (!m.getStatus().equals(DELETE)) {
+                friendList.add(MemberResponse.of(m));
+            }
         }
+
         return friendList;
     }
 
