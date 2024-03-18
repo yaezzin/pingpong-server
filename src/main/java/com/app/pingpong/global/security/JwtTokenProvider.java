@@ -127,7 +127,6 @@ public class JwtTokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             if (Boolean.TRUE.equals(redisTemplate.hasKey(token))) {
                 throw new BaseException(INVALID_ACCESS_TOKEN);
-                //return false;
             }
             return true;
         } catch (JwtException e) {
