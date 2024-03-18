@@ -1,6 +1,7 @@
 package com.app.pingpong.domain.notification.repository;
 
 import com.app.pingpong.domain.notification.entity.Notification;
+import com.app.pingpong.global.common.status.Status;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +15,8 @@ public interface NotificationRepository extends MongoRepository<Notification, Lo
     List<Notification> findAllByOpponentIdOrderByCreatedAtAsc(Long opponentId);
 
     boolean existsAllByOpponentIdAndIsClicked(Long opponentId, Boolean isClicked);
+
+    Optional<Notification> findByIdAndMemberIdAndOpponentIdAndTypeAndIsAccepted(String notificationId, Long memberId, Long opponentId, Status status, Boolean isAccepted);
+
+    Notification findById(String notificationId);
 }
