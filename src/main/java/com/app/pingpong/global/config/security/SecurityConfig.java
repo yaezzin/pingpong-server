@@ -49,6 +49,8 @@ public class SecurityConfig {
                 .antMatchers("/api/oauth/info", "/api/oauth/login", "/api/oauth/logout", "/api/oauth/reissue").permitAll()
                 .antMatchers("/api/members/sign-up", "/api/members/validate", "/api/s3/file").permitAll()
                 .antMatchers("/api/friends").permitAll()
+                //.antMatchers("/api/admin/**").hasRole("ADMIN")
+                .antMatchers("/api/admin/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .apply(new JwtSecurityConfig(jwtTokenProvider));
