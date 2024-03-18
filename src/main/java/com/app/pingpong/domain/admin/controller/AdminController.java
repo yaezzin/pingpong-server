@@ -1,5 +1,6 @@
 package com.app.pingpong.domain.admin.controller;
 
+import com.app.pingpong.domain.admin.dto.AdminDetailResponse;
 import com.app.pingpong.domain.admin.dto.AdminRequest;
 import com.app.pingpong.domain.admin.dto.AdminResponse;
 import com.app.pingpong.domain.admin.dto.AdminUpdateRequest;
@@ -20,13 +21,13 @@ public class AdminController {
 
     @ResponseBody
     @PostMapping("/posts")
-    public BaseResponse<AdminResponse> create(@RequestBody AdminRequest request) {
+    public BaseResponse<AdminDetailResponse> create(@RequestBody AdminRequest request) {
         return new BaseResponse<>(adminService.create(request));
     }
 
     @ResponseBody
     @PatchMapping("/posts/{id}")
-    public BaseResponse<AdminResponse> update(@PathVariable Long id, @RequestBody AdminUpdateRequest request) {
+    public BaseResponse<AdminDetailResponse> update(@PathVariable Long id, @RequestBody AdminUpdateRequest request) {
         return new BaseResponse<>(adminService.update(id, request));
     }
 

@@ -1,5 +1,6 @@
 package com.app.pingpong.domain.admin.service;
 
+import com.app.pingpong.domain.admin.dto.AdminDetailResponse;
 import com.app.pingpong.domain.admin.dto.AdminRequest;
 import com.app.pingpong.domain.admin.dto.AdminResponse;
 import com.app.pingpong.domain.admin.dto.AdminUpdateRequest;
@@ -23,17 +24,18 @@ public class AdminService {
 
     private final AdminRepository adminRepository;
 
-    public AdminResponse create(AdminRequest request) {
+    public AdminDetailResponse create(AdminRequest request) {
         Admin post = request.toEntity();
+        System.out.println(post.getCreatedAt());
         Admin adminPost = adminRepository.save(post);
-        return AdminResponse.of(adminPost);
+        return AdminDetailResponse.of(adminPost);
     }
 
-    public AdminResponse update(Long id, AdminUpdateRequest request) {
+    public AdminDetailResponse update(Long id, AdminUpdateRequest request) {
         Admin post = adminRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(ADMiN_POST_NOT_FOUND));
         post.setTitle(request.getTitle());
         post.setContents(request.getContents());
-        return AdminResponse.of(post);
+        return AdminDetailResponse.of(post);
     }
 
     public StatusCode delete(Long id) {
