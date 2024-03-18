@@ -63,14 +63,16 @@ public class TeamController {
 
     @ResponseBody
     @PostMapping("/{id}/accept")
-    public BaseResponse<StatusCode> accept(@PathVariable("id") Long teamId) {
-        return new BaseResponse<>(teamService.accept(teamId));
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> accept(@PathVariable("id") Long teamId, @CurrentLoginMemberId Long loginMemberId, @RequestParam("notificationId") String notificationId) {
+        return new BaseResponse<>(teamService.accept(teamId, loginMemberId, notificationId));
     }
 
     @ResponseBody
     @DeleteMapping("/{id}/refuse")
-    public BaseResponse<StatusCode> refuse(@PathVariable("id") Long teamId) {
-        return new BaseResponse<>(teamService.refuse(teamId));
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> refuse(@PathVariable("id") Long teamId, @CurrentLoginMemberId Long loginMemberId, @RequestParam("notificationId") String notificationId) {
+        return new BaseResponse<>(teamService.refuse(teamId, loginMemberId, notificationId));
     }
 
     @ResponseBody

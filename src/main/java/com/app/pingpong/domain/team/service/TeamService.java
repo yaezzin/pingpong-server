@@ -6,6 +6,8 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
+import com.app.pingpong.domain.notification.entity.Notification;
+import com.app.pingpong.domain.notification.repository.NotificationRepository;
 import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
 import com.app.pingpong.domain.team.dto.request.TeamRequest;
@@ -41,6 +43,7 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final PlanRepository planRepository;
     private final MemberTeamRepository memberTeamRepository;
+    private final NotificationRepository notificationRepository;
     private final MemberFacade memberFacade;
 
     @Transactional
@@ -99,17 +102,20 @@ public class TeamService {
     }
 
     @Transactional
-    public StatusCode accept(Long teamId) {
-        checkTeamExists(teamId);
+    public StatusCode accept(Long teamId, Long loginMemberId, String notificationId) {
+        Team team = checkTeamExists(teamId);
         checkTeamInvitationAlreadyExists(teamId);
         inviteMemberToTeam(teamId);
+        setNotificationAccepted(team.getHost().getId(), loginMemberId, notificationId);
         return SUCCESS_ACCEPT_TEAM_INVITATION;
     }
 
     @Transactional
-    public StatusCode refuse(Long teamId) {
-        checkTeamExists(teamId);
+    public StatusCode refuse(Long teamId, Long loginMemberId, String notificationId) {
+        Team team = checkTeamExists(teamId);
+        checkTeamInvitationAlreadyExists(teamId);
         refuseTeamInvitation(teamId);
+        setNotificationAccepted(team.getHost().getId(), loginMemberId, notificationId);
         return SUCCESS_REFUSE_TEAM_INVITATION;
     }
 
@@ -385,6 +391,13 @@ public class TeamService {
                 .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
         memberTeam.setStatus(ACTIVE);
         memberTeam.setParticipatedAt(new Date());
+    }
+
+    private void setNotificationAccepted(Long opponentId, Long loginMemberId, String notificationId) {
+        Notification notification = notificationRepository.findByIdAndMemberIdAndOpponentIdAndTypeAndIsAccepted(notificationId, opponentId, loginMemberId, TEAM, false)
+                .orElseThrow(() -> new BaseException(NOTIFICATION_NOT_FOUND));
+        notification.setAccepted();
+        notificationRepository.save(notification);
     }
 
     private void refuseTeamInvitation(Long teamId) {

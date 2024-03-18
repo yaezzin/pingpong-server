@@ -8,6 +8,8 @@ public enum Status {
     WAIT, // 3. 친구 대기 시
     COMPLETE,
     INCOMPLETE,
+
     TODO,
-    FRIEND
+    FRIEND,
+    TEAM
 }
