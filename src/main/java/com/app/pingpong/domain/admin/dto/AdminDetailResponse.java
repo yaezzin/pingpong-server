@@ -1,5 +1,6 @@
 package com.app.pingpong.domain.admin.dto;
 
+import com.app.pingpong.domain.admin.entity.Admin;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,4 +18,8 @@ public class AdminDetailResponse {
     private String contents;
     private LocalDate createdAt;
     private LocalDate updatedAt;
+
+    public static AdminDetailResponse of(Admin post) {
+        return new AdminDetailResponse(post.getId(), post.getTitle(), post.getContents(), post.getCreatedAt(), post.getUpdatedAt());
+    }
 }

@@ -21,7 +21,7 @@ public class AdminResponse {
     private LocalDate updatedAt;
 
     public static AdminResponse of(Admin post) {
-        return new AdminResponse(post.getId(), post.getTitle(), post.getCratedAt(), post.getUpdatedAt());
+        return new AdminResponse(post.getId(), post.getTitle(), post.getCreatedAt(), post.getUpdatedAt());
     }
 
     public static List<AdminResponse> of(List<Admin> posts) {
