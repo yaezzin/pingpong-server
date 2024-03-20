@@ -44,6 +44,7 @@ public class NotificationService {
                 .memberId(request.getMemberId())
                 .opponentId(loginMemberId)
                 .type(TODO)
+                .teamId(plan.getTeam().getId())
                 .message(message)
                 .build();
         notificationRepository.save(notification);
@@ -58,9 +59,10 @@ public class NotificationService {
 
         String message = me.getNickname() + "님이 친구 신청을 보냈어요";
         Notification notification = Notification.builder()
+                .type(FRIEND)
                 .memberId(loginMemberId)
                 .opponentId(request.getMemberId())
-                .type(FRIEND)
+                .teamId(null)
                 .message(message)
                 .build();
 
@@ -76,9 +78,10 @@ public class NotificationService {
 
         String message = team.getName() + "의 초대를 받았어요.";
         Notification notification = Notification.builder()
+                .type(TEAM)
                 .memberId(loginMemberId)
                 .opponentId(request.getMemberId())
-                .type(TEAM)
+                .teamId(team.getId())
                 .message(message)
                 .build();
 
@@ -90,7 +93,7 @@ public class NotificationService {
     @Transactional
     public List<NotificationResponse> findAll(Long loginMemberId) {
         List<Notification> notifications = notificationRepository.findAllByOpponentIdOrderByCreatedAtAsc(loginMemberId);
-
+        
         List<NotificationResponse> list = new ArrayList<>();
         for (Notification notification : notifications) {
             if (notification.getOpponentId() != null) {
