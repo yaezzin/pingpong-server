@@ -87,12 +87,17 @@ public class MemberService {
     public MemberResponse update(Long id, UpdateRequest request) {
         Member member = findMemberByIdAndStatus(id, ACTIVE);
 
-        validateNickname(request.getNickname());
-        member.setNickname(request.getNickname());
-        member.setProfileImage(request.getProfileImage());
+        if (!request.getNickname().equals("")) {
+            validateNickname(request.getNickname());
+            member.setNickname(request.getNickname());
+        }
 
-        String ImageUrl = s3Uploader.getFilePath(member.getProfileImage());
-        s3Uploader.deleteFile(ImageUrl);
+        if (!member.getProfileImage().equals("")) {
+            String ImageUrl = s3Uploader.getFilePath(member.getProfileImage());
+            s3Uploader.deleteFile(ImageUrl);
+        }
+       
+        member.setProfileImage(request.getProfileImage());
 
         return MemberResponse.of(member);
     }
