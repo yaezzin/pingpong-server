@@ -67,6 +67,7 @@ public enum StatusCode {
     ALREADY_INCOMPLETE_PLAN(false, 400, "완료된 일정이 아니기 떄문에, 해당 일정의 완료 취소를 할 수 없습니다.", "ALREADY_INCOMPLETE_PLAN"),
     ALREADY_INVITE_TEAM(false, 400, "이미 초대했거나, 이미 해당 그룹에 참가한 유저입니다.", "ALREADY_INVITE_TEAM"),
     ALREADY_DELETE_TRASH(false, 400, "이미 영구 삭제된 일정입니다.", "ALREADY_DELETE_TRASH"),
+    ALREADY_DELETE_EMAIL(false, 400, "탈퇴된 계정은 다시 재가입할 수 없습니다.", "ALREADY_DELETE_EMAIL"),
 
     /* 404 : NOT FOUND */
     MEMBER_NOT_FOUND(false, 404, "해당 유저를 찾을 수 없습니다.", "MEMBER_NOT_FOUND"),
