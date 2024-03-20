@@ -39,7 +39,7 @@ public class AdminController {
 
     @ResponseBody
     @GetMapping("/posts/{id}")
-    public BaseResponse<AdminResponse> findById(@PathVariable Long id) {
+    public BaseResponse<AdminDetailResponse> findById(@PathVariable Long id) {
         return new BaseResponse<>(adminService.findById(id));
     }
 

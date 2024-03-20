@@ -10,6 +10,7 @@ import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,11 +27,11 @@ public class AdminService {
 
     public AdminDetailResponse create(AdminRequest request) {
         Admin post = request.toEntity();
-        System.out.println(post.getCreatedAt());
         Admin adminPost = adminRepository.save(post);
         return AdminDetailResponse.of(adminPost);
     }
 
+    @Transactional
     public AdminDetailResponse update(Long id, AdminUpdateRequest request) {
         Admin post = adminRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(ADMiN_POST_NOT_FOUND));
         post.setTitle(request.getTitle());
@@ -38,19 +39,20 @@ public class AdminService {
         return AdminDetailResponse.of(post);
     }
 
+    @Transactional
     public StatusCode delete(Long id) {
         Admin post = adminRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(ADMiN_POST_NOT_FOUND));
         post.setStatus(DELETE);
         return SUCCESS_DELETE_ADMIN_POST;
     }
 
-    public AdminResponse findById(Long id) {
+    public AdminDetailResponse findById(Long id) {
         Admin post = adminRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(ADMiN_POST_NOT_FOUND));
-        return AdminResponse.of(post);
+        return AdminDetailResponse.of(post);
     }
 
     public List<AdminResponse> findAll() {
-        List<Admin> posts = adminRepository.findAllByStatus(ACTIVE);
+        List<Admin> posts = adminRepository.findAllByStatusOrderByIdDesc(ACTIVE);
         return AdminResponse.of(posts);
     }
 }

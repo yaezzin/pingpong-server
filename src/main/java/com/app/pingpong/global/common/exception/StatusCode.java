@@ -28,6 +28,7 @@ public enum StatusCode {
     SUCCESS_EXISTS_NOTIFY(true, 200, "모든 알림을 읽었습니다.", "SUCCESS_NOT_EXISTS_UNREAD_NOTIFY"),
     SUCCESS_EXISTS_UNREAD_NOTIFY(true, 200, "읽지 않은 알림이 존재합니다", "SUCCESS_EXISTS_UNREAD_NOTIFY"),
     SUCCESS_UNFOLLOW_FRIEND(true, 200, "친구 끊기에 성공하였습니다", "SUCCESS_UNFOLLOW_FRIEND"),
+    SUCCESS_DELETE_ADMIN_POST(true, 200, "공지사항 삭제에 성공하였습니다.", "SUCCESS_DELETE_ADMIN_POST"),
 
     /* 400 : Bad Request   */
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다.", "INVALID_REFRESH_TOKEN"),
@@ -78,6 +79,7 @@ public enum StatusCode {
     NOTIFICATION_NOT_FOUND(false, 404, "알림이 존재하지 않습니다.", "NOTIFICATION_NOT_FOUND"),
     BADGE_NOT_FOUND(false, 404, "해당 뱃지는 존재하지 않습니다", "BADGE_NOT_FOUND"),
     PLANS_IN_TRASH_NOT_FOUND(false, 404, "휴지통에서 삭제할 일정이 존재하지 않습니다.", "PLANS_IN_TRASH_NOT_FOUND"),
+    ADMiN_POST_NOT_FOUND(false, 404, "해당 공지를 찾을 수 없습니다.", "ADMiN_POST_NOT_FOUND"),
 
     /* 500 */
     DATABASE_ERROR(false, 500, "데이터베이스 오류입니다.", "DATABASE_ERROR");

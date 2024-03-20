@@ -12,5 +12,7 @@ import java.util.Optional;
 public interface AdminRepository extends JpaRepository<Admin, Long> {
     Optional<Admin> findByIdAndStatus(Long id, Status status);
 
-    List<Admin> findAllByStatus(Status status);
+    Optional<Admin> findByIdAndStatusOrderByUpdatedAtDesc(Long id, Status status);
+
+    List<Admin> findAllByStatusOrderByIdDesc(Status status);
 }
