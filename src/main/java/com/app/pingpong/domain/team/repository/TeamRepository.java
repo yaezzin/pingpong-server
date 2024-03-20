@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface TeamRepository extends JpaRepository<Team, Long> {
-    List<Team> findAllByHostId(Long hostId);
+    List<Team> findAllByHostIdAndStatus(Long hostId, Status status);
 
     Optional<Team> findByIdAndStatus(Long id, Status status);
 }

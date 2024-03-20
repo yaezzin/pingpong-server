@@ -54,6 +54,7 @@ public enum StatusCode {
     INVALID_ACCESS_TOKEN(false, 400, "유효하지 않은 토큰입니다.", "INVALID_ACCESS_TOKEN"),
 
     EXCEED_HOST_TEAM_SIZE(false, 400, "그룹을 더이상 생성할 수 없습니다. 그룹 개수는 최대 6개로 제한됩니다.", "EXCEED_HOST_TEAM_SIZE"),
+    EXCEED_MEMBER_TEAM_THRESHOLD(false, 400, "참여한 그룹이 6개 이상이므로, 그룹 생성 또는 참여가 불가능합니다.", "EXCEED_MEMBER_TEAM_THRESHOLD"),
     MEMBER_NICKNAME_ALREADY_EXISTS(false, 400, "이미 사용중인 닉네임입니다.", "MEMBER_NICKNAME_ALREADY_EXISTS"),
 
     MEMBER_ALREADY_FRIEND_REQUEST(false, 400, "해당 유저에게 이미 친구 신청을 하였습니다.", "MEMBER_ALREADY_FRIEND_REQUEST"),

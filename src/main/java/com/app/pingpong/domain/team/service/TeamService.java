@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.app.pingpong.global.common.exception.StatusCode.*;
+import static com.app.pingpong.global.common.status.Constant.TEAM_THRESHOLD;
 import static com.app.pingpong.global.common.status.Status.*;
 
 @RequiredArgsConstructor
@@ -104,8 +105,9 @@ public class TeamService {
     @Transactional
     public StatusCode accept(Long teamId, Long loginMemberId, String notificationId) {
         Team team = checkTeamExists(teamId);
-        checkTeamInvitationAlreadyExists(teamId);
-        inviteMemberToTeam(teamId);
+        checkTeamInvitationAlreadyExists(teamId, loginMemberId);
+        checkTeamCountThreshold(loginMemberId);
+        inviteMemberToTeam(teamId, loginMemberId);
         setNotificationAccepted(team.getHost().getId(), loginMemberId, notificationId);
         return SUCCESS_ACCEPT_TEAM_INVITATION;
     }
@@ -113,7 +115,7 @@ public class TeamService {
     @Transactional
     public StatusCode refuse(Long teamId, Long loginMemberId, String notificationId) {
         Team team = checkTeamExists(teamId);
-        checkTeamInvitationAlreadyExists(teamId);
+        checkTeamInvitationAlreadyExists(teamId, loginMemberId);
         refuseTeamInvitation(teamId);
         setNotificationAccepted(team.getHost().getId(), loginMemberId, notificationId);
         return SUCCESS_REFUSE_TEAM_INVITATION;
@@ -231,19 +233,22 @@ public class TeamService {
         return SUCCESS_RECOVER_TRASH;
     }
 
-    private void checkTeam(Member loginMember, TeamRequest request) {
-        if (teamRepository.findAllByHostId(loginMember.getId()).size() > 6) {
+    private void checkTeam(Member host, TeamRequest request) {
+        if (teamRepository.findAllByHostIdAndStatus(host.getId(), ACTIVE).size() >= TEAM_THRESHOLD.getNumber()) {
             throw new BaseException(EXCEED_HOST_TEAM_SIZE);
+        }
+        if (memberTeamRepository.findAllByMemberIdAndStatus(host.getId(), ACTIVE).size() >= TEAM_THRESHOLD.getNumber()) {
+            throw new BaseException(EXCEED_MEMBER_TEAM_THRESHOLD);
         }
         if (request.getMemberId().size() > 10 || request.getMemberId().size() < 1) {
             throw new BaseException(INVALID_TEAM_MEMBER_SIZE);
         }
-        if (request.getMemberId().contains(loginMember.getId())) {
+        if (request.getMemberId().contains(host.getId())) {
             throw new BaseException(INVALID_TEAM_HOST_MEMBER);
         }
         for (Long id : request.getMemberId()) {
             memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(INVALID_INVITER));
-            friendQueryRepository.checkFriendship(loginMember.getId(), id);
+            friendQueryRepository.checkFriendship(host.getId(), id);
         }
     }
 
@@ -380,14 +385,21 @@ public class TeamService {
         return teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
     }
 
-    private void checkTeamInvitationAlreadyExists(Long teamId) {
-        if (memberTeamRepository.existsByTeamIdAndMemberIdAndStatus(teamId, memberFacade.getCurrentMember().getId(), ACTIVE)) {
+    private void checkTeamInvitationAlreadyExists(Long teamId, Long loginMemberId) {
+        if (memberTeamRepository.existsByTeamIdAndMemberIdAndStatus(teamId, loginMemberId, ACTIVE)) {
             throw new BaseException(ALREADY_ACCEPT_TEAM_INVITATION);
         }
     }
 
-    private void inviteMemberToTeam(Long teamId) {
-        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, memberFacade.getCurrentMember().getId(), WAIT)
+    private void checkTeamCountThreshold(Long loginMemberId) {
+        List<MemberTeam> memberTeams = memberTeamRepository.findAllByMemberIdAndStatus(loginMemberId, ACTIVE);
+        if (memberTeams.size() >= TEAM_THRESHOLD.getNumber()) {
+            throw new BaseException(EXCEED_MEMBER_TEAM_THRESHOLD);
+        }
+    }
+
+    private void inviteMemberToTeam(Long teamId, Long loginMemberId) {
+        MemberTeam memberTeam = memberTeamRepository.findByTeamIdAndMemberIdAndStatus(teamId, loginMemberId, WAIT)
                 .orElseThrow(() -> new BaseException(TEAM_INVITATION_NOT_FOUND));
         memberTeam.setStatus(ACTIVE);
         memberTeam.setParticipatedAt(new Date());
