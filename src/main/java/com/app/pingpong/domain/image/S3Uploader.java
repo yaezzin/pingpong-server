@@ -5,7 +5,6 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.app.pingpong.global.common.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -18,8 +17,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static com.app.pingpong.global.common.exception.StatusCode.INVALID_S3_URL;
 
 
 @Service
@@ -65,8 +62,6 @@ public class S3Uploader {
 
             if (amazonS3.doesObjectExist(bucket, fileName)) {
                 amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
-            } else {
-                throw new BaseException(INVALID_S3_URL);
             }
         }
     }
