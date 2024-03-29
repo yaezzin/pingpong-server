@@ -10,6 +10,7 @@ appspec.yml
 deploy.yml
 lombok.config
 build.gradle.kts
+MongoDbConfig.java
 
 ### STS ###
 .apt_generated
