@@ -300,8 +300,12 @@ public class TeamService {
 
     private void deleteTeamAndMembers(Team team) {
         team.setStatus(DELETE);
+
         List<MemberTeam> memberTeams = memberTeamRepository.findAllByTeamId(team.getId());
+        List<Plan> plans = planRepository.findAllByTeamId(team.getId());
+
         memberTeams.forEach(memberTeam -> memberTeam.setStatus(DELETE));
+        plans.forEach(plan -> plan.setStatus(DELETE));
     }
 
     private Team checkHostForDelegate(Long teamId, Long loginMemberId, Long delegatorId) {
