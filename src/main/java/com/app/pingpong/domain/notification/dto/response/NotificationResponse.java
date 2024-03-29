@@ -7,21 +7,39 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 public class NotificationResponse {
     private String notificationId;
     private Status type;
-    private Long memberId; // 나한테 초대를 보낸 멤버
+    private Long memberId;
     private String profileImage;
     private Long teamId;
     private String message;
     private Boolean isClicked;
     private Boolean isAccepted;
+    private String createdAt;
+
 
     public static NotificationResponse of(Notification notification, Member member) {
-        return new NotificationResponse(notification.getId(), notification.getType(), member.getId(),
-                member.getProfileImage(), notification.getTeamId(), notification.getMessage(), notification.getIsClicked(), notification.getIsAccepted());
+        String days = null;
+
+        if (notification.getCreatedAt() != null) {
+            Duration duration = Duration.between(notification.getCreatedAt(), LocalDateTime.now());
+            long day = duration.toDays();
+
+            if (day != 0) {
+                days = day + "일 전";
+            } else {
+                days = "오늘";
+            }
+        }
+
+        return new NotificationResponse(notification.getId(), notification.getType(), member.getId(), member.getProfileImage(),
+                notification.getTeamId(), notification.getMessage(), notification.getIsClicked(), notification.getIsAccepted(), days);
     }
 }

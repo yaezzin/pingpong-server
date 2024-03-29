@@ -92,8 +92,8 @@ public class NotificationService {
 
     @Transactional
     public List<NotificationResponse> findAll(Long loginMemberId) {
-        List<Notification> notifications = notificationRepository.findAllByOpponentIdOrderByCreatedAtAsc(loginMemberId);
-        
+        List<Notification> notifications = notificationRepository.findAllByOpponentIdOrderByCreatedAtDesc(loginMemberId);
+
         List<NotificationResponse> list = new ArrayList<>();
         for (Notification notification : notifications) {
             if (notification.getOpponentId() != null) {

@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface NotificationRepository extends MongoRepository<Notification, Long> {
     Optional<Notification> findByMemberIdAndOpponentIdAndIsAccepted(Long memberId, Long opponentId, Boolean isAccepted);
 
-    List<Notification> findAllByOpponentIdOrderByCreatedAtAsc(Long opponentId);
+    List<Notification> findAllByOpponentIdOrderByCreatedAtDesc(Long opponentId);
 
     boolean existsAllByOpponentIdAndIsClicked(Long opponentId, Boolean isClicked);
 
