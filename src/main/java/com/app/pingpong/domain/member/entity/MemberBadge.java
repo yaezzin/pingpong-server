@@ -30,7 +30,7 @@ public class MemberBadge {
     @Column(nullable = false)
     private Status status;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "member_id")
     private Member member;
 

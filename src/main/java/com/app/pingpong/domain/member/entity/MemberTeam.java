@@ -33,11 +33,11 @@ public class MemberTeam {
 
     private Date participatedAt;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "team_id")
     private Team team;
 }
