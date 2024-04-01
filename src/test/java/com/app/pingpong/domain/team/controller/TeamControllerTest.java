@@ -1,5 +1,6 @@
 package com.app.pingpong.domain.team.controller;
 
+import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.team.dto.request.TeamAchieveRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
@@ -113,24 +114,26 @@ public class TeamControllerTest {
     public void acceptTest() throws Exception {
         // given
         Long teamId = 1L;
-        given(teamService.accept(any())).willReturn(SUCCESS_ACCEPT_TEAM_INVITATION);
+        given(teamService.accept(any(), any(), any())).willReturn(SUCCESS_ACCEPT_TEAM_INVITATION);
 
         // when, then
-        mockMvc.perform(post("/api/teams/{id}/accept", teamId))
+        mockMvc.perform(post("/api/teams/{id}/accept", teamId)
+                        .param("notificationId", "notificationId"))
                 .andExpect(status().isOk());
-        verify(teamService).accept(any());
+        verify(teamService).accept(any(), any(), any());
     }
 
     @Test
     public void refuseTest() throws Exception {
         // given
         Long teamId = 1L;
-        given(teamService.refuse(any())).willReturn(SUCCESS_REFUSE_TEAM_INVITATION);
+        given(teamService.refuse(any(), any(), any())).willReturn(SUCCESS_REFUSE_TEAM_INVITATION);
 
         // when, then
-        mockMvc.perform(post("/api/teams/{id}/refuse", teamId))
+        mockMvc.perform(delete("/api/teams/{id}/refuse", teamId)
+                        .param("notificationId", "notificationId"))
                 .andExpect(status().isOk());
-        verify(teamService).refuse(any());
+        verify(teamService).refuse(any(), any(), any());
     }
 
     @Test
@@ -151,7 +154,8 @@ public class TeamControllerTest {
         Long teamId = 1L;
         Long managerId = 1L;
         TeamPlanRequest request = new TeamPlanRequest(managerId, "plan title", LocalDate.now());
-        TeamPlanResponse response = new TeamPlanResponse(1L, managerId, "title", LocalDate.now(), Status.ACTIVE, Status.INCOMPLETE);
+        MemberResponse memberResponse = new MemberResponse(managerId, "nickname", "profileImage");
+        TeamPlanResponse response = new TeamPlanResponse(1L, "title", LocalDate.now(), Status.ACTIVE, Status.INCOMPLETE, memberResponse);
         given(teamService.createPlan(any(), any())).willReturn(response);
 
         // when, then
@@ -239,10 +243,10 @@ public class TeamControllerTest {
 
         // when, then
         mockMvc.perform(get("/api/teams/{teamId}/calendars/achievement", teamId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .param("startDate", String.valueOf(startDate))
+                        .param("endDate", String.valueOf(endDate)))
                 .andExpect(status().isOk());
-        verify(teamService).getTeamAchievementRate(any(), any());
+        verify(teamService).getTeamAchievementRate(any(), any(), any());
     }
 
     @Test
