@@ -1,6 +1,5 @@
 package com.app.pingpong.domain.member.controller;
 
-import com.app.pingpong.domain.member.dto.request.MemberAchieveRequest;
 import com.app.pingpong.domain.member.dto.request.SearchLogRequest;
 import com.app.pingpong.domain.member.dto.request.SignUpRequest;
 import com.app.pingpong.domain.member.dto.request.UpdateRequest;
@@ -20,6 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
 
+import static com.app.pingpong.global.common.exception.StatusCode.SUCCESS;
 import static com.app.pingpong.global.common.exception.StatusCode.SUCCESS_SAVE_SEARCH_LOG;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -61,7 +61,8 @@ public class MemberControllerTest {
     @Test
     public void validateNicknameTest() throws Exception {
         // given
-        String nickname = "member";
+        String nickname = "Hi";
+        given(memberService.validateNickname(any())).willReturn(SUCCESS);
 
         // when, then
         mockMvc.perform(post("/api/members/validate")
@@ -88,7 +89,7 @@ public class MemberControllerTest {
         UpdateRequest request = new UpdateRequest("nickname", "profile");
 
         // when, then
-        mockMvc.perform(patch("/api/members/{id}", id)
+        mockMvc.perform(patch("/api/members")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
@@ -97,22 +98,19 @@ public class MemberControllerTest {
 
     @Test
     public void deleteMemberTest() throws Exception {
-        // given
-        Long id = 1L;
+        //given
+        given(memberService.delete(any())).willReturn(SUCCESS);
 
         // when, then
-        mockMvc.perform(delete("/api/members/{id}", id))
+        mockMvc.perform(delete("/api/members"))
                 .andExpect(status().isOk());
         verify(memberService).delete(any());
     }
 
     @Test
     public void getMyPageTest() throws Exception {
-        // given
-        Long id = 1L;
-
         // when, then
-        mockMvc.perform(get("/api/members/{id}/mypage", id))
+        mockMvc.perform(get("/api/members/mypage"))
                 .andExpect(status().isOk());
         verify(memberService).getMyPage(any());
     }
@@ -125,7 +123,7 @@ public class MemberControllerTest {
         // when, then
         mockMvc.perform(get("/api/members/{id}/profile", id))
                 .andExpect(status().isOk());
-        verify(memberService).getOppPage(any());
+        verify(memberService).getOppPage(any(), any());
     }
 
     @Test
@@ -186,14 +184,17 @@ public class MemberControllerTest {
     public void getMemberAchievement() throws Exception {
         // given
         Long id = 1L;
-        MemberAchieveRequest request = new MemberAchieveRequest(LocalDate.now(), LocalDate.now());
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now();
 
         // when, then
         mockMvc.perform(get("/api/members/calendars/achievement")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .param("startDate", startDate.toString())
+                        .param("endDate", endDate.toString())
+                        .param("id", id.toString()))
                 .andExpect(status().isOk());
-        verify(memberService).getMemberAchievementRate(any(), any());
+        verify(memberService).getMemberAchievementRate(any(), any(), any());
     }
 
     @Test

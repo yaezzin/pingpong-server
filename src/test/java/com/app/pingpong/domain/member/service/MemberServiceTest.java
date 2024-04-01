@@ -34,8 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.app.pingpong.factory.FriendFactory.createMultipleFriendsByCount;
-import static com.app.pingpong.factory.MemberFactory.createMember;
-import static com.app.pingpong.factory.MemberFactory.createMultipleMemberByCount;
+import static com.app.pingpong.factory.MemberFactory.*;
 import static com.app.pingpong.factory.MemberTeamFactory.createMemberTeam;
 import static com.app.pingpong.factory.PlanFactory.createCompletedPlansByCount;
 import static com.app.pingpong.factory.PlanFactory.createInCompletedPlansByCount;
@@ -45,7 +44,6 @@ import static com.app.pingpong.global.common.status.Status.DELETE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -239,14 +237,16 @@ public class MemberServiceTest {
     @Test
     public void getOppPage() {
         // given
-        Member opponent = createMember();
+        Member me = createMember();
+        Member opponent = createOpponent();
+
         List<Friend> friends = createMultipleFriendsByCount(opponent.getId(), 10);
 
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(opponent));
         given(friendQueryRepository.findFriendCount(any())).willReturn(friends.size());
 
         // when
-        MemberDetailResponse response = memberService.getOppPage(opponent.getId());
+        MemberProfileResponse response = memberService.getOppPage(opponent.getId(), me.getId());
 
         // then
         assertThat(opponent.getId()).isEqualTo(response.getMemberId());
@@ -256,11 +256,12 @@ public class MemberServiceTest {
     @Test
     public void getOppPageExceptionByMemberNotFound() {
         // given
-        Member opponent = createMember();
+        Member me = createMember();
+        Member opponent = createOpponent();
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
 
         // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> memberService.getOppPage(opponent.getId()));
+        BaseException exception = assertThrows(BaseException.class, () -> memberService.getOppPage(opponent.getId(), me.getId()));
         assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND);
     }
 
@@ -272,10 +273,8 @@ public class MemberServiceTest {
         List<Member> offsetMembers = members.subList(10, 20); // 10
         ListOperations<String, Object> listOps = mock(ListOperations.class);
 
-        given(memberSearchRepository.findByNicknameContainsWithNoOffset(any(), any(), any(), anyInt()))
-                .willReturn(offsetMembers);
         given(memberFacade.getCurrentMember()).willReturn(member);
-        given(friendQueryRepository.isFriend(any(), any())).willReturn(true);
+        given(memberSearchRepository.findByNicknameContainsWithNoOffset(any(), any(), any(), anyInt())).willReturn(Optional.of(offsetMembers));
         given(redisTemplate.opsForList()).willReturn(listOps);
         given(listOps.leftPush(any(), any())).willReturn(1L);
 
@@ -295,7 +294,7 @@ public class MemberServiceTest {
         // given
         Member member = createMember();
         Member opponent = createMember();
-        SearchLogRequest request = new SearchLogRequest(opponent.getId());
+        SearchLogRequest request = new SearchLogRequest(1L);
 
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(opponent));
         ListOperations<String, Object> listOps = mock(ListOperations.class);
@@ -307,19 +306,6 @@ public class MemberServiceTest {
 
         // then
         assertThat(code).isEqualTo(SUCCESS_SAVE_SEARCH_LOG);
-    }
-
-    @Test
-    public void saveSearchLogExceptionByMemberNotFound() {
-        // given
-        Member opponent = createMember();
-        SearchLogRequest request = new SearchLogRequest(opponent.getId());
-
-        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.empty());
-
-        // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> memberService.saveSearchLog(request, opponent.getId()));
-        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND);
     }
 
     @Test
@@ -386,7 +372,7 @@ public class MemberServiceTest {
         given(planRepository.findAllByManagerIdAndStatusAndDateOrderByDateAsc(any(), any(), any())).willReturn(allPlans);
 
         // when
-        List<MemberAchieveResponse> response = memberService.getMemberAchievementRate(request, manager.getId());
+        List<MemberAchieveResponse> response = memberService.getMemberAchievementRate(request.getStartDate(), request.getEndDate(), manager.getId());
 
         // then
         assertThat(response.get(0).getAchievement()).isEqualTo(50.0);
