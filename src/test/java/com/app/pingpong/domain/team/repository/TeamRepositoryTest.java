@@ -38,7 +38,7 @@ public class TeamRepositoryTest {
         List<Team> teamList = List.of(team1, team2, team3);
 
         // when
-        List<Team> response = teamRepository.findAllByHostId(host.getId());
+        List<Team> response = teamRepository.findAllByHostIdAndStatus(host.getId(), ACTIVE);
 
         // then
         assertThat(response.size()).isEqualTo(teamList.size());
