@@ -5,6 +5,8 @@ import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberTeam;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.member.repository.MemberTeamRepository;
+import com.app.pingpong.domain.notification.entity.Notification;
+import com.app.pingpong.domain.notification.repository.NotificationRepository;
 import com.app.pingpong.domain.team.dto.request.TeamAchieveRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanPassRequest;
 import com.app.pingpong.domain.team.dto.request.TeamPlanRequest;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.app.pingpong.factory.MemberFactory.createMember;
+import static com.app.pingpong.factory.MemberFactory.createOpponent;
 import static com.app.pingpong.factory.MemberTeamFactory.*;
 import static com.app.pingpong.factory.PlanFactory.*;
 import static com.app.pingpong.factory.TeamFactory.createTeam;
@@ -60,6 +63,9 @@ public class TeamServiceTest {
     MemberTeamRepository memberTeamRepository;
 
     @Mock
+    NotificationRepository notificationRepository;
+
+    @Mock
     PlanRepository planRepository;
 
     @Mock
@@ -72,13 +78,14 @@ public class TeamServiceTest {
     public void create() {
         // given
         Member host = createMember();
-        Member member = createMember();
+        Member member = createOpponent();
 
         Team team = createTeam(host);
         MemberTeam memberTeamForHost = createMemberTeam(host, team);
         MemberTeam memberTeamForMember = createWaitMemberTeam(member, team);
 
-        TeamRequest request = new TeamRequest("team-name", List.of(1L, 2L));
+        List<Long> memberIds = List.of(1L, 2L);
+        TeamRequest request = new TeamRequest("team-name", memberIds);
 
         given(memberFacade.getCurrentMember()).willReturn(member);
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
@@ -105,7 +112,7 @@ public class TeamServiceTest {
         List<Team> exceedTeamList = createTeamList(member, exceedHostSize);
 
         given(memberFacade.getCurrentMember()).willReturn(member);
-        given(teamRepository.findAllByHostId(any())).willReturn(exceedTeamList);
+        given(teamRepository.findAllByHostIdAndStatus(any(), any())).willReturn(exceedTeamList);
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.create(request));
@@ -200,13 +207,14 @@ public class TeamServiceTest {
     public void updateHost() {
         // given
         Member host = createMember();
-        Member delegator = createMember();
+        Member delegator = createOpponent();
         Team team = createTeam(host);
         MemberTeam memberTeam = createMemberTeam(host, team);
+        MemberTeam mt = createMemberTeam(delegator, team);
 
         given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(host)).willReturn(Optional.of(delegator));
-        given(memberTeamRepository.findAllByTeamId(any())).willReturn(List.of(memberTeam));
+        given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), any())).willReturn(Optional.of(mt));
 
         // when
         teamService.updateHost(1L, 2L, 3L);
@@ -260,9 +268,11 @@ public class TeamServiceTest {
         Member host = createMember();
         Member delegator = createMember();
         Team team = createTeam(host);
+        MemberTeam memberTeam = createMemberTeam(delegator, team);
 
         given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
-        given(memberRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(delegator));
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(delegator));
+        given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), any())).willReturn(Optional.of(memberTeam));
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.updateHost(1L, 2L, 3L));
@@ -273,37 +283,19 @@ public class TeamServiceTest {
     public void updateHostExceptionByAlreadyHost() {
         // given
         Member host = createMember();
-        Member delegator = createMember();
+        Member delegator = createOpponent();
+
         Team team = createTeam(host);
+        MemberTeam memberTeam1 = createMemberTeam(host, team);
+        MemberTeam memberTeam2 = createMemberTeam(delegator, team);
 
         given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(host));
+        given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), any())).willReturn(Optional.of(memberTeam2));
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.updateHost(1L, 2L, 3L));
         assertThat(exception.getStatus()).isEqualTo(ALREADY_TEAM_HOST);
-    }
-
-    @Test
-    public void emit() {
-        // given
-        Member host = createMember();
-        Member emitter = createMember();
-        Team team = createTeam(host);
-        MemberTeam memberTeamForHost = createMemberTeam(host, team);
-        MemberTeam memberTeamForEmitter = createMemberTeam(emitter, team);
-
-        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
-        given(memberFacade.getCurrentMember()).willReturn(host);
-        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(host)).willReturn(Optional.of(emitter));
-        given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), any())).willReturn(Optional.of(memberTeamForEmitter));
-        given(memberTeamRepository.findAllByTeamId(any())).willReturn(List.of(memberTeamForHost, memberTeamForEmitter));
-
-        // when
-        TeamHostResponse response = teamService.emit(1L, 2L);
-
-        // then
-        assertThat(response.getResponses().get(1).getStatus()).isEqualTo(DELETE);
     }
 
     @Test
@@ -355,11 +347,12 @@ public class TeamServiceTest {
         Member host = createMember();
         Member emitter = createMember();
         Team team = createTeam(host);
+        MemberTeam memberTeam = createDeleteMemberTeam(emitter, team);
 
         given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
         given(memberFacade.getCurrentMember()).willReturn(host);
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(host)).willReturn(Optional.of(emitter));
-        given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), eq(ACTIVE))).willReturn(Optional.empty());
+        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.emit(1L, 2L));
@@ -409,7 +402,8 @@ public class TeamServiceTest {
 
         given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
         given(memberTeamRepository.findAllByTeamId(any())).willReturn(List.of(memberTeamForHost, memberTeamForMember));
-        given(friendQueryRepository.isFriend(any(), any())).willReturn(false);
+        given(memberFacade.getCurrentMember()).willReturn(host);
+        given(friendQueryRepository.findFriendStatus(any(), any())).willReturn(ACTIVE);
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForHost));
 
         // when
@@ -437,14 +431,15 @@ public class TeamServiceTest {
         Member member = createMember();
         Team team = createTeam(member);
         MemberTeam memberTeam = createWaitMemberTeam(member, team);
+        Notification notification = new Notification(TEAM, 1L, 2L, 1L, "message");
 
-        given(memberFacade.getCurrentMember()).willReturn(member);
         given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
         given(memberTeamRepository.existsByTeamIdAndMemberIdAndStatus(any(), any(), eq(ACTIVE))).willReturn(false);
         given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), eq(WAIT))).willReturn(Optional.of(memberTeam));
+        given(notificationRepository.findByIdAndMemberIdAndOpponentIdAndTypeAndIsAccepted(any(), any(), any(), any(), any())).willReturn(Optional.of(notification));
 
         // when
-        StatusCode code = teamService.accept(1L);
+        StatusCode code = teamService.accept(1L, 1L, "1");
 
         // then
         assertThat(code).isEqualTo(SUCCESS_ACCEPT_TEAM_INVITATION);
@@ -460,7 +455,7 @@ public class TeamServiceTest {
         given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.empty());
 
         // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> teamService.accept(1L));
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.accept(1L, 1L, "1"));
         assertThat(exception.getStatus()).isEqualTo(TEAM_NOT_FOUND);
     }
 
@@ -471,12 +466,11 @@ public class TeamServiceTest {
         Team team = createTeam(member);
         MemberTeam memberTeam = createWaitMemberTeam(member, team);
 
-        given(memberFacade.getCurrentMember()).willReturn(member);
         given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
         given(memberTeamRepository.existsByTeamIdAndMemberIdAndStatus(any(), any(), eq(ACTIVE))).willReturn(true);
 
         // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> teamService.accept(1L));
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.accept(1L, 1L, "1"));
         assertThat(exception.getStatus()).isEqualTo(ALREADY_ACCEPT_TEAM_INVITATION);
     }
 
@@ -487,13 +481,12 @@ public class TeamServiceTest {
         Member member2 = createMember();
         Team team = createTeam(member1);
 
-        given(memberFacade.getCurrentMember()).willReturn(member1);
         given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
         given(memberTeamRepository.existsByTeamIdAndMemberIdAndStatus(any(), any(), eq(ACTIVE))).willReturn(false);
         given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), eq(WAIT))).willReturn(Optional.empty());
 
         // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> teamService.accept(1L));
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.accept(1L, 1L, "1"));
         assertThat(exception.getStatus()).isEqualTo(TEAM_INVITATION_NOT_FOUND);
     }
 
@@ -503,13 +496,15 @@ public class TeamServiceTest {
         Member member = createMember();
         Team team = createTeam(member);
         MemberTeam memberTeam = createWaitMemberTeam(member, team);
+        Notification notification = new Notification(TEAM, 1L, 2L, 1L, "message");
 
         given(memberFacade.getCurrentMember()).willReturn(member);
         given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
         given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), eq(WAIT))).willReturn(Optional.of(memberTeam));
+        given(notificationRepository.findByIdAndMemberIdAndOpponentIdAndTypeAndIsAccepted(any(), any(), any(), any(), any())).willReturn(Optional.of(notification));
 
         // when
-        StatusCode code = teamService.refuse(1L);
+        StatusCode code = teamService.refuse(1L, 1L, "1");
 
         // then
         assertThat(code).isEqualTo(SUCCESS_REFUSE_TEAM_INVITATION);
@@ -527,7 +522,7 @@ public class TeamServiceTest {
         given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), eq(WAIT))).willReturn(Optional.empty());
 
         // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> teamService.refuse(1L));
+        BaseException exception = assertThrows(BaseException.class, () -> teamService.refuse(1L, 1L, "1"));
         assertThat(exception.getStatus()).isEqualTo(TEAM_INVITATION_NOT_FOUND);
     }
 
@@ -671,7 +666,7 @@ public class TeamServiceTest {
 
         given(memberFacade.getCurrentMember()).willReturn(member);
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(member));
-        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
+        given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), any())).willReturn(Optional.of(memberTeam));
         given(teamRepository.findByIdAndStatus(anyLong(), any())).willReturn(Optional.of(team));
         given(planRepository.save(any())).willReturn(plan);
 
@@ -700,7 +695,6 @@ public class TeamServiceTest {
         TeamPlanRequest request = new TeamPlanRequest(1L, "title", LocalDate.now());
 
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(manager));
-        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.empty());
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.createPlan(1L, request));
@@ -718,7 +712,7 @@ public class TeamServiceTest {
 
         given(memberFacade.getCurrentMember()).willReturn(maker);
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(manager)).willReturn(Optional.empty());
-        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForManager));
+        given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), any())).willReturn(Optional.of(memberTeamForManager));
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.createPlan(1L, request));
@@ -726,7 +720,7 @@ public class TeamServiceTest {
     }
 
     @Test
-    public void createPlanExceptionByMakerNotFoundInTeam() {
+    public void createPlanExceptionByTeamNotFound() {
         // given
         Member manager = createMember();
         Member maker = createMember();
@@ -735,14 +729,12 @@ public class TeamServiceTest {
         TeamPlanRequest request = new TeamPlanRequest(1L, "title", LocalDate.now());
 
         given(memberFacade.getCurrentMember()).willReturn(maker);
-        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(manager)).willReturn(Optional.of(maker));
-        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeamForManager)).willReturn(Optional.empty());
+        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(manager)).willReturn(Optional.of(manager));
+        given(memberTeamRepository.findByTeamIdAndMemberIdAndStatus(any(), any(), any())).willReturn(Optional.of(memberTeamForManager));
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.createPlan(1L, request));
-        assertThat(exception.getStatus()).isEqualTo(MEMBER_NOT_FOUND_IN_TEAM);
-        verify(memberRepository, times(2)).findByIdAndStatus(any(), any());
-        verify(memberTeamRepository, times(2)).findByTeamIdAndMemberId(any(), any());
+        assertThat(exception.getStatus()).isEqualTo(TEAM_NOT_FOUND);
     }
 
     @Test
@@ -1015,6 +1007,7 @@ public class TeamServiceTest {
         MemberTeam memberTeam = createMemberTeam(member, team);
         Plan plan = createCompletedPlan(member, team, LocalDate.now());
 
+        given(memberFacade.getCurrentMember()).willReturn(member);
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
         given(planRepository.findByIdAndTeamIdAndStatus(any(), any(), any())).willReturn(Optional.of(plan));
 
@@ -1059,6 +1052,7 @@ public class TeamServiceTest {
         MemberTeam memberTeam = createMemberTeam(member, team);
         Plan plan = createInCompletedPlan(member, team, LocalDate.now());
 
+        given(memberFacade.getCurrentMember()).willReturn(member);
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
         given(planRepository.findByIdAndTeamIdAndStatus(any(), any(), any())).willReturn(Optional.of(plan));
 
@@ -1132,7 +1126,7 @@ public class TeamServiceTest {
         given(planRepository.findAllByTeamIdAndDateAndStatus(any(), any(), any())).willReturn(allPlans);
 
         // when
-        List<TeamAchieveResponse> response = teamService.getTeamAchievementRate(1L, request);
+        List<TeamAchieveResponse> response = teamService.getTeamAchievementRate(1L, startDate, endDate);
 
         // then
         double rate = (double) completedPlans.size() / (completedPlans.size() + incompletedPlans.size()) * 100;
@@ -1151,8 +1145,7 @@ public class TeamServiceTest {
         given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(host));
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
-        given(planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(any(), any())).willReturn(plans);
-
+        given(planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(any(), any())).willReturn(Optional.of(plans));
         // when
         List<TeamPlanResponse> trash = teamService.getTrash(1L, 1L);
 
@@ -1238,8 +1231,7 @@ public class TeamServiceTest {
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(host));
         given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
-        given(planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(any(), any())).willReturn(plans);
-
+        given(planRepository.findAllByTeamIdAndStatusOrderByWastedTimeDesc(any(), any())).willReturn(Optional.of(plans));
         // when
         StatusCode code = teamService.deleteAllTrash(1L, 1L);
 
@@ -1315,7 +1307,7 @@ public class TeamServiceTest {
         given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(host));
         given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
         given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
-        given(planRepository.findById(any())).willReturn(Optional.of(plan));
+        given(planRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(plan));
 
         // when
         StatusCode code = teamService.deleteTrash(1L, 1L, 1L);
@@ -1377,23 +1369,6 @@ public class TeamServiceTest {
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> teamService.deleteTrash(1L, 1L, 1L));
         assertThat(exception.getStatus()).isEqualTo(INVALID_HOST);
-    }
-
-    @Test
-    public void deleteTrashExceptionByPlanNotFound() {
-        // given
-        Member host = createMember();
-        Team team = createTeam(host);
-        MemberTeam memberTeam = createMemberTeam(host, team);
-
-        given(memberRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(host));
-        given(teamRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(team));
-        given(memberTeamRepository.findByTeamIdAndMemberId(any(), any())).willReturn(Optional.of(memberTeam));
-        given(planRepository.findById(any())).willReturn(Optional.empty());
-
-        // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> teamService.deleteTrash(1L, 1L, 1L));
-        assertThat(exception.getStatus()).isEqualTo(PLAN_NOT_FOUND);
     }
 
     @Test
