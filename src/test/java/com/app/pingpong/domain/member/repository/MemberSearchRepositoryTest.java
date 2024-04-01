@@ -8,6 +8,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.app.pingpong.global.common.status.Authority.ROLE_USER;
 import static com.app.pingpong.global.common.status.Status.ACTIVE;
@@ -31,16 +32,18 @@ public class MemberSearchRepositoryTest {
             memberList.add(member);
         }
         given(memberSearchRepository.findByNicknameContainsWithNoOffset(eq(ACTIVE), eq("nickname"), eq(10L), eq(10)))
-                .willReturn(memberList.subList(10, 20));
+                .willReturn(Optional.of(memberList.subList(10, 20)));
 
         // when
         long start = System.nanoTime();
-        List<Member> members = memberSearchRepository.findByNicknameContainsWithNoOffset(ACTIVE, "nickname", 10L, 10);
+        Optional<List<Member>> members = memberSearchRepository.findByNicknameContainsWithNoOffset(ACTIVE, "nickname", 10L, 10);
         long end = System.nanoTime();
 
         //then
-        assertThat(members).hasSize(10);
-        assertThat(members.get(0).getId()).isEqualTo(memberList.get(10).getId());
+        assertThat(members.isPresent()).isTrue(); // Optional이 존재하는지 확인
+        List<Member> member = members.get(); // Optional에서 결과를 가져옴
+        assertThat(member).hasSize(10);
+        assertThat(member.get(0).getId()).isEqualTo(memberList.get(10).getId());
         System.out.println("Execution Time: " + (end - start) + " ns");
     }
 }
