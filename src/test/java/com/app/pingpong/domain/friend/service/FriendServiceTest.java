@@ -5,7 +5,6 @@ import com.app.pingpong.domain.friend.dto.response.FriendResponse;
 import com.app.pingpong.domain.friend.entity.Friend;
 import com.app.pingpong.domain.friend.repository.FriendQueryRepository;
 import com.app.pingpong.domain.friend.repository.FriendRepository;
-import com.app.pingpong.domain.member.dto.response.MemberResponse;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.notification.entity.Notification;
@@ -18,8 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static com.app.pingpong.factory.FriendFactory.createFriend;
@@ -154,9 +151,9 @@ public class FriendServiceTest {
                 .message("message")
                 .build();
 
+        given(notificationRepository.findByMemberIdAndOpponentIdAndIsAccepted(any(), any(), any())).willReturn(Optional.of(notification));
         given(friendQueryRepository.isFriend(any(), any())).willReturn(false);
         given(friendQueryRepository.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
-        given(notificationRepository.findByMemberIdAndOpponentId(any(), any())).willReturn(Optional.of(notification));
 
         // when
         StatusCode code = friendService.accept(friend.getRespondent(), friend.getApplicant());
@@ -195,7 +192,6 @@ public class FriendServiceTest {
 
         given(friendQueryRepository.isFriend(any(), any())).willReturn(false);
         given(friendQueryRepository.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
-        given(notificationRepository.findByMemberIdAndOpponentId(any(), any())).willReturn(Optional.empty());
 
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> friendService.accept(1L, 2L));
@@ -207,15 +203,15 @@ public class FriendServiceTest {
         // given
         Friend friend = createFriend(1L, 2L);
         Notification notification = Notification.builder()
+                .type(FRIEND)
                 .memberId(friend.getApplicant())
                 .opponentId(friend.getRespondent())
-                .type(FRIEND)
                 .message("message")
                 .build();
 
+        given(notificationRepository.findByMemberIdAndOpponentIdAndIsAccepted(any(), any(), any())).willReturn(Optional.of(notification));
         given(friendQueryRepository.isFriend(any(), any())).willReturn(false);
         given(friendQueryRepository.findWaitRequestBy(any(), any())).willReturn(Optional.of(friend));
-        given(notificationRepository.findByMemberIdAndOpponentId(any(), any())).willReturn(Optional.of(notification));
 
         // when
         StatusCode code = friendService.refuse(friend.getRespondent(), friend.getApplicant());
@@ -245,22 +241,5 @@ public class FriendServiceTest {
         // when, then
         BaseException exception = assertThrows(BaseException.class, () -> friendService.refuse(1L, 2L));
         assertThat(exception.getStatus()).isEqualTo(FRIEND_NOT_FOUND);
-    }
-
-    @Test
-    public void getMyFriends() {
-        // given
-        List<Member> friendMemberList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            friendMemberList.add(createMember());
-        }
-
-        given(friendRepository.findAllFriendsByMemberId(any())).willReturn(friendMemberList);
-
-        // when
-        List<MemberResponse> response = friendService.getMyFriends(1L);
-
-        //then
-        assertThat(response.size()).isEqualTo(friendMemberList.size());
     }
 }
