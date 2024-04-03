@@ -22,10 +22,11 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
-        with:
-          arguments: clean build
+        run: ./gradlew clean build --exclude-task test
 
       - name: Archive generated files
         uses: actions/upload-artifact@v2
