@@ -27,5 +27,10 @@ jobs:
         with:
           arguments: clean build
 
+      - name: Archive generated files
+        uses: actions/upload-artifact@v2
+        with:
+          name: generated-files
+          path: build/generated
 
 
