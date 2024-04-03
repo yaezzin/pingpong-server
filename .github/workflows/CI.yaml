@@ -8,13 +8,8 @@ on:
     types:
       - closed
 
-env:
-  IMAGE: ${{ secrets.NCP_CONTAINER_REGISTRY }}/ping-pong
-  IMAGE_TAG: ${{ secrets.NCP_CONTAINER_REGISTRY }}/ping-pong:latest
-
 jobs:
-  lint:
-    name: Check lint (black)
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,69 +19,13 @@ jobs:
       - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
           java-version: '11'
+          distribution: 'temurin'
 
-  build_push_to_ncp:
-    needs: lint
-    name: Build Image
-    runs-on: ubuntu-latest
-    outputs:
-      NEW_TAG: ${{ steps.check_tag.outputs.NEW_TAG }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to NCR
-        uses: docker/login-action@v2
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
         with:
-          registry: ${{ secrets.NCP_CONTAINER_REGISTRY }}
-          username: ${{ secrets.NCP_ACCESS_KEY }}
-          password: ${{ secrets.NCP_SECRET_KEY }}
+          arguments: clean build
 
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.1
-        with:
-          github_token: ${{ secrets.PING_PONG }}
-          default_bump: patch
-          release_branches: dev
 
-      - name: Check if new_tag exists
-        id: check_tag
-        run: |
-          echo "NEW_TAG=${{ steps.tag_version.outputs.new_tag }}" >> $GITHUB_ENV
 
-      - name: Create a GitHub release
-        if: ${{ env.NEW_TAG != '' }}
-        uses: ncipollo/release-action@v1
-        with:
-          token: ${{ secrets.PING_PONG }}
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
-          body: ${{ steps.tag_version.outputs.changelog }}
-
-      - name: create TAG
-        id: created_tag
-        run: |
-          if [[ "${{ env.NEW_TAG }}" != "" ]]; then
-              echo "Using version tag: ${{ env.NEW_TAG }}"
-              echo "TAG=${{ env.NEW_TAG }}" >> $GITHUB_ENV
-          else
-              TIMESTAMP=$(date '+%s')
-              echo "Using timestamp tag: $TIMESTAMP"
-              echo "TAG=$TIMESTAMP" >> $GITHUB_ENV
-          fi
-
-      - name: Build and Push
-        if: ${{ env.NEW_TAG != '' }}
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: ${{ env.IMAGE_TAG }},"${{ env.IMAGE }}:${{ env.TAG }}"
-          platforms: linux/amd64,linux/arm64
