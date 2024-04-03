@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.app.pingpong.global.common.exception.StatusCode.ADMiN_POST_NOT_FOUND;
 import static com.app.pingpong.global.common.exception.StatusCode.SUCCESS_DELETE_ADMIN_POST;
 import static com.app.pingpong.global.common.status.Status.ACTIVE;
 import static com.app.pingpong.global.common.status.Status.DELETE;
@@ -33,7 +32,7 @@ public class AdminService {
 
     @Transactional
     public AdminDetailResponse update(Long id, AdminUpdateRequest request) {
-        Admin post = adminRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(ADMiN_POST_NOT_FOUND));
+        Admin post = adminRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(ADMIN_POST_NOT_FOUND));
         post.setTitle(request.getTitle());
         post.setContents(request.getContents());
         return AdminDetailResponse.of(post);
@@ -41,13 +40,13 @@ public class AdminService {
 
     @Transactional
     public StatusCode delete(Long id) {
-        Admin post = adminRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(ADMiN_POST_NOT_FOUND));
+        Admin post = adminRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(ADMIN_POST_NOT_FOUND));
         post.setStatus(DELETE);
         return SUCCESS_DELETE_ADMIN_POST;
     }
 
     public AdminDetailResponse findById(Long id) {
-        Admin post = adminRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(ADMiN_POST_NOT_FOUND));
+        Admin post = adminRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(ADMIN_POST_NOT_FOUND));
         return AdminDetailResponse.of(post);
     }
 
