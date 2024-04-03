@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.app.pingpong.global.common.exception.StatusCode.ADMIN_POST_NOT_FOUND;
 import static com.app.pingpong.global.common.exception.StatusCode.SUCCESS_DELETE_ADMIN_POST;
 import static com.app.pingpong.global.common.status.Status.ACTIVE;
 import static com.app.pingpong.global.common.status.Status.DELETE;
