@@ -122,8 +122,6 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public List<MemberSearchResponse> findByNickname(String nickname, Long id) {
-        List<Member> findMembers = memberSearchRepository.findByNicknameContainsWithNoOffset(ACTIVE, nickname, id, 10);
-
         /* save log into Redis */
         ListOperations<String, Object> listOps = redisTemplate.opsForList();
         String loginUserId = "id" + memberFacade.getCurrentMember().getId();
@@ -131,6 +129,9 @@ public class MemberService {
 
         listOps.remove(loginUserId, 0, keyword);
         listOps.leftPush(loginUserId, keyword);
+
+        List<Member> findMembers = memberSearchRepository.findByNicknameContainsWithNoOffset(ACTIVE, nickname, id, 10)
+                .orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
 
         List<MemberSearchResponse> friendshipList = new ArrayList<>();
         for (Member findMember : findMembers) {
