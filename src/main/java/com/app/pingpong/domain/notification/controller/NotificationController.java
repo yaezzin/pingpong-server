@@ -3,6 +3,7 @@ package com.app.pingpong.domain.notification.controller;
 import com.app.pingpong.domain.notification.dto.request.NotificationFriendRequest;
 import com.app.pingpong.domain.notification.dto.request.NotificationRequest;
 import com.app.pingpong.domain.notification.dto.request.NotificationTeamRequest;
+import com.app.pingpong.domain.notification.dto.response.NotificationExistResponse;
 import com.app.pingpong.domain.notification.dto.response.NotificationResponse;
 import com.app.pingpong.domain.notification.service.NotificationService;
 import com.app.pingpong.global.aop.CheckLoginStatus;
@@ -48,7 +49,7 @@ public class NotificationController {
 
     @GetMapping("/un-read")
     @CheckLoginStatus(auth = Authority.ROLE_USER)
-    public BaseResponse<StatusCode> existUnReadNotification(@CurrentLoginMemberId Long id) {
+    public BaseResponse<NotificationExistResponse> existUnReadNotification(@CurrentLoginMemberId Long id) {
         return new BaseResponse<>(notificationService.existUnReadNotification(id));
     }
 }

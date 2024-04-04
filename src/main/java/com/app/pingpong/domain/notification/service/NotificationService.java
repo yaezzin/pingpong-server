@@ -5,6 +5,7 @@ import com.app.pingpong.domain.member.repository.MemberRepository;
 import com.app.pingpong.domain.notification.dto.request.NotificationFriendRequest;
 import com.app.pingpong.domain.notification.dto.request.NotificationRequest;
 import com.app.pingpong.domain.notification.dto.request.NotificationTeamRequest;
+import com.app.pingpong.domain.notification.dto.response.NotificationExistResponse;
 import com.app.pingpong.domain.notification.dto.response.NotificationResponse;
 import com.app.pingpong.domain.notification.entity.Notification;
 import com.app.pingpong.domain.notification.repository.NotificationRepository;
@@ -106,15 +107,8 @@ public class NotificationService {
         return list;
     }
 
-    public StatusCode existUnReadNotification(Long id) {
+    public NotificationExistResponse existUnReadNotification(Long id) {
         boolean exists = notificationRepository.existsAllByOpponentIdAndIsClicked(id, false);
-
-        StatusCode statusCode;
-        if (exists) {
-            statusCode = SUCCESS_EXISTS_UNREAD_NOTIFY;
-        } else {
-            statusCode = SUCCESS_EXISTS_NOTIFY;
-        }
-        return statusCode;
+        return new NotificationExistResponse(exists);
     }
 }
