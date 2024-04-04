@@ -166,6 +166,12 @@ public class MemberService {
         return responses;
     }
 
+    public StatusCode deleteSearchLog(Long id) {
+        String loginMemberId = "id" + id;
+        redisTemplate.delete(loginMemberId);
+        return SUCCESS_DELETE_ALL_SEARCH_LOG;
+    }
+
     /* Retrieves all the teams that a current member belongs to, and then retrieves all the members belonging to each team. */
     @Transactional(readOnly = true)
     public List<MemberTeamResponse> getMemberTeams(Long loginMemberId) {

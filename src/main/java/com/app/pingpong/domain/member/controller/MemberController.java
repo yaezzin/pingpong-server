@@ -91,6 +91,13 @@ public class MemberController {
     }
 
     @ResponseBody
+    @DeleteMapping("/search-log")
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> deleteSearchLog(@CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(memberService.deleteSearchLog(id));
+    }
+
+    @ResponseBody
     @GetMapping("/teams")
     @CheckLoginStatus(auth = Authority.ROLE_USER)
     public BaseResponse<List<MemberTeamResponse>> getMemberTeams(@CurrentLoginMemberId Long id) {
