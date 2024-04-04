@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.app.pingpong.domain.member.entity.QMember.member;
 
@@ -18,7 +17,7 @@ public class MemberSearchRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    public Optional<List<Member>> findByNicknameContainsWithNoOffset(Status status, String nickname, Long lastMemberId, int pageSize) {
+    public List<Member> findByNicknameContainsWithNoOffset(Status status, String nickname, Long lastMemberId, int pageSize) {
         BooleanExpression whereClause = member.status.eq(status).and(member.nickname.contains(nickname));
         BooleanExpression lastIdCondition = lastMemberId != null ? member.id.gt(lastMemberId) : null;
         List<Member> members = queryFactory
@@ -28,6 +27,6 @@ public class MemberSearchRepository {
                 .limit(pageSize)
                 .fetch();
 
-        return Optional.ofNullable(members.isEmpty() ? null : members);
+        return members.isEmpty() ? null : members;
     }
 }
