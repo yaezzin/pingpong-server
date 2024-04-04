@@ -267,9 +267,9 @@ public class MemberService {
                 String str = o.toString();
 
                 if (str.length() >= 2) {
-                    str = str.substring(0, 2);
+                    String sub_str = str.substring(0, 2);
 
-                    if (!str.equals("id") && list.size() < 10) { // keyword
+                    if (!sub_str.equals("id") && list.size() < 10) { // 키워드
                         list.add(str);
                     } else {
                         String memberId = o.toString().substring(2);
@@ -287,8 +287,7 @@ public class MemberService {
     /* 추출한 숫자값으로 Member 정보를 가져온다. */
     private List<Object> addMemberToListByExtractedNum(List<String> numList) {
         List<Object> memberList = new ArrayList<>();
-        System.out.println("=============");
-        System.out.println(memberList);
+
         for (String num : numList) {
             if (isLong(num)) {
                 Long memberId = Long.parseLong(num);
