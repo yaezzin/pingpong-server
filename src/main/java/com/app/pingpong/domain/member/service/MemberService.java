@@ -122,8 +122,7 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public List<MemberSearchResponse> findByNickname(String nickname, Long id) {
-        List<Member> findMembers = memberSearchRepository.findByNicknameContainsWithNoOffset(ACTIVE, nickname, id, 10)
-                .orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        List<Member> findMembers = memberSearchRepository.findByNicknameContainsWithNoOffset(ACTIVE, nickname, id, 10);
 
         /* save log into Redis */
         ListOperations<String, Object> listOps = redisTemplate.opsForList();
@@ -135,7 +134,6 @@ public class MemberService {
 
         List<MemberSearchResponse> friendshipList = new ArrayList<>();
         for (Member findMember : findMembers) {
-
             Status friendStatus = friendQueryRepository.findFriendStatus(memberFacade.getCurrentMember().getId(), findMember.getId());
             friendshipList.add(MemberSearchResponse.of(findMember, friendStatus));
         }
@@ -288,11 +286,15 @@ public class MemberService {
     /* 추출한 숫자값으로 Member 정보를 가져온다. */
     private List<Object> addMemberToListByExtractedNum(List<String> numList) {
         List<Object> memberList = new ArrayList<>();
+        System.out.println("=============");
+        System.out.println(memberList);
         for (String num : numList) {
             if (isLong(num)) {
                 Long memberId = Long.parseLong(num);
-                Member member = findMemberByIdAndStatus(memberId, ACTIVE);
-                memberList.add(MemberResponse.of(member));
+                if (memberRepository.existsByIdAndStatus(memberId, ACTIVE)) {
+                    Member findMember = findMemberByIdAndStatus(memberId, ACTIVE);
+                    memberList.add(MemberResponse.of(findMember));
+                }
             } else {
                 memberList.add(MemberKeywordResponse.of(num));
             }
