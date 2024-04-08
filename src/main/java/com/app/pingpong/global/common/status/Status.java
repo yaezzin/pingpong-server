@@ -15,5 +15,6 @@ public enum Status {
     TODO,
     FRIEND,
     TEAM,
-    HOST
+    HOST,
+    EMIT
 }

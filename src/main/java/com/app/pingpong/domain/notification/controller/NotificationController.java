@@ -47,6 +47,12 @@ public class NotificationController {
         return new BaseResponse<>(notificationService.notifyHost(request, id));
     }
 
+    @PostMapping("/emit")
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> notifyEmit(@RequestBody NotificationTeamRequest request, @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(notificationService.notifyEmit(request, id));
+    }
+
     @GetMapping("")
     @CheckLoginStatus(auth = Authority.ROLE_USER)
     public BaseResponse<List<NotificationResponse>> findAll(@CurrentLoginMemberId Long id) {

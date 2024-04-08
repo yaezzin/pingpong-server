@@ -98,7 +98,6 @@ public class NotificationService {
         Member loginMember = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Member opponent = memberRepository.findByIdAndStatus(request.getMemberId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
 
-        // 알림을 보낸다.
         String message = loginMember.getNickname() + "님이 방장을 넘겼습니다.";
         Notification notification = Notification.builder()
                 .type(HOST)
@@ -111,6 +110,26 @@ public class NotificationService {
         notificationRepository.save(notification);
 
         return SUCCESS_SEND_NOTIFICATION;
+    }
+
+    public StatusCode notifyEmit(NotificationTeamRequest request, Long loginMemberId) {
+        Member loginMember = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        Member opponent = memberRepository.findByIdAndStatus(request.getMemberId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        Team team = teamRepository.findByIdAndStatus(request.getTeamId(), ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+
+        String message = loginMember.getNickname() + "님이" + team.getName() + "에서 방출하였습니다.";
+        Notification notification = Notification.builder()
+                .type(EMIT)
+                .memberId(loginMemberId)
+                .opponentId(opponent.getId())
+                .teamId(request.getTeamId())
+                .message(message)
+                .build();
+
+        notificationRepository.save(notification);
+
+        return SUCCESS_SEND_NOTIFICATION;
+
     }
 
     @Transactional
@@ -133,4 +152,6 @@ public class NotificationService {
         boolean exists = notificationRepository.existsAllByOpponentIdAndIsClicked(id, false);
         return new NotificationExistResponse(exists);
     }
+
+
 }
