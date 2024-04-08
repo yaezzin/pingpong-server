@@ -41,6 +41,12 @@ public class NotificationController {
         return new BaseResponse<>(notificationService.notifyTeam(request, id));
     }
 
+    @PostMapping("/host")
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public BaseResponse<StatusCode> notifyHost(@RequestBody NotificationTeamRequest request, @CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(notificationService.notifyHost(request, id));
+    }
+
     @GetMapping("")
     @CheckLoginStatus(auth = Authority.ROLE_USER)
     public BaseResponse<List<NotificationResponse>> findAll(@CurrentLoginMemberId Long id) {

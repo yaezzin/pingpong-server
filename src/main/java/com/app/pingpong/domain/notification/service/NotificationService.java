@@ -2,6 +2,7 @@ package com.app.pingpong.domain.notification.service;
 
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.repository.MemberRepository;
+import com.app.pingpong.domain.member.repository.MemberTeamRepository;
 import com.app.pingpong.domain.notification.dto.request.NotificationFriendRequest;
 import com.app.pingpong.domain.notification.dto.request.NotificationRequest;
 import com.app.pingpong.domain.notification.dto.request.NotificationTeamRequest;
@@ -32,6 +33,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;
+    private final MemberTeamRepository memberTeamRepository;
     private final PlanRepository planRepository;
 
     @Transactional
@@ -83,6 +85,26 @@ public class NotificationService {
                 .memberId(loginMemberId)
                 .opponentId(request.getMemberId())
                 .teamId(team.getId())
+                .message(message)
+                .build();
+
+        notificationRepository.save(notification);
+
+        return SUCCESS_SEND_NOTIFICATION;
+    }
+
+    @Transactional
+    public StatusCode notifyHost(NotificationTeamRequest request, Long loginMemberId) {
+        Member loginMember = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        Member opponent = memberRepository.findByIdAndStatus(request.getMemberId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+
+        // 알림을 보낸다.
+        String message = loginMember.getNickname() + "님이 방장을 넘겼습니다.";
+        Notification notification = Notification.builder()
+                .type(HOST)
+                .memberId(loginMemberId)
+                .opponentId(opponent.getId())
+                .teamId(request.getTeamId())
                 .message(message)
                 .build();
 
