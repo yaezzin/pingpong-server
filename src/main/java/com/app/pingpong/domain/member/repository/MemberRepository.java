@@ -20,6 +20,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<List<Member>> findByStatusAndNicknameContains(Status status, String nickname);
 
+    List<Member> findAllByStatus(Status status);
+
     @Query("select count(m.id) > 0 from Member m where m.nickname =:nickname and m.status = 'ACTIVE'")
     boolean existsMemberByNicknameAndStatus(@Param("nickname") String nickname);
 

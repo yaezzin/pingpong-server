@@ -6,10 +6,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.Date;
 
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,4 +39,16 @@ public class MemberBadge {
     @ManyToOne
     @JoinColumn(name = "badge_id")
     private Badge badge;
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
+
+    public void setBadge(Badge badge) {
+        this.badge = badge;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 }

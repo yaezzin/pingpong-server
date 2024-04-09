@@ -12,4 +12,6 @@ public interface MemberBadgeRepository extends JpaRepository<MemberBadge, Long> 
     List<MemberBadge> findByMemberId(Long memberId);
 
     List<MemberBadge> findTop8ByMemberIdAndStatusOrderByBadgeIdAsc(Long memberId, Status status);
+
+    boolean existsByMemberIdAndBadgeIdAndStatus(Long memberId, Long BadgeId, Status status);
 }
