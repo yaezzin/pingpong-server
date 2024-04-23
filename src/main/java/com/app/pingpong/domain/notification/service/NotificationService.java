@@ -117,7 +117,7 @@ public class NotificationService {
         Member opponent = memberRepository.findByIdAndStatus(request.getMemberId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Team team = teamRepository.findByIdAndStatus(request.getTeamId(), ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
 
-        String message = loginMember.getNickname() + "님이" + team.getName() + "에서 방출하였습니다.";
+        String message = "방장 " + loginMember.getNickname() + "님이" + team.getName() + "에서 내보냈습니다.";
         Notification notification = Notification.builder()
                 .type(EMIT)
                 .memberId(loginMemberId)
