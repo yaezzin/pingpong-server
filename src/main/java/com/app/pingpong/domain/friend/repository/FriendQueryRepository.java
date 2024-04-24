@@ -60,9 +60,12 @@ public class FriendQueryRepository {
 
         Friend friend = queryFactory.selectFrom(QFriend.friend)
                 .where(condition1.or(condition2))
+                .orderBy(QFriend.friend.id.desc())
                 .fetchFirst();
 
         if (friend != null) {
+            System.out.println(friend.getStatus());
+
             switch (friend.getStatus()) {
                 case ACTIVE:
                     return ACTIVE;
