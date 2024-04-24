@@ -21,7 +21,6 @@ import static com.app.pingpong.global.common.status.Status.ACTIVE;
 import static com.app.pingpong.global.common.status.Status.COMPLETE;
 
 @RequiredArgsConstructor
-
 @Component
 public class BadgeScheduler {
 
@@ -33,32 +32,33 @@ public class BadgeScheduler {
 
     private final BadgeRepository badgeRepository;
 
-    @Scheduled(cron = "0 40 18 * * *")
+    private static final int[] PLAN_COUNT_THRESHOLDS = {1, 3, 5, 10, 100};
+
+    @Scheduled(cron = "0 0 17 * * *")
     public void addBadges() {
         List<Member> members = memberRepository.findAllByStatus(ACTIVE);
 
         for (Member member : members) {
-            List<Plan> plans = planRepository.findAllByManagerIdAndAchievementAndStatus(member.getId(), COMPLETE, ACTIVE);
-            int planCount = plans.size();
+            int planCount = getCompletedPlanCount(member.getId());
 
-            if (planCount >= 1) {
-                addBadge(member.getId(), 1L);
-            }
-
-            if (planCount >= 100) {
-                addBadge(member.getId(), 2L);
-            }
-
-            if (planCount >= 200) {
-                addBadge(member.getId(), 3L);
+            for (int i = 0; i < PLAN_COUNT_THRESHOLDS.length; i++) {
+                if (planCount >= PLAN_COUNT_THRESHOLDS[i]) {
+                    addBadge(member.getId(), i + 1);
+                }
             }
         }
     }
 
-    private void addBadge(Long memberId, Long badgeId) {
+    private int getCompletedPlanCount(Long memberId) {
+        List<Plan> plans = planRepository.findAllByManagerIdAndAchievementAndStatus(memberId, COMPLETE, ACTIVE);
+        return plans.size();
+    }
+
+    private void addBadge(Long memberId, int badgeLevel) {
         Member member = memberRepository.findByIdAndStatus(memberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
-        boolean exist = memberBadgeRepository.existsByMemberIdAndBadgeIdAndStatus(memberId, badgeId, ACTIVE);
-        Badge badge = badgeRepository.findById(badgeId).orElseThrow(() -> new BaseException(BADGE_NOT_FOUND));
+        System.out.println(badgeLevel);
+        Badge badge = badgeRepository.findById(Long.valueOf(badgeLevel)).orElseThrow(() -> new BaseException(BADGE_NOT_FOUND));
+        boolean exist = memberBadgeRepository.existsByMemberIdAndBadgeIdAndStatus(memberId, badge.getId(), ACTIVE);
 
         if (!exist) {
             MemberBadge memberBadge = new MemberBadge();
