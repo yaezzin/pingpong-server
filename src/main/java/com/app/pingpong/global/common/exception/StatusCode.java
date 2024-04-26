@@ -30,6 +30,9 @@ public enum StatusCode {
     SUCCESS_EXISTS_UNREAD_NOTIFY(true, 200, "읽지 않은 알림이 존재합니다", "SUCCESS_EXISTS_UNREAD_NOTIFY"),
     SUCCESS_UNFOLLOW_FRIEND(true, 200, "친구 끊기에 성공하였습니다", "SUCCESS_UNFOLLOW_FRIEND"),
     SUCCESS_DELETE_ADMIN_POST(true, 200, "공지사항 삭제에 성공하였습니다.", "SUCCESS_DELETE_ADMIN_POST"),
+    SUCCESS_CONNECT_SSE_NOTIFICATION(true, 200, "SSE 연결에 성공했습니다.", "SUCCESS_CONNECT_SSE_NOTIFICATION"),
+    SUCCESS_READ_SSE_NOTIFICATION(true, 200, "푸쉬 알림 읽기에 성공하였습니다.", "SUCCESS_READ_SSE_NOTIFICATION"),
+    SUCCESS_SEND_SSE_NOTIFICATION(true, 200, "푸쉬 알림 전송에 성공하였습니다.", "SUCCESS_SEND_SSE_NOTIFICATION"),
 
     /* 400 : Bad Request   */
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다.", "INVALID_REFRESH_TOKEN"),

@@ -82,6 +82,7 @@ public class NotificationService {
 
         notificationRepository.save(notification);
 
+
         return SUCCESS_SEND_NOTIFICATION;
     }
 
@@ -100,6 +101,7 @@ public class NotificationService {
                 .build();
 
         notificationRepository.save(notification);
+        send(request.getMemberId(), message);
 
         return SUCCESS_SEND_NOTIFICATION;
     }
@@ -186,13 +188,14 @@ public class NotificationService {
                     .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
                     .forEach(entry -> sendToClient(emitter, entry.getKey(), entry.getValue()));
         }
+
         return emitter;
     }
 
     /*
      * 데이터 전송
      * */
-    public void send(Long receiverId, String content) {
+    public StatusCode send(Long receiverId, String content) {
         SSENotification notification = createNotification(receiverId, content);
         System.out.println(notification.getContent());
 
@@ -210,6 +213,8 @@ public class NotificationService {
                     sendToClient(emitter, key, SSENotificationResponse.from(notification));
                 }
         );
+
+        return SUCCESS_SEND_SSE_NOTIFICATION;
     }
 
     private void sendToClient(SseEmitter emitter, String id, Object data) {
@@ -246,11 +251,12 @@ public class NotificationService {
     }
 
     @Transactional
-    public void readNotification(String id) {
+    public StatusCode readNotification(String id) {
         SSENotification notification = sseNotificationRepository.findById(id)
                 .orElseThrow(() -> new BaseException(NOTIFICATION_NOT_FOUND));
         notification.click();
         sseNotificationRepository.save(notification);
+        return SUCCESS_READ_SSE_NOTIFICATION;
     }
 
 }

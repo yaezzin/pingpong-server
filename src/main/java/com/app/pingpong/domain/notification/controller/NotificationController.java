@@ -14,7 +14,6 @@ import com.app.pingpong.global.common.response.BaseResponse;
 import com.app.pingpong.global.common.status.Authority;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -67,37 +66,24 @@ public class NotificationController {
         return new BaseResponse<>(notificationService.existUnReadNotification(id));
     }
 
-    /**
-     * @title 로그인 한 유저 sse 연결
-     */
-    @GetMapping(value = "/subscribe", produces = "text/event-stream")
-    public SseEmitter subscribe(@CurrentLoginMemberId Long id,
-                                @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId) {
-        return notificationService.subscribe(id, lastEventId);
+    @GetMapping(value = "/sse-subscribe", produces = "text/event-stream")
+    public void subscribe(@CurrentLoginMemberId Long id,
+                          @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId) {
+        notificationService.subscribe(id, lastEventId);
     }
 
-    /**
-     * @title 로그인 한 유저 sse 연결
-     */
-    @PostMapping("send")
-    public void send(@CurrentLoginMemberId Long id,
-                     @RequestParam("content") String content) {
-        notificationService.send(id, content);
+    @PostMapping("/sse-send")
+    public BaseResponse<StatusCode> send(@CurrentLoginMemberId Long id, @RequestParam("content") String content) {
+        return new BaseResponse<>(notificationService.send(id, content));
     }
 
-    /**
-     * @title 로그인 한 유저의 모든 알림 조회
-     */
-    @GetMapping("get")
-    public SSENotificationsResponse get(@CurrentLoginMemberId Long id) {
-        return notificationService.findAllById(id);
+    @GetMapping("/sse")
+    public BaseResponse<SSENotificationsResponse> findAllById(@CurrentLoginMemberId Long id) {
+        return new BaseResponse<>(notificationService.findAllById(id));
     }
 
-    /**
-     * @title 알림 읽음 상태 변경
-     */
-    @PatchMapping("/read/{id}")
-    public void readNotification(@PathVariable String id) {
-        notificationService.readNotification(id);
+    @PatchMapping("/sse-read/{id}")
+    public BaseResponse<StatusCode> readNotification(@PathVariable String id) {
+        return new BaseResponse<>(notificationService.readNotification(id));
     }
 }
