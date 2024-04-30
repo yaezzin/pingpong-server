@@ -38,6 +38,8 @@ public enum StatusCode {
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다.", "INVALID_REFRESH_TOKEN"),
     INVALID_SOCIAL_TYPE(false, 400, "소셜로그인 타입이 일치하지 않습니다.", "INVALID_SOCIAL_TYPE"),
     INVALID_NICKNAME(false, 400, "닉네임 형식이 올바르지 않습니다.", "INVALID_NICKNAME"),
+
+    INVALID_TEAM_NAME(false, 400, "그룹명은 한글/영문/숫자 10자 이내로 구성되어야 합니다.", "INVALID_TEAM_NAME"),
     INVALID_TEAM_HOST_MEMBER(false, 400, "방장의 ID를 포함하여 그룹을 생성할 수 없습니다.", "INVALID_TEAM_HOST_MEMBER"),
     INVALID_TEAM_MEMBER(false, 400, "그룹 호스트(자기 자신)은/는 초대할 수 없습니다.", "INVALID_TEAM_MEMBER"),
     INVALID_TEAM_MEMBER_SIZE(false, 400, "그룹 멤버는 최소 1명, 최대 10명으로 제한됩니다.", "INVALID_TEAM_MEMBER_SIZE"),

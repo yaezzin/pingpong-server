@@ -10,4 +10,11 @@ public class RegexUtil {
         Matcher matcher = pattern.matcher(target);
         return matcher.find();
     }
+
+    public static boolean isRegexTeamName(String target) {
+        String regex = "^[\\wㄱ-ㅎㅏ-ㅣ가-힣~!^@#$%^&*()_\\-+=]{1,10}$";
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(target);
+        return matcher.find();
+    }
 }

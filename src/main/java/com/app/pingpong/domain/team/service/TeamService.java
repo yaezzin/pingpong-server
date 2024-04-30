@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static com.app.pingpong.global.common.status.Constant.TEAM_THRESHOLD;
 import static com.app.pingpong.global.common.status.Status.*;
+import static com.app.pingpong.global.common.util.RegexUtil.isRegexTeamName;
 
 @RequiredArgsConstructor
 @Service
@@ -66,6 +67,9 @@ public class TeamService {
         Team team = teamRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
 
         checkHost(team.getHost());
+        if (!isRegexTeamName(request.getName())) {
+            throw new BaseException(INVALID_TEAM_NAME);
+        }
         team.setName(request.getName());
         setTeamToMembers(team, request);
 
@@ -234,6 +238,9 @@ public class TeamService {
     }
 
     private void checkTeam(Member host, TeamRequest request) {
+        if (!isRegexTeamName(request.getName())) {
+            throw new BaseException(INVALID_TEAM_NAME);
+        }
         if (teamRepository.findAllByHostIdAndStatus(host.getId(), ACTIVE).size() >= TEAM_THRESHOLD.getNumber()) {
             throw new BaseException(EXCEED_HOST_TEAM_SIZE);
         }
