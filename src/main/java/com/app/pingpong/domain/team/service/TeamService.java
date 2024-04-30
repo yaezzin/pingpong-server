@@ -378,11 +378,20 @@ public class TeamService {
     private List<TeamMemberResponse> buildTeamMemberResponseList(List<Member> members, Team team) {
         List<TeamMemberResponse> list = new ArrayList<>();
         Long loginMemberId = memberFacade.getCurrentMember().getId();
+        Member host = team.getHost();
 
+        // add Host
+        Status hostFriendStatus = friendQueryRepository.findFriendStatus(loginMemberId, host.getId());
+        MemberTeam hostStatus = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), host.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+        list.add(TeamMemberResponse.of(host, team, hostFriendStatus, hostStatus));
+
+        // add Member
         for (Member findMember : members) {
-            Status friendStatus = friendQueryRepository.findFriendStatus(loginMemberId, findMember.getId());
-            MemberTeam status = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), findMember.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
-            list.add(TeamMemberResponse.of(findMember, team, friendStatus, status));
+            if (findMember.getId() != host.getId()) {
+                Status friendStatus = friendQueryRepository.findFriendStatus(loginMemberId, findMember.getId());
+                MemberTeam status = memberTeamRepository.findByTeamIdAndMemberId(team.getId(), findMember.getId()).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND_IN_TEAM));
+                list.add(TeamMemberResponse.of(findMember, team, friendStatus, status));
+            }
         }
         return list;
     }
