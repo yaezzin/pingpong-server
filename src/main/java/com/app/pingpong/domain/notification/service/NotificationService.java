@@ -53,7 +53,7 @@ public class NotificationService {
         Member me = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Plan plan = planRepository.findByIdAndStatus(request.getPlanId(), ACTIVE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
 
-        String message = me.getNickname() + "님이 할 일 " + plan.getTitle() + "을 회원님께 넘겼어요";
+        String message = me.getNickname() + "님이 할 일 " + plan.getTitle() + "을 회원님께 넘겼어요.";
         Notification notification = Notification.builder()
                 .memberId(request.getMemberId())
                 .opponentId(loginMemberId)
@@ -71,7 +71,7 @@ public class NotificationService {
         Member opponent = memberRepository.findByIdAndStatus(request.getMemberId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Member me = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
 
-        String message = me.getNickname() + "님이 친구 신청을 보냈어요";
+        String message = me.getNickname() + "님이 친구 신청을 보냈어요.";
         Notification notification = Notification.builder()
                 .type(FRIEND)
                 .memberId(loginMemberId)
