@@ -55,12 +55,13 @@ public class NotificationService {
 
         String message = me.getNickname() + "님이 할 일 " + plan.getTitle() + "을 회원님께 넘겼어요.";
         Notification notification = Notification.builder()
-                .memberId(request.getMemberId())
-                .opponentId(loginMemberId)
                 .type(TODO)
+                .memberId(loginMemberId)
+                .opponentId(opponent.getId())
                 .teamId(plan.getTeam().getId())
                 .message(message)
                 .build();
+
         notificationRepository.save(notification);
 
         return SUCCESS_SEND_NOTIFICATION;
