@@ -130,7 +130,7 @@ public class NotificationService {
         Member opponent = memberRepository.findByIdAndStatus(request.getMemberId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Team team = teamRepository.findByIdAndStatus(request.getTeamId(), ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
 
-        String message = "방장 " + loginMember.getNickname() + "님이" + team.getName() + "에서 내보냈습니다.";
+        String message = "방장 " + loginMember.getNickname() + "님이 " + team.getName() + "에서 내보냈습니다.";
         Notification notification = Notification.builder()
                 .type(EMIT)
                 .memberId(loginMemberId)
@@ -168,7 +168,7 @@ public class NotificationService {
     /*
      * SSE 연결
      * */
-    public SseEmitter subscribe(Long userId, String lastEventId) {
+    public SseEmitter subscribe(String lastEventId, Long userId) {
         String id = userId + "_" + System.currentTimeMillis();
 
         // sse 연결 요청에 응답하기 위해 sseEmitter객체 만들기
@@ -188,7 +188,6 @@ public class NotificationService {
                     .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
                     .forEach(entry -> sendToClient(emitter, entry.getKey(), entry.getValue()));
         }
-
         return emitter;
     }
 
@@ -197,16 +196,15 @@ public class NotificationService {
      * */
     public StatusCode send(Long receiverId, String content) {
         SSENotification notification = createNotification(receiverId, content);
-        System.out.println(notification.getContent());
 
         String id = String.valueOf(receiverId);
         sseNotificationRepository.save(notification);
 
         // 로그인 한 유저의 SseEmitter 모두 가져오기
         Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(id);
-
-        System.out.println(sseEmitters);
-
+        if (sseEmitters.isEmpty()) {
+            throw new BaseException(SSE_CONNECT_FAILED);
+        }
         sseEmitters.forEach(
                 (key, emitter) -> {
                     emitterRepository.saveEventCache(key, notification);
