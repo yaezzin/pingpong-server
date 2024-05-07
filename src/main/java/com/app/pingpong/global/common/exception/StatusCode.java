@@ -90,7 +90,8 @@ public enum StatusCode {
     ADMIN_POST_NOT_FOUND(false, 404, "해당 공지를 찾을 수 없습니다.", "ADMiN_POST_NOT_FOUND"),
 
     /* 500 */
-    DATABASE_ERROR(false, 500, "데이터베이스 오류입니다.", "DATABASE_ERROR");
+    DATABASE_ERROR(false, 500, "데이터베이스 오류입니다.", "DATABASE_ERROR"),
+    SSE_CONNECT_FAILED(false, 500, "sse 연결에 실패하였습니다", "SSE_CONNECT_FAILED");
 
     private final boolean isSuccess;
     private final int code;
