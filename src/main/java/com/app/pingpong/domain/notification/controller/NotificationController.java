@@ -13,7 +13,10 @@ import com.app.pingpong.global.common.exception.StatusCode;
 import com.app.pingpong.global.common.response.BaseResponse;
 import com.app.pingpong.global.common.status.Authority;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -66,10 +69,10 @@ public class NotificationController {
         return new BaseResponse<>(notificationService.existUnReadNotification(id));
     }
 
-    @GetMapping(value = "/sse-subscribe", produces = "text/event-stream")
-    public void subscribe(@CurrentLoginMemberId Long id,
-                          @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId) {
-        notificationService.subscribe(id, lastEventId);
+    @GetMapping(value = "/sse-subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @CheckLoginStatus(auth = Authority.ROLE_USER)
+    public ResponseEntity<SseEmitter> subscribe(@CurrentLoginMemberId Long id, @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId) {
+        return ResponseEntity.ok(notificationService.subscribe(lastEventId, id));
     }
 
     @PostMapping("/sse-send")
