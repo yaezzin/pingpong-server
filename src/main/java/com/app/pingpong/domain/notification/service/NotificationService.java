@@ -102,7 +102,7 @@ public class NotificationService {
                 .build();
 
         notificationRepository.save(notification);
-        send(request.getMemberId(), message);
+        //send(request.getMemberId(), message);
 
         return SUCCESS_SEND_NOTIFICATION;
     }

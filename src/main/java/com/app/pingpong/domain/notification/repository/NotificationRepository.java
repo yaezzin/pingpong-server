@@ -19,4 +19,6 @@ public interface NotificationRepository extends MongoRepository<Notification, Lo
     Optional<Notification> findByIdAndMemberIdAndOpponentIdAndTypeAndIsAccepted(String notificationId, Long memberId, Long opponentId, Status status, Boolean isAccepted);
 
     Notification findById(String notificationId);
+
+    Optional<Notification> findByIdAndIsAccepted(String notificationId, Boolean isAccepted);
 }

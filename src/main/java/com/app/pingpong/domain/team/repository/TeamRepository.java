@@ -13,4 +13,6 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     List<Team> findAllByHostIdAndStatus(Long hostId, Status status);
 
     Optional<Team> findByIdAndStatus(Long id, Status status);
+
+    boolean existsByIdAndStatus(Long id, Status status);
 }

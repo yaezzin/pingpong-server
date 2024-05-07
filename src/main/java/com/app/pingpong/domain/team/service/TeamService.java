@@ -108,7 +108,7 @@ public class TeamService {
 
     @Transactional
     public StatusCode accept(Long teamId, Long loginMemberId, String notificationId) {
-        Team team = checkTeamExists(teamId);
+        Team team = checkTeamAndUpdateNotification(teamId, notificationId);
         checkTeamInvitationAlreadyExists(teamId, loginMemberId);
         checkTeamCountThreshold(loginMemberId);
         inviteMemberToTeam(teamId, loginMemberId);
@@ -118,7 +118,7 @@ public class TeamService {
 
     @Transactional
     public StatusCode refuse(Long teamId, Long loginMemberId, String notificationId) {
-        Team team = checkTeamExists(teamId);
+        Team team = checkTeamAndUpdateNotification(teamId, notificationId);
         checkTeamInvitationAlreadyExists(teamId, loginMemberId);
         refuseTeamInvitation(teamId);
         setNotificationAccepted(team.getHost().getId(), loginMemberId, notificationId);
@@ -404,6 +404,17 @@ public class TeamService {
     }
 
     private Team checkTeamExists(Long teamId) {
+        return teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
+    }
+
+    private Team checkTeamAndUpdateNotification(Long teamId, String notificationId) {
+        if (!teamRepository.existsByIdAndStatus(teamId, ACTIVE)) {
+            Notification notification = notificationRepository.findByIdAndIsAccepted(notificationId, false)
+                    .orElseThrow(() -> new BaseException(NOTIFICATION_NOT_FOUND));
+            notification.setAccepted();
+            notification.setClicked();
+            notificationRepository.save(notification);
+        }
         return teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
     }
 
