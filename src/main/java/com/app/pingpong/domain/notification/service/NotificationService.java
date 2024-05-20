@@ -196,16 +196,18 @@ public class NotificationService {
      * 데이터 전송
      * */
     public StatusCode send(Long receiverId, String content) {
-        SSENotification notification = createNotification(receiverId, content);
-
         String id = String.valueOf(receiverId);
-        sseNotificationRepository.save(notification);
 
         // 로그인 한 유저의 SseEmitter 모두 가져오기
         Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(id);
         if (sseEmitters.isEmpty()) {
             throw new BaseException(SSE_CONNECT_FAILED);
         }
+
+        // 알림 생성 및 저장
+        SSENotification notification = createNotification(receiverId, content);
+        sseNotificationRepository.save(notification);
+
         sseEmitters.forEach(
                 (key, emitter) -> {
                     emitterRepository.saveEventCache(key, notification);
