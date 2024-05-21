@@ -33,6 +33,7 @@ public enum StatusCode {
     SUCCESS_CONNECT_SSE_NOTIFICATION(true, 200, "SSE 연결에 성공했습니다.", "SUCCESS_CONNECT_SSE_NOTIFICATION"),
     SUCCESS_READ_SSE_NOTIFICATION(true, 200, "푸쉬 알림 읽기에 성공하였습니다.", "SUCCESS_READ_SSE_NOTIFICATION"),
     SUCCESS_SEND_SSE_NOTIFICATION(true, 200, "푸쉬 알림 전송에 성공하였습니다.", "SUCCESS_SEND_SSE_NOTIFICATION"),
+    SUCCESS_PUSH_ALARM(true, 200, "푸쉬알람 전송에 성공하였습니다.", "SUCCESS_PUSH_ALARM"),
 
     /* 400 : Bad Request   */
     INVALID_REFRESH_TOKEN(false, 400, "유효하지 않은 리프레시 토큰입니다.", "INVALID_REFRESH_TOKEN"),

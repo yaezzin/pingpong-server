@@ -46,10 +46,9 @@ public class SecurityConfig {
                 .and()
 
                 .authorizeRequests()
-                .antMatchers("/api/oauth/info", "/api/oauth/login", "/api/oauth/logout", "/api/oauth/reissue").permitAll()
+                .antMatchers("/api/notifications/push", "/api/oauth/info", "/api/oauth/login", "/api/oauth/logout", "/api/oauth/reissue").permitAll()
                 .antMatchers("/api/members/sign-up", "/api/members/validate", "/api/s3/file").permitAll()
                 .antMatchers("/api/friends").permitAll()
-                //.antMatchers("/api/admin/**").hasRole("ADMIN")
                 .antMatchers("/api/admin/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
