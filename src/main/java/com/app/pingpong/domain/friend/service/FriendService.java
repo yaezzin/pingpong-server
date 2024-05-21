@@ -12,10 +12,12 @@ import com.app.pingpong.domain.notification.entity.Notification;
 import com.app.pingpong.domain.notification.repository.NotificationRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
+import com.app.pingpong.global.common.util.FcmUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,11 +32,13 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final FriendQueryRepository friendQueryRepository;
     private final NotificationRepository notificationRepository;
+    private final FcmUtil fcmUtil;
 
-    public FriendResponse apply(FriendRequest request) {
+    public FriendResponse apply(FriendRequest request) throws IOException {
         Member applicant = memberRepository.findByIdAndStatus(request.getApplicantId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Member respondent = memberRepository.findByIdAndStatus(request.getRespondentId(), ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         checkFriendRequest(applicant, respondent);
+        sendFriendFcm(respondent);
         return FriendResponse.of(friendRepository.save(request.toEntity(applicant.getId(), respondent.getId())));
     }
 
@@ -120,6 +124,10 @@ public class FriendService {
             notification.setAccepted();
             notificationRepository.save(notification);
         }
+    }
+
+    private void sendFriendFcm(Member respondent) throws IOException {
+        fcmUtil.sendMessageTo(respondent.getFcmToken(), 3);
     }
 }
 

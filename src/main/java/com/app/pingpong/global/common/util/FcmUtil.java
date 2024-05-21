@@ -1,4 +1,4 @@
-package com.app.pingpong.domain.notification.service;
+package com.app.pingpong.global.common.util;
 
 import com.app.pingpong.domain.notification.dto.request.FcmMessage;
 import com.app.pingpong.domain.notification.dto.request.PushMessage;
@@ -19,7 +19,7 @@ import static com.app.pingpong.global.common.exception.StatusCode.SUCCESS_PUSH_A
 
 @Component
 @RequiredArgsConstructor
-public class FcmService {
+public class FcmUtil {
 
     private final String API_URL = "https://fcm.googleapis.com/v1/projects/ping-pong-410913/messages:send";
     private final ObjectMapper objectMapper;
@@ -44,7 +44,6 @@ public class FcmService {
             title = PushMessage.HOST.getTitle();
             body = PushMessage.HOST.getBody();
         }
-      
 
         String message = makeMessage(targetToken, title, body);
         OkHttpClient client = new OkHttpClient();

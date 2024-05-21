@@ -19,11 +19,13 @@ import com.app.pingpong.domain.team.repository.TeamRepository;
 import com.app.pingpong.global.common.exception.BaseException;
 import com.app.pingpong.global.common.exception.StatusCode;
 import com.app.pingpong.global.common.status.Status;
+import com.app.pingpong.global.common.util.FcmUtil;
 import com.app.pingpong.global.common.util.MemberFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,9 +49,10 @@ public class TeamService {
     private final MemberTeamRepository memberTeamRepository;
     private final NotificationRepository notificationRepository;
     private final MemberFacade memberFacade;
+    private final FcmUtil fcmUtil;
 
     @Transactional
-    public TeamResponse create(TeamRequest request) {
+    public TeamResponse create(TeamRequest request) throws IOException {
         Member host = memberFacade.getCurrentMember();
         checkTeam(host, request);
 
@@ -58,12 +61,12 @@ public class TeamService {
         setTeam(team, host);
         setTeamToHost(team, host);
         setTeamToMembers(team, request);
-
+        sendTeamFcm(request);
         return TeamResponse.of(memberTeamRepository.findAllByTeamId(team.getId()));
     }
 
     @Transactional
-    public TeamResponse update(Long id, TeamRequest request) {
+    public TeamResponse update(Long id, TeamRequest request) throws IOException {
         Team team = teamRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
 
         checkHost(team.getHost());
@@ -72,6 +75,7 @@ public class TeamService {
         }
         team.setName(request.getName());
         setTeamToMembers(team, request);
+        sendTeamFcm(request);
 
         return TeamResponse.of(memberTeamRepository.findAllByTeamId(team.getId()));
     }
@@ -85,7 +89,7 @@ public class TeamService {
     }
 
     @Transactional
-    public TeamHostResponse updateHost(Long teamId, Long delegatorId, Long loginMemberId) {
+    public TeamHostResponse updateHost(Long teamId, Long delegatorId, Long loginMemberId) throws IOException {
         Team team = checkHostForDelegate(teamId, loginMemberId, delegatorId);
         return TeamHostResponse.of(team, getTeamMemberStatus(team));
     }
@@ -153,10 +157,11 @@ public class TeamService {
     }
 
     @Transactional
-    public TeamPlanResponse passPlan(Long teamId, Long loginMemberId, TeamPlanPassRequest request) {
+    public TeamPlanResponse passPlan(Long teamId, Long loginMemberId, TeamPlanPassRequest request) throws IOException {
         checkMemberInTeam(teamId, loginMemberId);
         Member mandator = checkMandatorInTeam(teamId, request);
         Plan plan = passPlan(request, mandator);
+        fcmUtil.sendMessageTo(mandator.getFcmToken(), 1);
         return TeamPlanResponse.of(plan);
     }
 
@@ -317,7 +322,7 @@ public class TeamService {
         plans.forEach(plan -> plan.setStatus(DELETE));
     }
 
-    private Team checkHostForDelegate(Long teamId, Long loginMemberId, Long delegatorId) {
+    private Team checkHostForDelegate(Long teamId, Long loginMemberId, Long delegatorId) throws IOException {
         Team team = teamRepository.findByIdAndStatus(teamId, ACTIVE).orElseThrow(() -> new BaseException(TEAM_NOT_FOUND));
         Member host = memberRepository.findByIdAndStatus(loginMemberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
         Member delegator = memberRepository.findByIdAndStatus(delegatorId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
@@ -330,6 +335,8 @@ public class TeamService {
         }
 
         team.setHost(delegator);
+        fcmUtil.sendMessageTo(delegator.getFcmToken(), 4);
+
         return team;
     }
 
@@ -602,6 +609,14 @@ public class TeamService {
     private void recover(Long planId) {
         Plan plan = planRepository.findByIdAndStatus(planId, DELETE).orElseThrow(() -> new BaseException(PLAN_NOT_FOUND));
         plan.setStatus(ACTIVE);
+    }
+
+    private void sendTeamFcm(TeamRequest request) throws IOException {
+        for (Long memberId : request.getMemberId()) {
+            Member member = memberRepository.findByIdAndStatus(memberId, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+            fcmUtil.sendMessageTo(member.getFcmToken(), 2);
+        }
+
     }
 }
 
