@@ -12,6 +12,7 @@ import com.app.pingpong.global.common.status.Authority;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -23,7 +24,7 @@ public class FriendController {
 
     @ResponseBody
     @PostMapping("/apply")
-    public BaseResponse<FriendResponse> apply(@RequestBody FriendRequest request) {
+    public BaseResponse<FriendResponse> apply(@RequestBody FriendRequest request) throws IOException {
         return new BaseResponse<>(friendService.apply(request));
     }
 

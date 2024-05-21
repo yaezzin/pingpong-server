@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class TeamController {
 
     @ResponseBody
     @PostMapping("")
-    public BaseResponse<TeamResponse> create(@RequestBody TeamRequest request) {
+    public BaseResponse<TeamResponse> create(@RequestBody TeamRequest request) throws IOException {
         return new BaseResponse<>(teamService.create(request));
     }
 
@@ -38,14 +39,14 @@ public class TeamController {
 
     @ResponseBody
     @PatchMapping("/{id}")
-    public BaseResponse<TeamResponse> update(@PathVariable Long id, @RequestBody TeamRequest request) {
+    public BaseResponse<TeamResponse> update(@PathVariable Long id, @RequestBody TeamRequest request) throws IOException {
         return new BaseResponse<>(teamService.update(id, request));
     }
 
     @ResponseBody
     @PatchMapping("/{teamId}/host")
     @CheckLoginStatus(auth = Authority.ROLE_USER)
-    public BaseResponse<TeamHostResponse> updateHost(@PathVariable("teamId") Long teamId, @RequestParam Long delegatorId, @CurrentLoginMemberId Long loginMemberId) {
+    public BaseResponse<TeamHostResponse> updateHost(@PathVariable("teamId") Long teamId, @RequestParam Long delegatorId, @CurrentLoginMemberId Long loginMemberId) throws IOException {
         return new BaseResponse<>(teamService.updateHost(teamId, delegatorId, loginMemberId));
     }
 
@@ -98,7 +99,7 @@ public class TeamController {
     @PatchMapping("/{teamId}/plans/pass")
     public BaseResponse<TeamPlanResponse> passPlan(@PathVariable("teamId") Long teamId,
                                                    @CurrentLoginMemberId Long loginMemberId,
-                                                   @RequestBody TeamPlanPassRequest request) {
+                                                   @RequestBody TeamPlanPassRequest request) throws IOException {
         return new BaseResponse<>(teamService.passPlan(teamId, loginMemberId, request));
     }
 
