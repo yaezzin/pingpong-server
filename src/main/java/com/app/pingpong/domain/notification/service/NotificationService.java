@@ -7,13 +7,8 @@ import com.app.pingpong.domain.notification.dto.request.NotificationRequest;
 import com.app.pingpong.domain.notification.dto.request.NotificationTeamRequest;
 import com.app.pingpong.domain.notification.dto.response.NotificationExistResponse;
 import com.app.pingpong.domain.notification.dto.response.NotificationResponse;
-import com.app.pingpong.domain.notification.dto.response.SSENotificationResponse;
-import com.app.pingpong.domain.notification.dto.response.SSENotificationsResponse;
 import com.app.pingpong.domain.notification.entity.Notification;
-import com.app.pingpong.domain.notification.entity.SSENotification;
-import com.app.pingpong.domain.notification.repository.EmitterRepository;
 import com.app.pingpong.domain.notification.repository.NotificationRepository;
-import com.app.pingpong.domain.notification.repository.SSENotificationRepository;
 import com.app.pingpong.domain.team.entity.Plan;
 import com.app.pingpong.domain.team.entity.Team;
 import com.app.pingpong.domain.team.repository.PlanRepository;
@@ -23,13 +18,9 @@ import com.app.pingpong.global.common.exception.StatusCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.app.pingpong.global.common.exception.StatusCode.*;
 import static com.app.pingpong.global.common.status.Status.*;
@@ -44,8 +35,6 @@ public class NotificationService {
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;
     private final PlanRepository planRepository;
-    private final EmitterRepository emitterRepository;
-    private final SSENotificationRepository sseNotificationRepository;
 
     @Transactional
     public StatusCode notifyTodo(NotificationRequest request, Long loginMemberId) {
@@ -165,99 +154,4 @@ public class NotificationService {
         boolean exists = notificationRepository.existsAllByOpponentIdAndIsClicked(id, false);
         return new NotificationExistResponse(exists);
     }
-
-    /*
-     * SSE 연결
-     * */
-    public SseEmitter subscribe(String lastEventId, Long userId) {
-        String id = userId + "_" + System.currentTimeMillis();
-
-        // sse 연결 요청에 응답하기 위해 sseEmitter객체 만들기
-        SseEmitter emitter = emitterRepository.save(id, new SseEmitter(DEFAULT_TIMEOUT));
-
-        // 만약 정상동작하지 않으면 객체 삭제
-        emitter.onCompletion(() -> emitterRepository.deleteById(id));
-        emitter.onTimeout(() -> emitterRepository.deleteById(id));
-
-        // 503 방지를 위해 더미 이벤트 전송
-        sendToClient(emitter, id, "EventStream Created. [userId=" + userId + "]");
-
-        // 미수신 이벤트가 있을 경우 전송하여 이벤트 유실 예방
-        if (!lastEventId.isEmpty()) { //
-            Map<String, Object> events = emitterRepository.findAllEventCacheStartWithId(String.valueOf(userId));
-            events.entrySet().stream()
-                    .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
-                    .forEach(entry -> sendToClient(emitter, entry.getKey(), entry.getValue()));
-        }
-        return emitter;
-    }
-
-    /*
-     * 데이터 전송
-     * */
-    public StatusCode send(Long receiverId, String content) {
-        String id = String.valueOf(receiverId);
-
-        // 로그인 한 유저의 SseEmitter 모두 가져오기
-        Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(id);
-        if (sseEmitters.isEmpty()) {
-            throw new BaseException(SSE_CONNECT_FAILED);
-        }
-
-        // 알림 생성 및 저장
-        SSENotification notification = createNotification(receiverId, content);
-        sseNotificationRepository.save(notification);
-
-        sseEmitters.forEach(
-                (key, emitter) -> {
-                    emitterRepository.saveEventCache(key, notification);
-                    sendToClient(emitter, key, SSENotificationResponse.from(notification));
-                }
-        );
-
-        return SUCCESS_SEND_SSE_NOTIFICATION;
-    }
-
-    private void sendToClient(SseEmitter emitter, String id, Object data) {
-        try {
-            emitter.send(SseEmitter.event()
-                    .id(id)
-                    .name("sse")
-                    .data(data));
-        } catch (IOException exception) {
-            emitterRepository.deleteById(id);
-            throw new RuntimeException("연결 오류!");
-        }
-    }
-
-    private SSENotification createNotification(Long receiverId, String content) {
-        return SSENotification.builder()
-                .receiverId(receiverId)
-                .content(content)
-                .isClicked(false)
-                .build();
-    }
-
-    @Transactional
-    public SSENotificationsResponse findAllById(Long loginMemberId) {
-        List<SSENotificationResponse> responses = sseNotificationRepository.findAllByReceiverId(loginMemberId).stream()
-                .map(SSENotificationResponse::from)
-                .collect(Collectors.toList());
-
-        long unreadCount = responses.stream()
-                .filter(notification -> !notification.isClicked())
-                .count();
-
-        return SSENotificationsResponse.of(responses, unreadCount);
-    }
-
-    @Transactional
-    public StatusCode readNotification(String id) {
-        SSENotification notification = sseNotificationRepository.findById(id)
-                .orElseThrow(() -> new BaseException(NOTIFICATION_NOT_FOUND));
-        notification.click();
-        sseNotificationRepository.save(notification);
-        return SUCCESS_READ_SSE_NOTIFICATION;
-    }
-
 }

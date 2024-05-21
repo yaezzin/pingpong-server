@@ -5,7 +5,7 @@ import com.app.pingpong.domain.notification.dto.request.NotificationRequest;
 import com.app.pingpong.domain.notification.dto.request.NotificationTeamRequest;
 import com.app.pingpong.domain.notification.dto.response.NotificationExistResponse;
 import com.app.pingpong.domain.notification.dto.response.NotificationResponse;
-import com.app.pingpong.domain.notification.dto.response.SSENotificationsResponse;
+import com.app.pingpong.domain.notification.service.FcmService;
 import com.app.pingpong.domain.notification.service.NotificationService;
 import com.app.pingpong.global.aop.CheckLoginStatus;
 import com.app.pingpong.global.aop.CurrentLoginMemberId;
@@ -13,11 +13,9 @@ import com.app.pingpong.global.common.exception.StatusCode;
 import com.app.pingpong.global.common.response.BaseResponse;
 import com.app.pingpong.global.common.status.Authority;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -26,6 +24,7 @@ import java.util.List;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final FcmService fcmService;
 
     @PostMapping("/to-do")
     @CheckLoginStatus(auth = Authority.ROLE_USER)
@@ -69,24 +68,12 @@ public class NotificationController {
         return new BaseResponse<>(notificationService.existUnReadNotification(id));
     }
 
-    @GetMapping(value = "/sse-subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @CheckLoginStatus(auth = Authority.ROLE_USER)
-    public ResponseEntity<SseEmitter> subscribe(@CurrentLoginMemberId Long id, @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId) {
-        return ResponseEntity.ok(notificationService.subscribe(lastEventId, id));
+    @ResponseBody
+    @PostMapping("/push")
+    public BaseResponse<StatusCode> push(@RequestParam("token") String token, @RequestParam("type") int type) throws IOException {
+
+        return new BaseResponse<>(fcmService.sendMessageTo(token, type));
     }
 
-    @PostMapping("/sse-send")
-    public BaseResponse<StatusCode> send(@CurrentLoginMemberId Long id, @RequestParam("content") String content) {
-        return new BaseResponse<>(notificationService.send(id, content));
-    }
 
-    @GetMapping("/sse")
-    public BaseResponse<SSENotificationsResponse> findAllById(@CurrentLoginMemberId Long id) {
-        return new BaseResponse<>(notificationService.findAllById(id));
-    }
-
-    @PatchMapping("/sse-read/{id}")
-    public BaseResponse<StatusCode> readNotification(@PathVariable String id) {
-        return new BaseResponse<>(notificationService.readNotification(id));
-    }
 }
