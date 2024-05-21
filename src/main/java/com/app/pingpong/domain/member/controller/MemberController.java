@@ -31,6 +31,12 @@ public class MemberController {
     }
 
     @ResponseBody
+    @PostMapping("/fcm")
+    public BaseResponse<StatusCode> saveToken(@CurrentLoginMemberId Long id, @RequestParam("token") String token) {
+        return new BaseResponse<>(memberService.saveToken(id, token));
+    }
+
+    @ResponseBody
     @PostMapping("/validate")
     public BaseResponse<StatusCode> validate(@RequestParam String nickname) {
         return new BaseResponse<>(memberService.validateNickname(nickname));

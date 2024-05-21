@@ -64,6 +64,13 @@ public class MemberService {
     }
 
     @Transactional
+    public StatusCode saveToken(Long id, String token) {
+        Member member = memberRepository.findByIdAndStatus(id, ACTIVE).orElseThrow(() -> new BaseException(MEMBER_NOT_FOUND));
+        member.setFcmToken(token);
+        return SUCCESS_SAVE_FCM_TOKEN;
+    }
+
+    @Transactional
     public StatusCode validateNickname(String nickname) {
         if (!isRegexNickname(nickname)) {
             throw new BaseException(INVALID_NICKNAME);

@@ -31,6 +31,7 @@ public class Member {
     @Column(nullable = false, length = 10)
     private String nickname;
 
+    @Column
     private String profileImage;
 
     @Enumerated(EnumType.STRING)
@@ -40,6 +41,9 @@ public class Member {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Authority authority;
+
+    @Column
+    private String fcmToken;
 
     @OneToMany(mappedBy = "member")
     private List<MemberTeam> memberTeams = new ArrayList<>();
@@ -70,6 +74,10 @@ public class Member {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 }
 
