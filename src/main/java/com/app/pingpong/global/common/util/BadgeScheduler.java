@@ -1,5 +1,6 @@
 package com.app.pingpong.global.common.util;
 
+import com.app.pingpong.domain.friend.repository.FriendQueryRepository;
 import com.app.pingpong.domain.member.entity.Badge;
 import com.app.pingpong.domain.member.entity.Member;
 import com.app.pingpong.domain.member.entity.MemberBadge;
@@ -30,6 +31,8 @@ public class BadgeScheduler {
 
     private final MemberBadgeRepository memberBadgeRepository;
 
+    private final FriendQueryRepository friendQueryRepository;
+
     private final BadgeRepository badgeRepository;
 
     private static final int[] PLAN_COUNT_THRESHOLDS = {1, 3, 5, 10, 100};
@@ -45,6 +48,14 @@ public class BadgeScheduler {
                 if (planCount >= PLAN_COUNT_THRESHOLDS[i]) {
                     addBadge(member.getId(), i + 1);
                 }
+            }
+
+            int friendCount = friendQueryRepository.findFriendCount(member.getId());
+            if (friendCount >= 10) {
+                addBadge(member.getId(), 6);
+            }
+            if (friendCount >= 100) {
+                addBadge(member.getId(), 7);
             }
         }
     }
@@ -68,4 +79,6 @@ public class BadgeScheduler {
             memberBadgeRepository.save(memberBadge);
         }
     }
+
+
 }
