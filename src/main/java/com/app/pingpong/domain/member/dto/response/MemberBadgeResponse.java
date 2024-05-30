@@ -13,8 +13,9 @@ import lombok.NoArgsConstructor;
 public class MemberBadgeResponse {
     private Long badgeId;
     private String badgeName;
+    private boolean hasBadge;
 
-    public static MemberBadgeResponse of(Badge badge) {
-        return new MemberBadgeResponse(badge.getId(), badge.getName());
+    public static MemberBadgeResponse of(Badge badge, boolean hasBadge) {
+        return new MemberBadgeResponse(badge.getId(), badge.getName(), hasBadge);
     }
 }

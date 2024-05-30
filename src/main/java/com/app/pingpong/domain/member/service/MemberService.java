@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.app.pingpong.global.common.exception.StatusCode.*;
@@ -226,28 +227,16 @@ public class MemberService {
         Member member = findMemberByIdAndStatus(id, ACTIVE);
 
         List<MemberBadge> memberBadges = memberBadgeRepository.findByMemberId(member.getId());
+        Set<Long> ownedBadgeIds = memberBadges.stream()
+                .map(memberBadge -> memberBadge.getBadge().getId())
+                .collect(Collectors.toSet());
+
+        List<Badge> allBadges = badgeRepository.findAllByStatus(ACTIVE);
 
         List<MemberBadgeResponse> response = new ArrayList<>();
-        for (MemberBadge memberBadge : memberBadges) {
-            Long badgeId = memberBadge.getBadge().getId();
-            Badge badge = badgeRepository.findById(badgeId).orElseThrow(() -> new BaseException(BADGE_NOT_FOUND));
-            response.add(MemberBadgeResponse.of(badge));
-        }
-
-        return response;
-    }
-
-    @Transactional
-    public List<MemberBadgeResponse> getMemberPreBadges(Long id) {
-        Member member = findMemberByIdAndStatus(id, ACTIVE);
-
-        List<MemberBadge> memberBadges = memberBadgeRepository.findTop8ByMemberIdAndStatusOrderByBadgeIdAsc(id, ACTIVE);
-
-        List<MemberBadgeResponse> response = new ArrayList<>();
-        for (MemberBadge memberBadge : memberBadges) {
-            Long badgeId = memberBadge.getBadge().getId();
-            Badge badge = badgeRepository.findById(badgeId).orElseThrow(() -> new BaseException(BADGE_NOT_FOUND));
-            response.add(MemberBadgeResponse.of(badge));
+        for (Badge badge : allBadges) {
+            boolean hasBadge = ownedBadgeIds.contains(badge.getId());
+            response.add(MemberBadgeResponse.of(badge, hasBadge));
         }
 
         return response;
